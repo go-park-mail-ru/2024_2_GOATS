@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package auth;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/api/annotations.proto";
+
+option go_package = ".";
+
+service Auth {
+  rpc Register(RegisterRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/register"
+      body: "*"
+    };
+  }
+  rpc Login(AuthRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/login"
+      body: "*"
+    };
+  }
+  rpc Logout(LogoutRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/logout"
+      body: "*"
+    };
+  }
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string password_confirm = 3;  // Может быть пустым
+  string nickname = 4;
+  string sex = 5;
+  google.protobuf.Timestamp birthdate = 6;
+}
+
+message LogoutRequest {
+  string email = 1;
+}
+
+message AuthRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message ErrorMessage {
+  string code = 1;
+  string error = 2;
+}
+
+message AuthResponse {
+  bool success = 1;
+  repeated ErrorMessage errors = 2;
+}
