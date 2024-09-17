@@ -1,0 +1,44 @@
+version: '3'
+
+volumes:
+  postgres_volume:
+  redis:
+
+services:
+  validation_ms:
+    build:
+      context: ./validation-service/
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 5050:5050
+    networks:
+      - netflix
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis:/data
+    networks:
+      - netflix
+  db:
+    image: postgres:latest
+    environment:
+      - "POSTGRES_DB=netflix"
+      - "POSTGRES_USER=test"
+      - "POSTGRES_PASSWORD=test"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "postgres_volume:/var/lib/postgresql/data"
+    networks:
+      - netflix
+
+
+networks:
+  netflix:
+  default:
+    external:
+      name: netflix

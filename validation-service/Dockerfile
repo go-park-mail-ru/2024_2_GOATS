@@ -10,9 +10,9 @@ RUN go mod download
 RUN go mod tidy
 RUN go build cmd/main.go
 
-EXPOSE 8081
+EXPOSE 5050
 
-CMD [ "main" ]
+CMD [ "./main" ]
 
 # /app/
 #   /api

@@ -4,15 +4,14 @@ package validation;
 
 option go_package = ".";
 
+import "google/protobuf/timestamp.proto";
+
 message ValidateRegistrationRequest {
   string email = 1;
   string password = 2;
   string password_confirm = 3;
-}
-
-message ValidateAuthorizationRequest {
-  string email = 1;
-  string password = 2;
+  string sex = 4;
+  google.protobuf.Timestamp bitrhdate = 5;
 }
 
 message ErrorMessage {
@@ -27,5 +26,4 @@ message ValidationResponse {
 
 service Validation {
   rpc ValidateRegistration(ValidateRegistrationRequest) returns (ValidationResponse);
-  rpc ValidateAuthorization(ValidateAuthorizationRequest) returns (ValidationResponse);
 }

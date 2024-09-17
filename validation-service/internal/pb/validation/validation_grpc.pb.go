@@ -19,139 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ValidationV1_ValidateRegistration_FullMethodName  = "/validation_v1.ValidationV1/ValidateRegistration"
-	ValidationV1_ValidateAuthorization_FullMethodName = "/validation_v1.ValidationV1/ValidateAuthorization"
+	Validation_ValidateRegistration_FullMethodName = "/validation.Validation/ValidateRegistration"
 )
 
-// ValidationV1Client is the client API for ValidationV1 service.
+// ValidationClient is the client API for Validation service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ValidationV1Client interface {
+type ValidationClient interface {
 	ValidateRegistration(ctx context.Context, in *ValidateRegistrationRequest, opts ...grpc.CallOption) (*ValidationResponse, error)
-	ValidateAuthorization(ctx context.Context, in *ValidateAuthorizationRequest, opts ...grpc.CallOption) (*ValidationResponse, error)
 }
 
-type validationV1Client struct {
+type validationClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewValidationV1Client(cc grpc.ClientConnInterface) ValidationV1Client {
-	return &validationV1Client{cc}
+func NewValidationClient(cc grpc.ClientConnInterface) ValidationClient {
+	return &validationClient{cc}
 }
 
-func (c *validationV1Client) ValidateRegistration(ctx context.Context, in *ValidateRegistrationRequest, opts ...grpc.CallOption) (*ValidationResponse, error) {
+func (c *validationClient) ValidateRegistration(ctx context.Context, in *ValidateRegistrationRequest, opts ...grpc.CallOption) (*ValidationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ValidationResponse)
-	err := c.cc.Invoke(ctx, ValidationV1_ValidateRegistration_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Validation_ValidateRegistration_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *validationV1Client) ValidateAuthorization(ctx context.Context, in *ValidateAuthorizationRequest, opts ...grpc.CallOption) (*ValidationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ValidationResponse)
-	err := c.cc.Invoke(ctx, ValidationV1_ValidateAuthorization_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// ValidationV1Server is the server API for ValidationV1 service.
-// All implementations must embed UnimplementedValidationV1Server
+// ValidationServer is the server API for Validation service.
+// All implementations must embed UnimplementedValidationServer
 // for forward compatibility.
-type ValidationV1Server interface {
+type ValidationServer interface {
 	ValidateRegistration(context.Context, *ValidateRegistrationRequest) (*ValidationResponse, error)
-	ValidateAuthorization(context.Context, *ValidateAuthorizationRequest) (*ValidationResponse, error)
-	mustEmbedUnimplementedValidationV1Server()
+	mustEmbedUnimplementedValidationServer()
 }
 
-// UnimplementedValidationV1Server must be embedded to have
+// UnimplementedValidationServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedValidationV1Server struct{}
+type UnimplementedValidationServer struct{}
 
-func (UnimplementedValidationV1Server) ValidateRegistration(context.Context, *ValidateRegistrationRequest) (*ValidationResponse, error) {
+func (UnimplementedValidationServer) ValidateRegistration(context.Context, *ValidateRegistrationRequest) (*ValidationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateRegistration not implemented")
 }
-func (UnimplementedValidationV1Server) ValidateAuthorization(context.Context, *ValidateAuthorizationRequest) (*ValidationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ValidateAuthorization not implemented")
-}
-func (UnimplementedValidationV1Server) mustEmbedUnimplementedValidationV1Server() {}
-func (UnimplementedValidationV1Server) testEmbeddedByValue()                      {}
+func (UnimplementedValidationServer) mustEmbedUnimplementedValidationServer() {}
+func (UnimplementedValidationServer) testEmbeddedByValue()                    {}
 
-// UnsafeValidationV1Server may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ValidationV1Server will
+// UnsafeValidationServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ValidationServer will
 // result in compilation errors.
-type UnsafeValidationV1Server interface {
-	mustEmbedUnimplementedValidationV1Server()
+type UnsafeValidationServer interface {
+	mustEmbedUnimplementedValidationServer()
 }
 
-func RegisterValidationV1Server(s grpc.ServiceRegistrar, srv ValidationV1Server) {
-	// If the following call pancis, it indicates UnimplementedValidationV1Server was
+func RegisterValidationServer(s grpc.ServiceRegistrar, srv ValidationServer) {
+	// If the following call pancis, it indicates UnimplementedValidationServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&ValidationV1_ServiceDesc, srv)
+	s.RegisterService(&Validation_ServiceDesc, srv)
 }
 
-func _ValidationV1_ValidateRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Validation_ValidateRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ValidateRegistrationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ValidationV1Server).ValidateRegistration(ctx, in)
+		return srv.(ValidationServer).ValidateRegistration(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ValidationV1_ValidateRegistration_FullMethodName,
+		FullMethod: Validation_ValidateRegistration_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ValidationV1Server).ValidateRegistration(ctx, req.(*ValidateRegistrationRequest))
+		return srv.(ValidationServer).ValidateRegistration(ctx, req.(*ValidateRegistrationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ValidationV1_ValidateAuthorization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ValidateAuthorizationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ValidationV1Server).ValidateAuthorization(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ValidationV1_ValidateAuthorization_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ValidationV1Server).ValidateAuthorization(ctx, req.(*ValidateAuthorizationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// ValidationV1_ServiceDesc is the grpc.ServiceDesc for ValidationV1 service.
+// Validation_ServiceDesc is the grpc.ServiceDesc for Validation service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ValidationV1_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "validation_v1.ValidationV1",
-	HandlerType: (*ValidationV1Server)(nil),
+var Validation_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "validation.Validation",
+	HandlerType: (*ValidationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ValidateRegistration",
-			Handler:    _ValidationV1_ValidateRegistration_Handler,
-		},
-		{
-			MethodName: "ValidateAuthorization",
-			Handler:    _ValidationV1_ValidateAuthorization_Handler,
+			Handler:    _Validation_ValidateRegistration_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
