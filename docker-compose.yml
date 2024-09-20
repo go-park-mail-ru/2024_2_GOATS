@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 volumes:
   postgres_volume:
@@ -17,8 +17,6 @@ services:
   redis:
     image: 'redis:latest'
     command: redis-server
-    ports:
-      - '6379:6379'
     volumes:
       - redis:/data
     networks:
@@ -29,8 +27,6 @@ services:
       - "POSTGRES_DB=netflix"
       - "POSTGRES_USER=test"
       - "POSTGRES_PASSWORD=test"
-    ports:
-      - "5432:5432"
     volumes:
       - "postgres_volume:/var/lib/postgresql/data"
     networks:
@@ -41,4 +37,4 @@ networks:
   netflix:
   default:
     external:
-      name: netflix
+      name: netflix # Не забыть создать сеть перед деплоем

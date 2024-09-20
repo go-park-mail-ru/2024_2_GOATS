@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"log"
 	"regexp"
 	"slices"
@@ -11,10 +10,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+const PasswordLength = 8
+const Male = 0
+const Female = 1
+const Other = 2
+
 var (
-	emailRegex     = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	passwordLength = 8
-	sexVals        = []string{"male", "female"}
+	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	sexVals    = []int32{Male, Female, Other}
 )
 
 func ValidatePassword(pass, passConf string) error {
@@ -22,9 +25,9 @@ func ValidatePassword(pass, passConf string) error {
 		log.Println("password confirm is missing, but now its OK")
 	}
 
-	if len(pass) < passwordLength {
-		log.Println(errVals.ErrInvalidPasswordText)
-		return fmt.Errorf(errVals.ErrInvalidPasswordText)
+	if len(pass) < PasswordLength {
+		log.Println(errVals.ErrInvalidPasswordText.Error())
+		return errVals.ErrInvalidPasswordText
 	}
 
 	return nil
@@ -32,8 +35,8 @@ func ValidatePassword(pass, passConf string) error {
 
 func ValidateEmail(email string) error {
 	if !emailRegex.MatchString(email) {
-		log.Println(errVals.ErrInvalidEmailText)
-		return fmt.Errorf(errVals.ErrInvalidEmailText)
+		log.Println(errVals.ErrInvalidEmailText.Error())
+		return errVals.ErrInvalidEmailText
 	}
 
 	return nil
@@ -42,17 +45,17 @@ func ValidateEmail(email string) error {
 func ValidateBirthdate(birthdate int) error {
 	ts := timestamppb.New(time.Now())
 	if int(ts.Seconds) < birthdate {
-		log.Println(errVals.ErrInvalidBirthdateCode)
-		return fmt.Errorf(errVals.ErrInvalidBirthdateText)
+		log.Println(errVals.ErrInvalidBirthdateText.Error())
+		return errVals.ErrInvalidBirthdateText
 	}
 
 	return nil
 }
 
-func ValidateSex(sex string) error {
+func ValidateSex(sex int32) error {
 	if !slices.Contains(sexVals, sex) {
-		log.Println(errVals.ErrInvalidSexCode)
-		return fmt.Errorf(errVals.ErrInvalidSexText)
+		log.Println(errVals.ErrInvalidSexText.Error())
+		return errVals.ErrInvalidSexText
 	}
 
 	return nil

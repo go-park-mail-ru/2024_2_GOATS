@@ -13,19 +13,19 @@ func (s *serv) ValidateRegistration(ctx context.Context, userData *model.UserReg
 	errors := make([]model.ErrorResponse, 0)
 
 	if err := userHelper.ValidatePassword(userData.Password, userData.PasswordConfirm); err != nil {
-		success = AddError(errVals.ErrInvalidPasswordCode, err.Error(), &errors)
+		success = AddError(errVals.ErrInvalidPasswordCode, err, &errors)
 	}
 
 	if err := userHelper.ValidateEmail(userData.Email); err != nil {
-		success = AddError(errVals.ErrInvalidEmailCode, err.Error(), &errors)
+		success = AddError(errVals.ErrInvalidEmailCode, err, &errors)
 	}
 
 	if err := userHelper.ValidateBirthdate(userData.Birthday); err != nil {
-		success = AddError(errVals.ErrInvalidBirthdateCode, err.Error(), &errors)
+		success = AddError(errVals.ErrInvalidBirthdateCode, err, &errors)
 	}
 
 	if err := userHelper.ValidateSex(userData.Sex); err != nil {
-		success = AddError(errVals.ErrInvalidSexCode, err.Error(), &errors)
+		success = AddError(errVals.ErrInvalidSexCode, err, &errors)
 	}
 
 	return &model.ValidationResponse{
@@ -34,10 +34,10 @@ func (s *serv) ValidateRegistration(ctx context.Context, userData *model.UserReg
 	}
 }
 
-func AddError(code, err string, errors *[]model.ErrorResponse) bool {
+func AddError(code string, err error, errors *[]model.ErrorResponse) bool {
 	errStruct := model.ErrorResponse{
-		Code:  code,
-		Error: err,
+		Code:     code,
+		ErrorObj: err,
 	}
 
 	*errors = append(*errors, errStruct)

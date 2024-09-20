@@ -1,12 +1,14 @@
 package errors
 
+import "errors"
+
 var (
 	ErrInvalidEmailCode     = "invalid_email"
-	ErrInvalidEmailText     = "email is incorrect"
+	ErrInvalidEmailText     = errors.New("email is incorrect")
 	ErrInvalidPasswordCode  = "invalid_password"
-	ErrInvalidPasswordText  = "password is too short. The minimal len is 8"
+	ErrInvalidPasswordText  = errors.New("password is too short. The minimal len is 8")
 	ErrInvalidSexCode       = "invalid_sex"
-	ErrInvalidSexText       = "only male or female allowed"
+	ErrInvalidSexText       = errors.New("only male or female allowed")
 	ErrInvalidBirthdateCode = "invalid_birthdate"
-	ErrInvalidBirthdateText = "bithdate should be before current time"
+	ErrInvalidBirthdateText = errors.New("bithdate should be before current time")
 )

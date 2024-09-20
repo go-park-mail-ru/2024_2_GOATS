@@ -10,7 +10,7 @@ message ValidateRegistrationRequest {
   string email = 1;
   string password = 2;
   string password_confirm = 3;
-  string sex = 4;
+  int32 sex = 4;
   google.protobuf.Timestamp bitrhdate = 5;
 }
 

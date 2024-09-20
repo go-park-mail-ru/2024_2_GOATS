@@ -13,11 +13,13 @@ type ValidationService interface {
 
 type Implementation struct {
 	desc.UnimplementedValidationServer
+	ctx               context.Context
 	validationService ValidationService
 }
 
-func NewImplementation(validationService ValidationService) *Implementation {
+func NewImplementation(ctx context.Context, validationService ValidationService) *Implementation {
 	return &Implementation{
+		ctx:               ctx,
 		validationService: validationService,
 	}
 }

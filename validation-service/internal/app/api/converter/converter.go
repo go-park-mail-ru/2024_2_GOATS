@@ -22,6 +22,6 @@ func ToUserRegisterDataFromDesc(data *desc.ValidateRegistrationRequest) *model.U
 func ToErrorsFromServ(data *model.ErrorResponse) *desc.ErrorMessage {
 	return &desc.ErrorMessage{
 		Code:  data.Code,
-		Error: data.Error,
+		Error: data.ErrorObj.Error(),
 	}
 }

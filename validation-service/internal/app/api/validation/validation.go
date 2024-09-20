@@ -8,7 +8,7 @@ import (
 )
 
 func (i *Implementation) ValidateRegistration(ctx context.Context, req *desc.ValidateRegistrationRequest) (*desc.ValidationResponse, error) {
-	validData := i.validationService.ValidateRegistration(ctx, converter.ToUserRegisterDataFromDesc(req))
+	validData := i.validationService.ValidateRegistration(i.ctx, converter.ToUserRegisterDataFromDesc(req))
 	descErrors := make([]*desc.ErrorMessage, 0)
 	for _, errData := range validData.Errors {
 		descErrors = append(descErrors, converter.ToErrorsFromServ(&errData))
