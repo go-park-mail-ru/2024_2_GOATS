@@ -1,0 +1,40 @@
+version: '3.9'
+
+volumes:
+  postgres_volume:
+  redis:
+
+services:
+  validation_ms:
+    build:
+      context: ./validation-service/
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 5050:5050
+    networks:
+      - netflix
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    volumes:
+      - redis:/data
+    networks:
+      - netflix
+  db:
+    image: postgres:latest
+    environment:
+      - "POSTGRES_DB=netflix"
+      - "POSTGRES_USER=test"
+      - "POSTGRES_PASSWORD=test"
+    volumes:
+      - "postgres_volume:/var/lib/postgresql/data"
+    networks:
+      - netflix
+
+
+networks:
+  netflix:
+  default:
+    external:
+      name: netflix # Не забыть создать сеть перед деплоем
