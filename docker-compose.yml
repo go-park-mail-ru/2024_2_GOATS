@@ -1,0 +1,41 @@
+version: '3.9'
+
+volumes:
+  postgres_volume:
+  redis:
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - netflix
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    volumes:
+      - redis:/data
+    networks:
+      - netflix
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      - "POSTGRES_DB=netflix"
+      - "POSTGRES_USER=test"
+      - "POSTGRES_PASSWORD=test"
+    volumes:
+      - ./dev/SQL:/docker-entrypoint-initdb.d/
+      - "postgres_volume:/var/lib/postgresql/data"
+    networks:
+      - netflix
+
+networks:
+  netflix:
+  default:
+    external:
+      name: netflix # Не забыть создать сеть перед деплоем
