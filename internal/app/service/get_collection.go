@@ -8,6 +8,6 @@ import (
 )
 
 func (s *Service) GetCollection(ctx context.Context) {
-	fmt.Println("From service: ", config.GetConfigFromContext(ctx))
+	fmt.Println("From service: ", config.FromContext(ctx))
 	s.repository.GetCollection(ctx)
 }

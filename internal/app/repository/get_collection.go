@@ -8,5 +8,6 @@ import (
 )
 
 func (r *Repo) GetCollection(ctx context.Context) {
-	fmt.Println("From repo:", config.GetConfigFromContext(ctx))
+	fmt.Println("From repo:", config.FromContext(ctx))
+	r.Database.QueryContext(ctx, "SELECT * FROM movie_collections")
 }
