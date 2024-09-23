@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	a, ctx, err := app.New()
+	a, err := app.New()
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
 
-	a.Run(ctx)
+	a.Run()
 }

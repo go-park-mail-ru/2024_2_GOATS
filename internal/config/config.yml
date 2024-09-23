@@ -9,4 +9,4 @@ postgres:
   port: 5432
   user: test
   password: test
-  name: netflix
+  name: cassette-world

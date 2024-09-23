@@ -1,4 +1,4 @@
-package handler
+package auth
 
 import (
 	"context"
@@ -15,11 +15,5 @@ func Login(ctx context.Context, api *api.Implementation, next http.Handler) http
 func Register(ctx context.Context, api *api.Implementation, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	})
-}
-
-func MovieCollections(ctx context.Context, api *api.Implementation, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		api.GetCollection(ctx, r.URL.Query())
 	})
 }

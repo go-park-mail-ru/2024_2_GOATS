@@ -5,15 +5,20 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/handler"
+	authHandlers "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/handlers/auth"
+	movieCollectionHandlers "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/handlers/movie_collections"
 	"github.com/gorilla/mux"
 )
 
 func Setup(ctx context.Context, api *api.Implementation) *mux.Router {
 	router := mux.NewRouter()
-	router.Handle("/login", handler.Login(ctx, api, router)).Methods("POST")
-	router.Handle("/signup", handler.Register(ctx, api, router)).Methods("POST")
-	router.Handle("/movie_collections", handler.MovieCollections(ctx, api, router)).Methods("GET")
+
+	authRouter := router.PathPrefix("/auth").Subrouter()
+	authRouter.Handle("/login", authHandlers.Login(ctx, api, router)).Methods("POST")
+	authRouter.Handle("/signup", authHandlers.Register(ctx, api, router)).Methods("POST")
+
+	movieCollectionsRouter := router.PathPrefix("/movie_collections").Subrouter()
+	movieCollectionsRouter.Handle("", movieCollectionHandlers.MovieCollections(ctx, api, router)).Methods("GET")
 
 	// TODO: Add middleware using for sessions
 	http.Handle("/", router)

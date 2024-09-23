@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
@@ -20,30 +19,38 @@ import (
 
 type App struct {
 	Database *sql.DB
+	Context  context.Context
 }
 
-func New() (*App, context.Context, error) {
-	setupViper()
-	ctx, err := config.WrapContext(config.NewConfig())
+func New() (*App, error) {
+	cfg, err := config.New()
 	if err != nil {
-		return nil, nil, err
+		return nil, fmt.Errorf("error initialize app cfg: %w", err)
+	}
+
+	ctx, err := config.WrapContext(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error wrap app context: %w", err)
 	}
 
 	db, err := db.SetupDatabase(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, fmt.Errorf("error initialize database: %w", err)
 	}
 
-	return &App{Database: db}, ctx, nil
+	return &App{
+		Database: db,
+		Context:  ctx,
+	}, nil
 }
 
-func (a *App) Run(ctx context.Context) {
+func (a *App) Run() {
 	repoLayer := repository.NewRepository(a.Database)
 	srvLayer := service.NewService(repoLayer)
-	apiLayer := api.NewImplementation(ctx, srvLayer)
-	mux := router.Setup(ctx, apiLayer)
+	apiLayer := api.NewImplementation(a.Context, srvLayer)
+	mux := router.Setup(a.Context, apiLayer)
 
-	ctxValues := config.FromContext(ctx)
+	ctxValues := config.FromContext(a.Context)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", ctxValues.Listener.Port),
@@ -57,27 +64,5 @@ func (a *App) Run(ctx context.Context) {
 
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf(err.Error())
-	}
-}
-
-func setupViper() {
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		fmt.Printf("Failed to read .env file: %v\n", err)
-		return
-	}
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("yml")
-	viper.AddConfigPath(viper.GetString("VIPER_CFG_PATH"))
-
-	err = viper.MergeInConfig()
-	if err != nil {
-		fmt.Printf("Failed to read config.yml file: %v\n", err)
-		return
 	}
 }

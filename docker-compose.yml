@@ -11,29 +11,29 @@ services:
     ports:
       - 8080:8080
     networks:
-      - netflix
+      - cassette-world
   redis:
     image: 'redis:latest'
     command: redis-server
     volumes:
       - redis:/data
     networks:
-      - netflix
+      - cassette-world
   db:
     image: postgres:latest
     container_name: db
     environment:
-      - "POSTGRES_DB=netflix"
+      - "POSTGRES_DB=cassette-world"
       - "POSTGRES_USER=test"
       - "POSTGRES_PASSWORD=test"
     volumes:
       - ./dev/SQL:/docker-entrypoint-initdb.d/
       - "postgres_volume:/var/lib/postgresql/data"
     networks:
-      - netflix
+      - cassette-world
 
 networks:
-  netflix:
+  cassette-world:
   default:
     external:
-      name: netflix # Не забыть создать сеть перед деплоем
+      name: cassette-world # Не забыть создать сеть перед деплоем
