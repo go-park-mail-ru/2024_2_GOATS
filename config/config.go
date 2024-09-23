@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Listener Listener `yaml:"listener"`
 	Postgres Postgres `yaml:"postgres"`
+	Redis    Redis    `yaml:"redis"`
 }
 
 type ConfigContextKey struct{}
@@ -22,11 +23,22 @@ type Postgres struct {
 	Name     string `yaml:"name"`
 }
 
+type Redis struct {
+	Host   string `yaml:"host"`
+	Port   int    `yaml:"port"`
+	Cookie Cookie `yaml:"cookie"`
+}
+
+type Cookie struct {
+	Name   string        `yaml:"name"`
+	MaxAge time.Duration `yaml:"maxAge"`
+}
+
 type Listener struct {
 	Address     string        `yaml:"address"`
 	Port        int           `yaml:"port"`
 	Timeout     time.Duration `yaml:"timeout"`
-	IdleTimeout time.Duration `yaml:"idle_timeout"`
+	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
 func New() (*Config, error) {
@@ -35,25 +47,13 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("config creation error: %w", err)
 	}
 
-	listner := Listener{
-		Address:     viper.GetString("listener.address"),
-		Port:        viper.GetInt("listener.port"),
-		Timeout:     viper.GetDuration("listener.timeout"),
-		IdleTimeout: viper.GetDuration("listener.idle_timeout"),
+	cfg := &Config{}
+	err = viper.Unmarshal(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal the config file: %w", err)
 	}
 
-	postgres := Postgres{
-		Host:     viper.GetString("postgres.host"),
-		Port:     viper.GetInt("postgres.port"),
-		User:     viper.GetString("postgres.user"),
-		Password: viper.GetString("postgres.password"),
-		Name:     viper.GetString("postgres.name"),
-	}
-
-	return &Config{
-		Listener: listner,
-		Postgres: postgres,
-	}, nil
+	return cfg, nil
 }
 
 func setupViper() error {

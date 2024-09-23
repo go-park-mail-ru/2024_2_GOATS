@@ -2,7 +2,14 @@ listener:
   address: localhost
   port: 8080
   timeout: 4s
-  idle_timeout: 60s
+  idleTimeout: 60s
+
+# postgres: local
+#   host: localhost
+#   port: 5432
+#   user: unicoyal
+#   password: test
+#   name: netflix
 
 postgres:
   host: db
@@ -10,3 +17,10 @@ postgres:
   user: test
   password: test
   name: cassette-world
+
+redis:
+  host: redis
+  port: 6379
+  cookie:
+    maxAge: 84400s
+    name: session_id

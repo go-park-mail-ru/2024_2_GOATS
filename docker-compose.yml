@@ -15,6 +15,7 @@ services:
   redis:
     image: 'redis:latest'
     command: redis-server
+    container_name: redis
     volumes:
       - redis:/data
     networks:

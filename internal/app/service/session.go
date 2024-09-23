@@ -5,24 +5,23 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
-func (s *Service) GetCollection(ctx context.Context) (*models.CollectionsResponse, *models.ErrorResponse) {
-	collections, err, code := s.repository.GetCollection(ctx)
-
+func (s *Service) Session(ctx context.Context, cookie string) (*authModels.SessionResponse, *models.ErrorResponse) {
+	user, err, code := s.repository.Session(ctx, cookie)
 	if err != nil {
 		errors := make([]errVals.ErrorObj, 1)
 		errors[0] = *err
 
 		return nil, &models.ErrorResponse{
 			Success:    false,
-			StatusCode: code,
 			Errors:     errors,
+			StatusCode: code,
 		}
 	}
-
-	return &models.CollectionsResponse{
-		Collections: collections,
-		Success:     true,
+	return &authModels.SessionResponse{
+		Success:  true,
+		UserData: *user,
 	}, nil
 }

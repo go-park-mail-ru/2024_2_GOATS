@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/spf13/viper"
 )
 
 func SetupDatabase(ctx context.Context) (*sql.DB, error) {
@@ -42,24 +44,27 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 
 	DB, err := sql.Open("postgres", connString)
 	if err != nil {
-		return nil, fmt.Errorf("Error while opening DB: %w", err)
+		return nil, fmt.Errorf("error while opening DB: %w", err)
 	}
-
-	defer func() {
-		if err := DB.Close(); err != nil {
-			log.Fatal("Closing DB: ", err)
-		}
-	}()
 
 	log.Printf("Database connection opened successfully")
 	time.Sleep(5 * time.Second)
 
 	err = DB.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("Error while pinging DB: %w", err)
+		return nil, fmt.Errorf("error while pinging DB: %w", err)
 	}
 
 	log.Printf("Database pinged successfully")
+	sqlFile, err := os.ReadFile(viper.GetString("SQL_PATH"))
+	if err != nil {
+		return nil, fmt.Errorf("error read sql script: %w", err)
+	}
+
+	_, err = DB.Exec(string(sqlFile))
+	if err != nil {
+		return nil, fmt.Errorf("error while migrating DB: %w", err)
+	}
 
 	return DB, nil
 }
