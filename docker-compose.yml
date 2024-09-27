@@ -32,6 +32,18 @@ services:
       - "postgres_volume:/var/lib/postgresql/data"
     networks:
       - cassette-world
+  nginx:
+    build: ./nginx
+    volumes:
+      - ../frontend/2024_2_GOATS/dist:/var/www/dist
+      - ../static:/usr/share/nginx/html/static
+    ports:
+      - 80:80
+    depends_on:
+      - app
+    restart: "always"
+    networks:
+      - cassette-world
 
 networks:
   cassette-world:
