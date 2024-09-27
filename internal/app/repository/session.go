@@ -3,11 +3,14 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"log"
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	ck "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/cookie"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository/user"
 )
 
 func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVals.ErrorObj, int) {
@@ -16,25 +19,24 @@ func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVa
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusInternalServerError
 	}
 
-	defer cookieStore.RedisDB.Close()
+	defer func() {
+		if err := cookieStore.RedisDB.Close(); err != nil {
+			log.Fatal("Error closing output file %w", err)
+		}
+	}()
 
-	userId, err := cookieStore.GetFromCookie(ctx, cookie)
+	userId, err := cookieStore.GetFromCookie(cookie)
 	if err != nil || userId == "" {
 		return nil, errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err}), http.StatusUnauthorized
 	}
 
-	var user models.User
-	err = r.Database.QueryRowContext(
-		ctx,
-		"SELECT id, email, username, password_hash FROM USERS WHERE id = $1", userId,
-	).Scan(&user.Id, &user.Email, &user.Username, &user.Password)
-
+	user, err := user.FindById(ctx, userId, r.Database)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound
 		}
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	return &user, nil, http.StatusOK
+	return user, nil, http.StatusOK
 }

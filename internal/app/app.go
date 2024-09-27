@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
@@ -22,9 +23,11 @@ import (
 )
 
 type App struct {
-	Database *sql.DB
-	Context  context.Context
-	Server   *http.Server
+	Database          *sql.DB
+	Context           context.Context
+	Server            *http.Server
+	Mux               *mux.Router
+	AcceptConnections bool
 }
 
 func New() (*App, error) {
@@ -60,11 +63,14 @@ func New() (*App, error) {
 		Database: db,
 		Context:  ctx,
 		Server:   srv,
+		Mux:      mux,
 	}, nil
 }
 
 func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
+	a.Mux.Use(a.AppReadyMiddleware)
+
 	log.Printf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
 
 	c := make(chan os.Signal, 1)
@@ -83,12 +89,14 @@ func (a *App) Run() {
 		}
 	}()
 
+	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf(err.Error())
 	}
 }
 
 func (a *App) GracefulShutdown() error {
+	a.AcceptConnections = false
 	log.Println("Starting graceful shutdown")
 
 	if err := a.Database.Close(); err != nil {
@@ -104,7 +112,6 @@ func (a *App) GracefulShutdown() error {
 	}
 	log.Println("HTTP server shut down")
 
-
 	select {
 	case <-shutdownCtx.Done():
 		log.Println("Graceful shutdown complete")
@@ -113,7 +120,7 @@ func (a *App) GracefulShutdown() error {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	os.Exit(1)
+	os.Exit(0)
 
 	return nil
 }

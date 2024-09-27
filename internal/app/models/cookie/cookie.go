@@ -13,29 +13,32 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type CookieStore struct {
-	RedisDB *redis.Client
+type Store struct {
+	RedisDB  *redis.Client
+	RedisCfg config.Redis
 }
 
-func NewCookieStore(ctx context.Context) (*CookieStore, error) {
-	// addr := fmt.Sprintf("%s:6379", "localhost") local
-	host := config.FromContext(ctx).Redis.Host
-	port := config.FromContext(ctx).Redis.Port
-	addr := fmt.Sprintf("%s:%d", host, port)
+func NewCookieStore(ctx context.Context) (*Store, error) {
+	cfg := config.FromContext(ctx)
+	addr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 	})
-	return &CookieStore{RedisDB: rdb}, nil
+
+	return &Store{
+		RedisDB:  rdb,
+		RedisCfg: cfg.Redis,
+	}, nil
 }
 
-func (cs *CookieStore) SetCookie(ctx context.Context, token *authModels.Token) (string, error) {
-	err := cs.RedisDB.Set(ctx, token.TokenID, fmt.Sprint(token.UserID), config.FromContext(ctx).Redis.Cookie.MaxAge).Err()
+func (cs *Store) SetCookie(token *authModels.Token) (string, error) {
+	err := cs.RedisDB.Set(context.Background(), token.TokenID, fmt.Sprint(token.UserID), cs.RedisCfg.Cookie.MaxAge).Err()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot set cookie into redis: %w", err)
 	}
 
 	cookie := &http.Cookie{
-		Name:     config.FromContext(ctx).Redis.Cookie.Name,
+		Name:     cs.RedisCfg.Cookie.Name,
 		Value:    token.TokenID,
 		Expires:  token.Expiry,
 		HttpOnly: true,
@@ -46,23 +49,31 @@ func (cs *CookieStore) SetCookie(ctx context.Context, token *authModels.Token) (
 	return cookie.String(), nil
 }
 
-func (cs *CookieStore) GetFromCookie(ctx context.Context, cookie string) (string, error) {
+func (cs *Store) GetFromCookie(cookie string) (string, error) {
 	var userID string
-	err := cs.RedisDB.Get(ctx, cookie).Scan(&userID)
+	err := cs.RedisDB.Get(context.Background(), cookie).Scan(&userID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot get cookie from redis: %w", err)
 	}
 
 	return userID, nil
 }
 
-func (cs *CookieStore) DeleteCookie(ctx context.Context, userId int) error {
-	_, err := cs.RedisDB.Del(ctx, fmt.Sprint(userId)).Result()
-	return err
+func (cs *Store) DeleteCookie(userId int) error {
+	_, err := cs.RedisDB.Del(context.Background(), fmt.Sprint(userId)).Result()
+
+	if err != nil {
+		return fmt.Errorf("failed to delete old cookie: %w", err)
+	}
+
+	return nil
 }
 
 func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {
-	tokenID := generateRandomString(32)
+	tokenID, err := generateRandomString(32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate cookie token: %w", err)
+	}
 
 	expiry := time.Now().Add(config.FromContext(ctx).Redis.Cookie.MaxAge)
 
@@ -73,11 +84,12 @@ func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {
 	}, nil
 }
 
-func generateRandomString(length int) string {
+func generateRandomString(length int) (string, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("failed to generate random string: %w", err)
 	}
-	return base64.URLEncoding.EncodeToString(bytes)
+
+	return base64.URLEncoding.EncodeToString(bytes), nil
 }

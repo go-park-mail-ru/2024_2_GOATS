@@ -3,24 +3,21 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/cookie"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (r *Repo) Login(ctx context.Context, loginData *authModels.LoginData) (*authModels.Token, *errVals.ErrorObj, int) {
-	var user models.User
-	err := r.Database.QueryRowContext(
-		ctx,
-		"SELECT id, email, username, password_hash FROM USERS WHERE email = $1", loginData.Email,
-	).Scan(&user.Id, &user.Email, &user.Username, &user.Password)
+	user, err := user.FindByEmail(ctx, loginData.Email, r.Database)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound
 		}
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity

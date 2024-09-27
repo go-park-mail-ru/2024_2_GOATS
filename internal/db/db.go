@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
 )
 
@@ -26,7 +26,8 @@ func SetupDatabase(ctx context.Context) (*sql.DB, error) {
 			if err == nil {
 				return DB, nil
 			}
-			log.Printf("Failed to connect to database. Retrying...")
+
+			log.Errorf("Failed to connect to database. Error: %w. Retrying...", err)
 			time.Sleep(5 * time.Second)
 		}
 	}
@@ -56,15 +57,43 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 	}
 
 	log.Printf("Database pinged successfully")
-	sqlFile, err := os.ReadFile(viper.GetString("SQL_PATH"))
-	if err != nil {
-		return nil, fmt.Errorf("error read sql script: %w", err)
-	}
 
-	_, err = DB.Exec(string(sqlFile))
-	if err != nil {
+	if err = migrate(DB); err != nil {
 		return nil, fmt.Errorf("error while migrating DB: %w", err)
 	}
 
+	if err = seed(DB); err != nil {
+		return nil, fmt.Errorf("error while seeding DB: %w", err)
+	}
+
 	return DB, nil
+}
+
+func migrate(db *sql.DB) error {
+	sqlFile, err := os.ReadFile(viper.GetString("SCHEMA_PATH"))
+	if err != nil {
+		return fmt.Errorf("error read sql script: %w", err)
+	}
+
+	_, err = db.Exec(string(sqlFile))
+	if err != nil {
+		return fmt.Errorf("error while exec sqlFile: %w", err)
+	}
+
+	return nil
+}
+
+func seed(db *sql.DB) error {
+	seedsFile, err := os.ReadFile(viper.GetString("SEEDS_PATH"))
+
+	if err != nil {
+		return fmt.Errorf("error read sql script: %w", err)
+	}
+
+	_, err = db.Exec(string(seedsFile))
+	if err != nil {
+		return fmt.Errorf("error while exec seedsFile: %w", err)
+	}
+
+	return nil
 }

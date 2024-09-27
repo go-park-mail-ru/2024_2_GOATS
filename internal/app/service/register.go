@@ -6,8 +6,8 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service/validation"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service/validation"
 )
 
 func (s *Service) Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.AuthResponse, *models.ErrorResponse) {

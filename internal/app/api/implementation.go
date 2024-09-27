@@ -15,13 +15,13 @@ type ServiceInterface interface {
 }
 
 type Implementation struct {
-	ctx     context.Context
+	Ctx     context.Context
 	service ServiceInterface
 }
 
 func NewImplementation(ctx context.Context, srv ServiceInterface) *Implementation {
 	return &Implementation{
-		ctx:     ctx,
+		Ctx:     ctx,
 		service: srv,
 	}
 }

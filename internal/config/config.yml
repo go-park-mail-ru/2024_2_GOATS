@@ -4,13 +4,6 @@ listener:
   timeout: 4s
   idleTimeout: 60s
 
-# postgres: local
-#   host: localhost
-#   port: 5432
-#   user: unicoyal
-#   password: test
-#   name: netflix
-
 postgres:
   host: db
   port: 5432
