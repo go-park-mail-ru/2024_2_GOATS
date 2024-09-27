@@ -12,14 +12,15 @@ import (
 
 func Setup(ctx context.Context, api *api.Implementation) *mux.Router {
 	router := mux.NewRouter()
+	apiMux := router.PathPrefix("/api").Subrouter()
 
-	authRouter := router.PathPrefix("/auth").Subrouter()
+	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 	authHandler := auth.NewHandler(ctx, api)
 	authRouter.Handle("/login", authHandler.Login(router)).Methods("POST")
 	authRouter.Handle("/signup", authHandler.Register(router)).Methods("POST")
 	authRouter.Handle("/session", authHandler.Session(router)).Methods("GET")
 
-	movieCollectionsRouter := router.PathPrefix("/movie_collections").Subrouter()
+	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 	movieHandler := movie.NewHandler(ctx, api)
 	movieCollectionsRouter.Handle("", movieHandler.GetCollections(router)).Methods("GET")
 
