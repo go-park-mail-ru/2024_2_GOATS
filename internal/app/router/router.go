@@ -17,6 +17,7 @@ func Setup(ctx context.Context, api *api.Implementation) *mux.Router {
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 	authHandler := handlers.NewAuthHandler(api)
 	authRouter.Handle("/login", authHandler.Login(router)).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.Handle("/logout", authHandler.Logout(router)).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.Handle("/signup", authHandler.Register(router)).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.Handle("/session", authHandler.Session(router)).Methods(http.MethodGet, http.MethodOptions)
 

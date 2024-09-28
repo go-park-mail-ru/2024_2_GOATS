@@ -22,6 +22,42 @@ func NewAuthHandler(api *api.Implementation) *AuthHandler {
 	}
 }
 
+func (a *AuthHandler) Logout(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ck, err := r.Cookie("session_id")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		cs, err := cookie.NewCookieStore(a.ApiLayer.Ctx)
+		if err != nil {
+			log.Errorf("failed to connect to Redis: %w", err)
+			http.Error(w, "Redis Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		defer func() {
+			if err := cs.RedisDB.Close(); err != nil {
+				log.Fatal("Error closing redis connection %w", err)
+			}
+		}()
+
+		err = cs.DeleteCookie(ck.Value)
+		if err != nil {
+			log.Errorf("cookie error: %w", err)
+			http.Error(w, "Redis Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		err = json.NewEncoder(w).Encode(map[string]bool{"success": true})
+		if err != nil {
+			log.Errorf("error while encoding success logout response: %w", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+}
+
 func (a *AuthHandler) Login(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		loginData := &authModels.LoginData{}
@@ -40,7 +76,7 @@ func (a *AuthHandler) Session(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ck, err := r.Cookie("session_id")
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -100,7 +136,7 @@ func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeD
 }
 
 func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authModels.Token) {
-	cookieStore, err := cookie.NewCookieStore(ctx)
+	cs, err := cookie.NewCookieStore(ctx)
 	if err != nil {
 		log.Errorf("failed to connect to Redis: %w", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
@@ -108,19 +144,19 @@ func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authMode
 	}
 
 	defer func() {
-		if err := cookieStore.RedisDB.Close(); err != nil {
+		if err := cs.RedisDB.Close(); err != nil {
 			log.Fatal("Error closing redis connection %w", err)
 		}
 	}()
 
-	err = cookieStore.DeleteCookie(token.UserID)
+	err = cs.DeleteCookie(token.TokenID)
 	if err != nil {
 		log.Errorf("cookie error: %w", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	sessionCookie, err := cookieStore.SetCookie(token)
+	sessionCookie, err := cs.SetCookie(token)
 	if err != nil {
 		log.Errorf("cookie error: %w", err)
 		http.Error(w, "Failed to set cookie", http.StatusInternalServerError)
