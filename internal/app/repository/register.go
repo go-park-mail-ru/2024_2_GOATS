@@ -11,12 +11,12 @@ import (
 )
 
 func (r *Repo) Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.Token, *errVals.ErrorObj, int) {
-	user, err := user.Create(ctx, *registerData, r.Database)
+	usr, err := user.Create(ctx, *registerData, r.Database)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrCreateUserCode, errVals.CustomError{Err: err}), http.StatusConflict
 	}
 
-	token, err := cookie.GenerateToken(ctx, user.Id)
+	token, err := cookie.GenerateToken(ctx, usr.Id)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: err}), http.StatusInternalServerError
 	}

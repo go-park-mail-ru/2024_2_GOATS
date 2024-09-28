@@ -41,29 +41,29 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("error wrap app context: %w", err)
 	}
 
-	db, err := db.SetupDatabase(ctx)
+	database, err := db.SetupDatabase(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize database: %w", err)
 	}
 
-	repoLayer := repository.NewRepository(db)
+	repoLayer := repository.NewRepository(database)
 	srvLayer := service.NewService(repoLayer)
 	apiLayer := api.NewImplementation(ctx, srvLayer)
-	mux := router.Setup(ctx, apiLayer)
+	appMx := router.Setup(ctx, apiLayer)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
-		Handler:      mux,
+		Handler:      appMx,
 		ReadTimeout:  cfg.Listener.Timeout,
 		WriteTimeout: cfg.Listener.Timeout,
 		IdleTimeout:  cfg.Listener.IdleTimeout,
 	}
 
 	return &App{
-		Database: db,
+		Database: database,
 		Context:  ctx,
 		Server:   srv,
-		Mux:      mux,
+		Mux:      appMx,
 	}, nil
 }
 
@@ -91,7 +91,7 @@ func (a *App) Run() {
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf(err.Error())
+		log.Fatalf("server stopped: %v", err)
 	}
 }
 

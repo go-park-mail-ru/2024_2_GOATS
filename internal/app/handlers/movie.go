@@ -25,7 +25,7 @@ func (m *MovieHandler) GetCollections(next http.Handler) http.Handler {
 			w.WriteHeader(errResp.StatusCode)
 			err := json.NewEncoder(w).Encode(errResp)
 			if err != nil {
-				log.Errorf("error while encoding bad movie_collections response: %w", err)
+				log.Errorf("error while encoding bad movie_collections response: %v", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
@@ -34,7 +34,7 @@ func (m *MovieHandler) GetCollections(next http.Handler) http.Handler {
 
 		err := json.NewEncoder(w).Encode(collectionsResp)
 		if err != nil {
-			log.Errorf("error while encoding good movie_collections response: %w", err)
+			log.Errorf("error while encoding good movie_collections response: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
