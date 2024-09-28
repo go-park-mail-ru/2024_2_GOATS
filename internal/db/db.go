@@ -27,7 +27,7 @@ func SetupDatabase(ctx context.Context) (*sql.DB, error) {
 				return DB, nil
 			}
 
-			log.Errorf("Failed to connect to database. Error: %w. Retrying...", err)
+			log.Errorf("Failed to connect to database. Error: %v. Retrying...", err)
 			time.Sleep(5 * time.Second)
 		}
 	}
@@ -36,11 +36,11 @@ func SetupDatabase(ctx context.Context) (*sql.DB, error) {
 func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		cfg.Postgres.Host,
-		cfg.Postgres.Port,
-		cfg.Postgres.User,
-		cfg.Postgres.Password,
-		cfg.Postgres.Name,
+		cfg.Databases.Postgres.Host,
+		cfg.Databases.Postgres.Port,
+		cfg.Databases.Postgres.User,
+		cfg.Databases.Postgres.Password,
+		cfg.Databases.Postgres.Name,
 	)
 
 	DB, err := sql.Open("postgres", connString)

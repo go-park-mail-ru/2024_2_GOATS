@@ -21,7 +21,7 @@ func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVa
 
 	defer func() {
 		if err := cookieStore.RedisDB.Close(); err != nil {
-			log.Fatal("Error closing output file %w", err)
+			log.Fatalf("Error closing output file %v", err)
 		}
 	}()
 
@@ -30,7 +30,7 @@ func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVa
 		return nil, errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err}), http.StatusUnauthorized
 	}
 
-	user, err := user.FindById(ctx, userId, r.Database)
+	usr, err := user.FindById(ctx, userId, r.Database)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound
@@ -38,5 +38,5 @@ func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVa
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	return user, nil, http.StatusOK
+	return usr, nil, http.StatusOK
 }

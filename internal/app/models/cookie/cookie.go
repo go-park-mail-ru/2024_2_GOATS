@@ -20,14 +20,14 @@ type Store struct {
 
 func NewCookieStore(ctx context.Context) (*Store, error) {
 	cfg := config.FromContext(ctx)
-	addr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
+	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 	})
 
 	return &Store{
 		RedisDB:  rdb,
-		RedisCfg: cfg.Redis,
+		RedisCfg: cfg.Databases.Redis,
 	}, nil
 }
 
@@ -75,7 +75,7 @@ func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {
 		return nil, fmt.Errorf("failed to generate cookie token: %w", err)
 	}
 
-	expiry := time.Now().Add(config.FromContext(ctx).Redis.Cookie.MaxAge)
+	expiry := time.Now().Add(config.FromContext(ctx).Databases.Redis.Cookie.MaxAge)
 
 	return &authModels.Token{
 		UserID:  userID,
