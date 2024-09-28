@@ -42,8 +42,8 @@ func (cs *Store) SetCookie(token *authModels.Token) (string, error) {
 		Value:    token.TokenID,
 		Expires:  token.Expiry,
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   false,
 	}
 
 	return cookie.String(), nil
@@ -59,8 +59,8 @@ func (cs *Store) GetFromCookie(cookie string) (string, error) {
 	return userID, nil
 }
 
-func (cs *Store) DeleteCookie(userId int) error {
-	_, err := cs.RedisDB.Del(context.Background(), fmt.Sprint(userId)).Result()
+func (cs *Store) DeleteCookie(token string) error {
+	_, err := cs.RedisDB.Del(context.Background(), token).Result()
 
 	if err != nil {
 		return fmt.Errorf("failed to delete old cookie: %w", err)
