@@ -14,7 +14,7 @@ import (
 )
 
 func (r *Repo) Login(ctx context.Context, loginData *authModels.LoginData) (*authModels.Token, *errVals.ErrorObj, int) {
-	user, err := user.FindByEmail(ctx, loginData.Email, r.Database)
+	usr, err := user.FindByEmail(ctx, loginData.Email, r.Database)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -23,12 +23,12 @@ func (r *Repo) Login(ctx context.Context, loginData *authModels.LoginData) (*aut
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(loginData.Password))
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatchText), http.StatusConflict
 	}
 
-	token, err := cookie.GenerateToken(ctx, user.Id)
+	token, err := cookie.GenerateToken(ctx, usr.Id)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: err}), http.StatusInternalServerError
 	}

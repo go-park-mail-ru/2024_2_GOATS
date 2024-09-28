@@ -12,22 +12,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-func SetupDatabase(ctx context.Context) (*sql.DB, error) {
+func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, error) {
 	ctxVals := config.FromContext(ctx)
-	ctxTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	for {
 		select {
-		case <-ctxTimeout.Done():
-			return nil, ctxTimeout.Err()
+		case <-ctx.Done():
+			return nil, ctx.Err()
 		default:
 			DB, err := ConnectDB(ctxVals)
 			if err == nil {
 				return DB, nil
 			}
 
-			log.Errorf("Failed to connect to database. Error: %w. Retrying...", err)
+			log.Errorf("Failed to connect to database. Error: %v. Retrying...", err)
 			time.Sleep(5 * time.Second)
 		}
 	}
@@ -36,11 +35,11 @@ func SetupDatabase(ctx context.Context) (*sql.DB, error) {
 func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		cfg.Postgres.Host,
-		cfg.Postgres.Port,
-		cfg.Postgres.User,
-		cfg.Postgres.Password,
-		cfg.Postgres.Name,
+		cfg.Databases.Postgres.Host,
+		cfg.Databases.Postgres.Port,
+		cfg.Databases.Postgres.User,
+		cfg.Databases.Postgres.Password,
+		cfg.Databases.Postgres.Name,
 	)
 
 	DB, err := sql.Open("postgres", connString)

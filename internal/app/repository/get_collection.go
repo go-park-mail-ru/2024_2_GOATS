@@ -18,7 +18,7 @@ func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			log.Errorf("cannot close rows while taking collections: %w", err)
+			log.Errorf("cannot close rows while taking collections: %v", err)
 		}
 	}()
 

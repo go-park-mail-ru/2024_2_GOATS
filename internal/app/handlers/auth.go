@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
@@ -49,7 +50,7 @@ func (a *AuthHandler) Session(next http.Handler) http.Handler {
 			w.WriteHeader(errResp.StatusCode)
 			err = json.NewEncoder(w).Encode(errResp)
 			if err != nil {
-				log.Errorf("error while encoding bad session response: %w", err)
+				log.Errorf("error while encoding bad session response: %v", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
@@ -57,7 +58,7 @@ func (a *AuthHandler) Session(next http.Handler) http.Handler {
 
 		err = json.NewEncoder(w).Encode(sessionResp)
 		if err != nil {
-			log.Errorf("error while encoding success session response: %w", err)
+			log.Errorf("error while encoding success session response: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
@@ -83,10 +84,17 @@ func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeD
 		w.WriteHeader(errResp.StatusCode)
 		err = json.NewEncoder(w).Encode(errResp)
 		if err != nil {
-			log.Errorf("error while encoding bad auth response: %w", err)
+			log.Errorf("error while encoding bad auth response: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
+		return
+	}
+
+	if authResp == nil || authResp.Token == nil {
+		err = fmt.Errorf("something went wrong during authentication: %w", err)
+		log.Errorf(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -94,7 +102,7 @@ func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeD
 
 	err = json.NewEncoder(w).Encode(authResp)
 	if err != nil {
-		log.Errorf("error while encoding success auth response: %w", err)
+		log.Errorf("error while encoding success auth response: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -102,27 +110,27 @@ func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeD
 func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authModels.Token) {
 	cookieStore, err := cookie.NewCookieStore(ctx)
 	if err != nil {
-		log.Errorf("failed to connect to Redis: %w", err)
+		log.Errorf("failed to connect to Redis: %v", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	defer func() {
 		if err := cookieStore.RedisDB.Close(); err != nil {
-			log.Fatal("Error closing redis connection %w", err)
+			log.Fatalf("Error closing redis connection %v", err)
 		}
 	}()
 
 	err = cookieStore.DeleteCookie(token.UserID)
 	if err != nil {
-		log.Errorf("cookie error: %w", err)
+		log.Errorf("cookie error: %v", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	sessionCookie, err := cookieStore.SetCookie(token)
 	if err != nil {
-		log.Errorf("cookie error: %w", err)
+		log.Errorf("cookie error: %v", err)
 		http.Error(w, "Failed to set cookie", http.StatusInternalServerError)
 		return
 	}
