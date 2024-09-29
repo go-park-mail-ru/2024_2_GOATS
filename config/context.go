@@ -4,6 +4,8 @@ import (
 	"context"
 )
 
+type ConfigContextKey struct{}
+
 func WrapContext(cfg *Config) (context.Context, error) {
 	return context.WithValue(context.Background(), ConfigContextKey{}, cfg), nil
 }

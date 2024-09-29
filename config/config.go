@@ -12,8 +12,6 @@ type Config struct {
 	Databases Databases `yaml:"databases"`
 }
 
-type ConfigContextKey struct{}
-
 type Databases struct {
 	Postgres Postgres `yaml:"postgres"`
 	Redis    Redis    `yaml:"redis"`

@@ -20,6 +20,7 @@ func (s *Service) Session(ctx context.Context, cookie string) (*authModels.Sessi
 			StatusCode: code,
 		}
 	}
+
 	return &authModels.SessionResponse{
 		Success:  true,
 		UserData: *user,
