@@ -44,12 +44,14 @@ func (a *AuthHandler) Logout(next http.Handler) http.Handler {
 			}
 		}()
 
-		err = cs.DeleteCookie(ck.Value)
+		expCookie, err := cs.DeleteCookie(ck.Value)
 		if err != nil {
 			log.Errorf("cookie error: %w", err)
 			http.Error(w, "Redis Server Error", http.StatusInternalServerError)
 			return
 		}
+
+		http.SetCookie(w, expCookie)
 
 		err = json.NewEncoder(w).Encode(map[string]bool{"success": true})
 		if err != nil {
@@ -157,12 +159,14 @@ func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authMode
 		}
 	}()
 
-	err = cs.DeleteCookie(token.TokenID)
+	expCookie, err := cs.DeleteCookie(token.TokenID)
 	if err != nil {
 		log.Errorf("cookie error: %v", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
 		return
 	}
+
+	http.SetCookie(w, expCookie)
 
 	sessionCookie, err := cs.SetCookie(token)
 	if err != nil {

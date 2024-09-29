@@ -59,14 +59,24 @@ func (cs *Store) GetFromCookie(cookie string) (string, error) {
 	return userID, nil
 }
 
-func (cs *Store) DeleteCookie(token string) error {
+func (cs *Store) DeleteCookie(token string) (*http.Cookie, error) {
 	_, err := cs.RedisDB.Del(context.Background(), token).Result()
 
 	if err != nil {
-		return fmt.Errorf("failed to delete old cookie: %w", err)
+		return nil, fmt.Errorf("failed to delete old cookie: %w", err)
 	}
 
-	return nil
+	expiredCookie := &http.Cookie{
+		Name:     cs.RedisCfg.Cookie.Name,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   false,
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+	}
+
+	return expiredCookie, nil
 }
 
 func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {
