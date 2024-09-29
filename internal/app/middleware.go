@@ -10,6 +10,7 @@ func (a *App) AppReadyMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Services is not started", http.StatusServiceUnavailable)
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }

@@ -35,6 +35,7 @@ func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVa
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound
 		}
+
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 

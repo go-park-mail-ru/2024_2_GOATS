@@ -20,6 +20,7 @@ func (r *Repo) Login(ctx context.Context, loginData *authModels.LoginData) (*aut
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound
 		}
+
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 

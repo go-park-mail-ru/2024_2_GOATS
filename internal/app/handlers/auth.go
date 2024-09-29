@@ -53,6 +53,7 @@ func (a *AuthHandler) Session(next http.Handler) http.Handler {
 				log.Errorf("error while encoding bad session response: %v", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
+
 			return
 		}
 
@@ -95,6 +96,7 @@ func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeD
 		err = fmt.Errorf("something went wrong during authentication: %w", err)
 		log.Errorf(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -112,6 +114,7 @@ func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authMode
 	if err != nil {
 		log.Errorf("failed to connect to Redis: %v", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -125,6 +128,7 @@ func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authMode
 	if err != nil {
 		log.Errorf("cookie error: %v", err)
 		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -132,6 +136,7 @@ func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authMode
 	if err != nil {
 		log.Errorf("cookie error: %v", err)
 		http.Error(w, "Failed to set cookie", http.StatusInternalServerError)
+
 		return
 	}
 
