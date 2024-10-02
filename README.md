@@ -15,13 +15,13 @@ Backend репозиторий команды GOATS 🐐🐐🐐🐐
 
 [Павловский Андрей](https://github.com/Starlexxx) - *Backend*
 
-[Клонов Александр](https://www.youtube.com/watch?v=dQw4w9WgXcQ) - *Frontend*
+[Клонов Александр](https://github.com/Shureks-den) - *Frontend*
 
-[Мартынова Галина](https://www.youtube.com/watch?v=dQw4w9WgXcQ) - *UX*
+Мартынова Галина - *UX*
 
 
 ## Ссылки
 
 [Фронтенд проекта](https://github.com/frontend-park-mail-ru/2024_2_GOATS)
 
-[Деплой](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+[Деплой](http://185.241.195.151/)
