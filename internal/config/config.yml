@@ -1,0 +1,20 @@
+listener:
+  address: localhost
+  port: 8080
+  timeout: 4s
+  idleTimeout: 60s
+
+databases:
+  postgres:
+    host: db
+    port: 5432
+    user: test
+    password: test
+    name: cassette-world
+
+  redis:
+    host: redis
+    port: 6379
+    cookie:
+      maxAge: 84400s
+      name: session_id
