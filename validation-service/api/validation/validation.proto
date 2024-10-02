@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package validation;
+
+option go_package = ".";
+
+message ValidateRegistrationRequest {
+  string email = 1;
+  string password = 2;
+  string password_confirm = 3;
+}
+
+message ValidateAuthorizationRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message ErrorMessage {
+  string code = 1;
+  string error = 2;
+}
+
+message ValidationResponse {
+  bool success = 1;
+  repeated ErrorMessage errors = 2;
+}
+
+service Validation {
+  rpc ValidateRegistration(ValidateRegistrationRequest) returns (ValidationResponse);
+  rpc ValidateAuthorization(ValidateAuthorizationRequest) returns (ValidationResponse);
+}
