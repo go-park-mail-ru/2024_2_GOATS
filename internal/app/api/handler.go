@@ -43,3 +43,12 @@ func (i *Implementation) Session(ctx context.Context, cookie string) (*authModel
 
 	return resp, nil
 }
+
+func (i *Implementation) Logout(ctx context.Context, cookie string) (*authModels.AuthResponse, *models.ErrorResponse) {
+	resp, errData := i.service.Logout(ctx, cookie)
+	if errData != nil {
+		return nil, errData
+	}
+
+	return resp, nil
+}
