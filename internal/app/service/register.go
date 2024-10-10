@@ -30,7 +30,7 @@ func (s *Service) Register(ctx context.Context, registerData *authModels.Registe
 		}
 	}
 
-	token, err, code := s.repository.Register(ctx, registerData)
+	cookie, err, code := s.repository.Register(ctx, registerData)
 	if err != nil {
 		errors := make([]errVals.ErrorObj, 1)
 		errors[0] = *err
@@ -43,8 +43,9 @@ func (s *Service) Register(ctx context.Context, registerData *authModels.Registe
 	}
 
 	return &authModels.AuthResponse{
-		Token:   token,
-		Success: true,
+		NewCookie:  cookie,
+		StatusCode: code,
+		Success:    true,
 	}, nil
 }
 
