@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
@@ -16,42 +15,36 @@ import (
 type Store struct {
 	RedisDB  *redis.Client
 	RedisCfg config.Redis
+	Ctx      context.Context
 }
 
-func NewCookieStore(ctx context.Context) (*Store, error) {
+func NewCookieStore(ctx context.Context, rdb *redis.Client) *Store {
 	cfg := config.FromContext(ctx)
-	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
-	rdb := redis.NewClient(&redis.Options{
-		Addr: addr,
-	})
 
 	return &Store{
 		RedisDB:  rdb,
 		RedisCfg: cfg.Databases.Redis,
-	}, nil
+		Ctx:      ctx,
+	}
 }
 
-func (cs *Store) SetCookie(token *authModels.Token) (string, error) {
-	err := cs.RedisDB.Set(context.Background(), token.TokenID, fmt.Sprint(token.UserID), cs.RedisCfg.Cookie.MaxAge).Err()
+func (cs *Store) SetCookie(token *authModels.Token) (*authModels.CookieData, error) {
+	err := cs.RedisDB.Set(cs.Ctx, token.TokenID, fmt.Sprint(token.UserID), cs.RedisCfg.Cookie.MaxAge).Err()
 	if err != nil {
-		return "", fmt.Errorf("cannot set cookie into redis: %w", err)
+		return nil, fmt.Errorf("cannot set cookie into redis: %w", err)
 	}
 
-	cookie := &http.Cookie{
-		Name:     cs.RedisCfg.Cookie.Name,
-		Value:    token.TokenID,
-		Expires:  token.Expiry,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   false,
-	}
-
-	return cookie.String(), nil
+	return &authModels.CookieData{
+		Name:   cs.RedisCfg.Cookie.Name,
+		Value:  token.TokenID,
+		Expiry: token.Expiry,
+		UserID: token.UserID,
+	}, nil
 }
 
 func (cs *Store) GetFromCookie(cookie string) (string, error) {
 	var userID string
-	err := cs.RedisDB.Get(context.Background(), cookie).Scan(&userID)
+	err := cs.RedisDB.Get(cs.Ctx, cookie).Scan(&userID)
 	if err != nil {
 		return "", fmt.Errorf("cannot get cookie from redis: %w", err)
 	}
@@ -59,24 +52,18 @@ func (cs *Store) GetFromCookie(cookie string) (string, error) {
 	return userID, nil
 }
 
-func (cs *Store) DeleteCookie(token string) (*http.Cookie, error) {
-	_, err := cs.RedisDB.Del(context.Background(), token).Result()
+func (cs *Store) DeleteCookie(token string) (*authModels.CookieData, error) {
+	_, err := cs.RedisDB.Del(cs.Ctx, token).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete old cookie: %w", err)
 	}
 
-	expiredCookie := &http.Cookie{
-		Name:     cs.RedisCfg.Cookie.Name,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   false,
-		Value:    "",
-		Expires:  time.Unix(0, 0),
-		MaxAge:   -1,
-	}
-
-	return expiredCookie, nil
+	return &authModels.CookieData{
+		Name:   cs.RedisCfg.Cookie.Name,
+		Value:  "",
+		Expiry: time.Unix(0, 0),
+	}, nil
 }
 
 func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {

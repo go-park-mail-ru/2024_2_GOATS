@@ -4,28 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	ck "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/cookie"
+	ck "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository/cookie"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository/user"
 )
 
 func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVals.ErrorObj, int) {
-	cookieStore, err := ck.NewCookieStore(ctx)
-	if err != nil {
-		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusInternalServerError
-	}
-
-	defer func() {
-		if err := cookieStore.RedisDB.Close(); err != nil {
-			log.Fatalf("Error closing output file %v", err)
-		}
-	}()
-
-	userId, err := cookieStore.GetFromCookie(cookie)
+	userId, err := ck.NewCookieStore(ctx, r.Redis).GetFromCookie(cookie)
 	if err != nil || userId == "" {
 		return nil, errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err}), http.StatusUnauthorized
 	}

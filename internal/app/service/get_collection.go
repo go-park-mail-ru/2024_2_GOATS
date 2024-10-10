@@ -23,6 +23,7 @@ func (s *Service) GetCollection(ctx context.Context) (*models.CollectionsRespons
 
 	return &models.CollectionsResponse{
 		Collections: collections,
+		StatusCode:  code,
 		Success:     true,
 	}, nil
 }

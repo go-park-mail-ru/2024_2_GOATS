@@ -7,10 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
@@ -24,6 +23,7 @@ import (
 
 type App struct {
 	Database          *sql.DB
+	Redis             *redis.Client
 	Context           context.Context
 	Server            *http.Server
 	Mux               *mux.Router
@@ -36,18 +36,17 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
 
-	ctx, err := config.WrapContext(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error wrap app context: %w", err)
-	}
-
+	ctx := config.WrapContext(context.Background(), cfg)
 	ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	database, err := db.SetupDatabase(ctxDBTimeout, cancel)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize database: %w", err)
 	}
 
-	repoLayer := repository.NewRepository(database)
+	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
+	rdb := redis.NewClient(&redis.Options{Addr: addr})
+
+	repoLayer := repository.NewRepository(database, rdb)
 	srvLayer := service.NewService(repoLayer)
 	apiLayer := api.NewImplementation(ctx, srvLayer)
 	appMx := router.Setup(ctx, apiLayer)
@@ -62,6 +61,7 @@ func New() (*App, error) {
 
 	return &App{
 		Database: database,
+		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
 		Mux:      appMx,
@@ -74,21 +74,8 @@ func (a *App) Run() {
 
 	log.Printf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		for {
-			sig := <-c
-			log.Println("Received shutdown signal:", sig)
-
-			if err := a.GracefulShutdown(); err != nil {
-				log.Fatalf("Failed to shut down gracefully: %v", err)
-			}
-
-			return
-		}
-	}()
+	// Not ready yet
+	defer a.GracefulShutdown()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
