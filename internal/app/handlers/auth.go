@@ -1,65 +1,47 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/cookie"
-	"github.com/labstack/gommon/log"
 )
 
 type AuthHandler struct {
 	ApiLayer *api.Implementation
+	Config   *config.Config
 }
 
-func NewAuthHandler(api *api.Implementation) *AuthHandler {
+func NewAuthHandler(api *api.Implementation, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
 		ApiLayer: api,
+		Config:   cfg,
 	}
 }
 
 func (a *AuthHandler) Logout(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ck, err := r.Cookie("session_id")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+		if errors.Is(err, http.ErrNoCookie) {
+			Response(w, http.StatusForbidden, err)
 			return
 		}
 
-		cs, err := cookie.NewCookieStore(a.ApiLayer.Ctx)
-		if err != nil {
-			log.Errorf("failed to connect to Redis: %v", err)
-			http.Error(w, "Redis Server Error", http.StatusInternalServerError)
-
+		ctx := config.WrapContext(r.Context(), a.Config)
+		resp, errData := a.ApiLayer.Logout(ctx, ck.Value)
+		if errData != nil {
+			Response(w, errData.StatusCode, errData)
 			return
 		}
 
-		defer func() {
-			if err := cs.RedisDB.Close(); err != nil {
-				log.Fatal("Error closing redis connection %v", err)
-			}
-		}()
+		http.SetCookie(w, preparedCookie(resp.ExpCookie))
 
-		expCookie, err := cs.DeleteCookie(ck.Value)
-		if err != nil {
-			log.Errorf("cookie error: %v", err)
-			http.Error(w, "Redis Server Error", http.StatusInternalServerError)
-
-			return
-		}
-
-		http.SetCookie(w, expCookie)
-
-		err = json.NewEncoder(w).Encode(map[string]bool{"success": true})
-		if err != nil {
-			log.Errorf("error while encoding success logout response: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		Response(w, resp.StatusCode, resp)
 	})
 }
 
@@ -80,107 +62,59 @@ func (a *AuthHandler) Register(next http.Handler) http.Handler {
 func (a *AuthHandler) Session(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ck, err := r.Cookie("session_id")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+		if errors.Is(err, http.ErrNoCookie) {
+			Response(w, http.StatusForbidden, err)
 			return
 		}
 
-		sessionResp, errResp := a.ApiLayer.Session(a.ApiLayer.Ctx, ck.Value)
+		ctx := config.WrapContext(r.Context(), a.Config)
+		sessionResp, errResp := a.ApiLayer.Session(ctx, ck.Value)
 		if errResp != nil {
-			w.WriteHeader(errResp.StatusCode)
-			err = json.NewEncoder(w).Encode(errResp)
-			if err != nil {
-				log.Errorf("error while encoding bad session response: %v", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-
+			Response(w, errResp.StatusCode, errResp)
 			return
 		}
 
-		err = json.NewEncoder(w).Encode(sessionResp)
-		if err != nil {
-			log.Errorf("error while encoding success session response: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		Response(w, sessionResp.StatusCode, sessionResp)
 	})
 }
 
 func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeData interface{}, operation string) {
 	err := json.NewDecoder(r.Body).Decode(decodeData)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		Response(w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
 		return
 	}
 
+	ctx := config.WrapContext(r.Context(), a.Config)
 	var authResp *authModels.AuthResponse
 	var errResp *models.ErrorResponse
 
 	if operation == "login" {
-		authResp, errResp = a.ApiLayer.Login(a.ApiLayer.Ctx, decodeData.(*authModels.LoginData))
+		authResp, errResp = a.ApiLayer.Login(ctx, decodeData.(*authModels.LoginData))
 	} else if operation == "register" {
-		authResp, errResp = a.ApiLayer.Register(a.ApiLayer.Ctx, decodeData.(*authModels.RegisterData))
+		authResp, errResp = a.ApiLayer.Register(ctx, decodeData.(*authModels.RegisterData))
 	}
 
 	if errResp != nil {
-		w.WriteHeader(errResp.StatusCode)
-		err = json.NewEncoder(w).Encode(errResp)
-		if err != nil {
-			log.Errorf("error while encoding bad auth response: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
+		Response(w, errResp.StatusCode, errResp)
 		return
 	}
 
-	if authResp == nil || authResp.Token == nil {
-		err = fmt.Errorf("something went wrong during authentication: %w", err)
-		log.Errorf(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-
-		return
+	if authResp.ExpCookie != nil {
+		http.SetCookie(w, preparedCookie(authResp.ExpCookie))
 	}
+	http.SetCookie(w, preparedCookie(authResp.NewCookie))
 
-	cookieProcessor(a.ApiLayer.Ctx, w, authResp.Token)
-
-	err = json.NewEncoder(w).Encode(authResp)
-	if err != nil {
-		log.Errorf("error while encoding success auth response: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	Response(w, authResp.StatusCode, authResp)
 }
 
-func cookieProcessor(ctx context.Context, w http.ResponseWriter, token *authModels.Token) {
-	cs, err := cookie.NewCookieStore(ctx)
-	if err != nil {
-		log.Errorf("failed to connect to Redis: %v", err)
-		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
-
-		return
+func preparedCookie(ck *authModels.CookieData) *http.Cookie {
+	return &http.Cookie{
+		Name:     ck.Name,
+		Value:    ck.Value,
+		Expires:  ck.Expiry,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   false,
 	}
-
-	defer func() {
-		if err := cs.RedisDB.Close(); err != nil {
-			log.Fatal("Error closing redis connection %v", err)
-		}
-	}()
-
-	expCookie, err := cs.DeleteCookie(token.TokenID)
-	if err != nil {
-		log.Errorf("cookie error: %v", err)
-		http.Error(w, "Redis Server Error", http.StatusInternalServerError)
-
-		return
-	}
-
-	http.SetCookie(w, expCookie)
-
-	sessionCookie, err := cs.SetCookie(token)
-	if err != nil {
-		log.Errorf("cookie error: %v", err)
-		http.Error(w, "Failed to set cookie", http.StatusInternalServerError)
-
-		return
-	}
-
-	w.Header().Set("Set-Cookie", sessionCookie)
 }
