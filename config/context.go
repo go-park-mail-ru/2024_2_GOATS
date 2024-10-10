@@ -6,8 +6,8 @@ import (
 
 type ConfigContextKey struct{}
 
-func WrapContext(cfg *Config) (context.Context, error) {
-	return context.WithValue(context.Background(), ConfigContextKey{}, cfg), nil
+func WrapContext(ctx context.Context, cfg *Config) context.Context {
+	return context.WithValue(ctx, ConfigContextKey{}, cfg)
 }
 
 func FromContext(ctx context.Context) *Config {
