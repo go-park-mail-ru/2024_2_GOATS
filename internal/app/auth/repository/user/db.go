@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository/password"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository/password"
 )
 
 func Create(ctx context.Context, registerData authModels.RegisterData, db *sql.DB) (*models.User, error) {

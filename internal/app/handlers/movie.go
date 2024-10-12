@@ -1,41 +1,33 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/labstack/gommon/log"
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 )
 
 type MovieHandler struct {
-	ApiLayer *api.Implementation
+	ApiLayer *delivery.Implementation
+	Config   *config.Config
 }
 
-func NewMovieHandler(api *api.Implementation) *MovieHandler {
+func NewMovieHandler(api *delivery.Implementation, cfg *config.Config) *MovieHandler {
 	return &MovieHandler{
 		ApiLayer: api,
+		Config:   cfg,
 	}
 }
 
 func (m *MovieHandler) GetCollections(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		collectionsResp, errResp := m.ApiLayer.GetCollection(m.ApiLayer.Ctx, r.URL.Query())
+		ctx := config.WrapContext(r.Context(), m.Config)
+		collectionsResp, errResp := m.ApiLayer.GetCollection(ctx, r.URL.Query())
 		if errResp != nil {
-			w.WriteHeader(errResp.StatusCode)
-			err := json.NewEncoder(w).Encode(errResp)
-			if err != nil {
-				log.Errorf("error while encoding bad movie_collections response: %v", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-
+			Response(w, errResp.StatusCode, errResp)
 			return
 		}
 
-		err := json.NewEncoder(w).Encode(collectionsResp)
-		if err != nil {
-			log.Errorf("error while encoding good movie_collections response: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		Response(w, collectionsResp.StatusCode, collectionsResp)
 	})
 }

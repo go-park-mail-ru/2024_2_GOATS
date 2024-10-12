@@ -7,8 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (s *Service) GetCollection(ctx context.Context) (*models.CollectionsResponse, *models.ErrorResponse) {
-	collections, err, code := s.repository.GetCollection(ctx)
+func (s *MovieService) GetCollection(ctx context.Context) (*models.CollectionsResponse, *models.ErrorResponse) {
+	collections, err, code := s.movieRepository.GetCollection(ctx)
 
 	if err != nil {
 		errors := make([]errVals.ErrorObj, 1)
@@ -23,6 +23,7 @@ func (s *Service) GetCollection(ctx context.Context) (*models.CollectionsRespons
 
 	return &models.CollectionsResponse{
 		Collections: collections,
+		StatusCode:  code,
 		Success:     true,
 	}, nil
 }

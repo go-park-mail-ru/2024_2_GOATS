@@ -4,13 +4,14 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/validation"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service/validation"
 )
 
-func (s *Service) Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.AuthResponse, *models.ErrorResponse) {
+func (s *AuthService) Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.AuthResponse, *models.ErrorResponse) {
 	success := true
 	errors := make([]errVals.ErrorObj, 0)
 
@@ -30,7 +31,7 @@ func (s *Service) Register(ctx context.Context, registerData *authModels.Registe
 		}
 	}
 
-	token, err, code := s.repository.Register(ctx, registerData)
+	usr, err, code := s.authRepository.CreateUser(ctx, registerData)
 	if err != nil {
 		errors := make([]errVals.ErrorObj, 1)
 		errors[0] = *err
@@ -42,9 +43,28 @@ func (s *Service) Register(ctx context.Context, registerData *authModels.Registe
 		}
 	}
 
+	token, errVal := cookie.GenerateToken(ctx, usr.Id)
+	if errVal != nil {
+		return nil, &models.ErrorResponse{
+			Success:    false,
+			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errVal})},
+			StatusCode: http.StatusInternalServerError,
+		}
+	}
+
+	ck, errCk, code := s.authRepository.SetCookie(ctx, token)
+	if errCk != nil {
+		return nil, &models.ErrorResponse{
+			Success:    false,
+			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisWriteCode, errVals.CustomError{Err: errCk})},
+			StatusCode: code,
+		}
+	}
+
 	return &authModels.AuthResponse{
-		Token:   token,
-		Success: true,
+		NewCookie:  ck,
+		StatusCode: code,
+		Success:    true,
 	}, nil
 }
 
