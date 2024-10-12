@@ -14,10 +14,13 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository"
+	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
+	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
+	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
+	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 )
 
@@ -46,14 +49,22 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
-	repoLayer := repository.NewRepository(database, rdb)
-	srvLayer := service.NewService(repoLayer)
-	apiLayer := api.NewImplementation(ctx, srvLayer)
-	appMx := router.Setup(ctx, apiLayer)
+	repoAuth := authRepo.NewRepository(database, rdb)
+	srvAuth := authServ.NewService(repoAuth)
+	delAuth := authApi.NewImplementation(ctx, srvAuth)
+
+	repoMov := movieRepo.NewRepository(database, rdb)
+	srvMov := movieServ.NewService(repoMov)
+	delMov := movieApi.NewImplementation(ctx, srvMov)
+
+	mx := mux.NewRouter()
+	router.SetupAuth(ctx, delAuth, mx)
+	router.SetupMovie(ctx, delMov, mx)
+	router.ActivateMiddlewares(mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
-		Handler:      appMx,
+		Handler:      mx,
 		ReadTimeout:  cfg.Listener.Timeout,
 		WriteTimeout: cfg.Listener.Timeout,
 		IdleTimeout:  cfg.Listener.IdleTimeout,
@@ -64,7 +75,7 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
-		Mux:      appMx,
+		Mux:      mx,
 	}, nil
 }
 

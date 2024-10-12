@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -21,9 +22,9 @@ type RegisterData struct {
 }
 
 type LoginData struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Cookie   string `json:"-"`
+	Email    string       `json:"email"`
+	Password string       `json:"password"`
+	Cookie   *http.Cookie `json:"-"`
 }
 type SessionResponse struct {
 	Success    bool        `json:"success"`
@@ -34,7 +35,6 @@ type SessionResponse struct {
 type AuthResponse struct {
 	Success    bool        `json:"success"`
 	NewCookie  *CookieData `json:"-"`
-	ExpCookie  *CookieData `json:"-"`
 	StatusCode int         `json:"-"`
 }
 

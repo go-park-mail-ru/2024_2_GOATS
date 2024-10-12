@@ -9,8 +9,8 @@ import (
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
-func (s *Service) Logout(ctx context.Context, cookie string) (*auth.AuthResponse, *models.ErrorResponse) {
-	expCookie, err, code := s.repository.Logout(ctx, cookie)
+func (s *AuthService) Logout(ctx context.Context, cookie string) (*auth.AuthResponse, *models.ErrorResponse) {
+	err, code := s.authRepository.DestroySession(ctx, cookie)
 
 	if err != nil {
 		errors := make([]errVals.ErrorObj, 1)
@@ -26,6 +26,5 @@ func (s *Service) Logout(ctx context.Context, cookie string) (*auth.AuthResponse
 	return &authModels.AuthResponse{
 		Success:    true,
 		StatusCode: code,
-		ExpCookie:  expCookie,
 	}, nil
 }

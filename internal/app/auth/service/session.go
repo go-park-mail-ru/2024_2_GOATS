@@ -2,28 +2,26 @@ package service
 
 import (
 	"context"
-	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service/validation"
 )
 
-func (s *Service) Session(ctx context.Context, cookie string) (*authModels.SessionResponse, *models.ErrorResponse) {
-	validationErr := validation.ValidateCookie(cookie)
-	if validationErr != nil {
+func (s *AuthService) Session(ctx context.Context, cookie string) (*authModels.SessionResponse, *models.ErrorResponse) {
+	userId, err, code := s.authRepository.GetFromCookie(ctx, cookie)
+	if err != nil || userId == "" {
 		return nil, &models.ErrorResponse{
 			Success:    false,
-			StatusCode: http.StatusForbidden,
-			Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: *validationErr}},
+			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err})},
+			StatusCode: code,
 		}
 	}
 
-	user, err, code := s.repository.Session(ctx, cookie)
-	if err != nil {
+	user, sesErr, code := s.authRepository.UserById(ctx, userId)
+	if sesErr != nil {
 		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *err
+		errors[0] = *sesErr
 
 		return nil, &models.ErrorResponse{
 			Success:    false,

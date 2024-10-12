@@ -4,20 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
 type AuthHandler struct {
-	ApiLayer *api.Implementation
+	ApiLayer *delivery.Implementation
 	Config   *config.Config
 }
 
-func NewAuthHandler(api *api.Implementation, cfg *config.Config) *AuthHandler {
+func NewAuthHandler(api *delivery.Implementation, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
 		ApiLayer: api,
 		Config:   cfg,
@@ -39,7 +41,7 @@ func (a *AuthHandler) Logout(next http.Handler) http.Handler {
 			return
 		}
 
-		http.SetCookie(w, preparedCookie(resp.ExpCookie))
+		http.SetCookie(w, preparedExpiredCookie())
 
 		Response(w, resp.StatusCode, resp)
 	})
@@ -100,9 +102,15 @@ func (a *AuthHandler) handleAuth(w http.ResponseWriter, r *http.Request, decodeD
 		return
 	}
 
-	if authResp.ExpCookie != nil {
-		http.SetCookie(w, preparedCookie(authResp.ExpCookie))
+	oldCookie, err := r.Cookie("session_id")
+	if errors.Is(err, http.ErrNoCookie) {
+		log.Printf("user dont have old cookie")
 	}
+
+	if oldCookie != nil && authResp.NewCookie.Value != oldCookie.Value {
+		http.SetCookie(w, preparedExpiredCookie())
+	}
+
 	http.SetCookie(w, preparedCookie(authResp.NewCookie))
 
 	Response(w, authResp.StatusCode, authResp)
@@ -113,6 +121,17 @@ func preparedCookie(ck *authModels.CookieData) *http.Cookie {
 		Name:     ck.Name,
 		Value:    ck.Value,
 		Expires:  ck.Expiry,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   false,
+	}
+}
+
+func preparedExpiredCookie() *http.Cookie {
+	return &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
