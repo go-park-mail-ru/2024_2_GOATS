@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -33,8 +33,8 @@ type App struct {
 	AcceptConnections bool
 }
 
-func New() (*App, error) {
-	cfg, err := config.New()
+func New(isTest bool, port *nat.Port) (*App, error) {
+	cfg, err := config.New(isTest, port)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -118,8 +118,6 @@ func (a *App) GracefulShutdown() error {
 		log.Println("Waiting for all goroutines to finish...")
 		time.Sleep(500 * time.Millisecond)
 	}
-
-	os.Exit(0)
 
 	return nil
 }

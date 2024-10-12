@@ -25,3 +25,12 @@ Backend репозиторий команды GOATS 🐐🐐🐐🐐
 [Фронтенд проекта](https://github.com/frontend-park-mail-ru/2024_2_GOATS)
 
 [Деплой](http://185.241.195.151/)
+
+## Тесты
+
+```
+go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+go tool cover -html=coverage.out -o coverage.html
+open coverage.html
+```

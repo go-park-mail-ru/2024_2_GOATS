@@ -13,6 +13,8 @@ var (
 	ErrInvalidPasswordsMatchText = CustomError{Err: errors.New("password doesnt match with passwordConfirmation")}
 	ErrUserNotFoundCode          = "user_not_found"
 	ErrUserNotFoundText          = CustomError{Err: errors.New("cannot find user with translated email")}
+	ErrBrokenCookieText          = CustomError{Err: errors.New("broken cookie was given")}
+	ErrBrokenCookieCode          = "broken_cookie"
 	ErrServerCode                = "something_went_wrong"
 	ErrGenerateTokenCode         = "auth_token_generation_error"
 	ErrCreateUserCode            = "create_user_error"
