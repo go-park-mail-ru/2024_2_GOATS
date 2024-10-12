@@ -15,7 +15,7 @@ import (
 func (r *Repo) Session(ctx context.Context, cookie string) (*models.User, *errVals.ErrorObj, int) {
 	userId, err := ck.NewCookieStore(ctx, r.Redis).GetFromCookie(cookie)
 	if err != nil || userId == "" {
-		return nil, errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err}), http.StatusUnauthorized
+		return nil, errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err}), http.StatusForbidden
 	}
 
 	usr, err := user.FindById(ctx, userId, r.Database)

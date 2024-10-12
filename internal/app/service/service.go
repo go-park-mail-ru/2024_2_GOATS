@@ -11,6 +11,7 @@ import (
 
 var _ api.ServiceInterface = (*Service)(nil)
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
 type RepositoryInterface interface {
 	Login(ctx context.Context, loginData *authModels.LoginData) ([]*authModels.CookieData, *errVals.ErrorObj, int)
 	Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.CookieData, *errVals.ErrorObj, int)

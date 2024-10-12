@@ -37,8 +37,8 @@ func (r *Repo) Login(ctx context.Context, loginData *authModels.LoginData) ([]*a
 	var expCookie *authModels.CookieData
 
 	cs := cookie.NewCookieStore(ctx, r.Redis)
-	if loginData.Cookie != nil {
-		expCookie, err = cs.DeleteCookie(loginData.Cookie.Value)
+	if loginData.Cookie != "" {
+		expCookie, err = cs.DeleteCookie(loginData.Cookie)
 		if err != nil {
 			return nil, errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: err}), http.StatusInternalServerError
 		}
