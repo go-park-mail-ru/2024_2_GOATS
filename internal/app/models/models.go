@@ -34,6 +34,7 @@ type Movie struct {
 type CollectionsResponse struct {
 	Success     bool         `json:"success"`
 	Collections []Collection `json:"collections"`
+	StatusCode  int          `json:"-"`
 }
 
 type ErrorResponse struct {
