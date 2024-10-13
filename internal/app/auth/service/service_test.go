@@ -23,7 +23,10 @@ func TestService_Register(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, _ := config.New(false, nil)
+	cfg, err := config.New(false, nil)
+	if err != nil {
+		t.Fatalf("failed to read config from Register test: %v", err)
+	}
 	ctx := config.WrapContext(context.Background(), cfg)
 
 	tests := []struct {
@@ -363,7 +366,10 @@ func TestService_Login(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, _ := config.New(false, nil)
+	cfg, err := config.New(false, nil)
+	if err != nil {
+		t.Fatalf("failed to read config from Register test: %v", err)
+	}
 	ctx := config.WrapContext(context.Background(), cfg)
 
 	tests := []struct {
@@ -585,7 +591,10 @@ func TestService_Logout(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, _ := config.New(false, nil)
+	cfg, err := config.New(false, nil)
+	if err != nil {
+		t.Fatalf("failed to read config from Register test: %v", err)
+	}
 	ctx := config.WrapContext(context.Background(), cfg)
 
 	tests := []struct {

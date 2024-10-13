@@ -9,17 +9,16 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
 type AuthHandler struct {
-	ApiLayer *delivery.Implementation
+	ApiLayer AuthImplementationInterface
 	Config   *config.Config
 }
 
-func NewAuthHandler(api *delivery.Implementation, cfg *config.Config) *AuthHandler {
+func NewAuthHandler(api AuthImplementationInterface, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
 		ApiLayer: api,
 		Config:   cfg,

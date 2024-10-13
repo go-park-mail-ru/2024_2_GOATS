@@ -31,6 +31,7 @@ Backend репозиторий команды GOATS 🐐🐐🐐🐐
 Перед прогоном тестов запустите докер. Тесты постгреса требуют запущенного докера
 ```
 go test -coverprofile=coverage.out ./...
+./filter_coverage.sh coverage.out exclude_from_coverage.txt
 go tool cover -func=coverage.out
 go tool cover -html=coverage.out -o coverage.html
 open coverage.html

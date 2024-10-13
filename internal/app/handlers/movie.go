@@ -4,15 +4,14 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 )
 
 type MovieHandler struct {
-	ApiLayer *delivery.Implementation
+	ApiLayer MovieImplementationInterface
 	Config   *config.Config
 }
 
-func NewMovieHandler(api *delivery.Implementation, cfg *config.Config) *MovieHandler {
+func NewMovieHandler(api MovieImplementationInterface, cfg *config.Config) *MovieHandler {
 	return &MovieHandler{
 		ApiLayer: api,
 		Config:   cfg,

@@ -3,8 +3,11 @@ package delivery
 import (
 	"context"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
+
+var _ handlers.MovieImplementationInterface = (*Implementation)(nil)
 
 //go:generate mockgen -source=implementation.go -destination=mocks/mock.go
 type MovieServiceInterface interface {

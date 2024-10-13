@@ -17,7 +17,7 @@ func (r *Repo) SetCookie(ctx context.Context, token *authModels.Token) (*authMod
 	if err.Err() != nil {
 		return nil, errVals.NewErrorObj(
 			errVals.ErrCreateUserCode,
-			errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)},
+			errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err.Err())},
 		), http.StatusInternalServerError
 	}
 
