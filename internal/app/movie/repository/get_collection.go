@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -23,6 +24,7 @@ func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals
 	}()
 
 	collections, err := movieCollection.ScanConnections(rows)
+	fmt.Println(collections)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}

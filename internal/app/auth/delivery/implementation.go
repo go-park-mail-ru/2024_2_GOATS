@@ -8,6 +8,7 @@ import (
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
+//go:generate mockgen -source=implementation.go -destination=mocks/mock.go
 type AuthServiceInterface interface {
 	Login(ctx context.Context, loginData *authModels.LoginData) (*authModels.AuthResponse, *models.ErrorResponse)
 	Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.AuthResponse, *models.ErrorResponse)

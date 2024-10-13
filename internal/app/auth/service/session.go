@@ -13,7 +13,7 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*authModels.S
 	if err != nil || userId == "" {
 		return nil, &models.ErrorResponse{
 			Success:    false,
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err})},
+			Errors:     []errVals.ErrorObj{*err},
 			StatusCode: code,
 		}
 	}

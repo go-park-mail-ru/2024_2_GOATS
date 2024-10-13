@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+//go:generate mockgen -source=implementation.go -destination=mocks/mock.go
 type MovieServiceInterface interface {
 	GetCollection(ctx context.Context) (*models.CollectionsResponse, *models.ErrorResponse)
 }

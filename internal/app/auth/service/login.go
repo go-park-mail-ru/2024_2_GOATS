@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/validation"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -13,6 +14,15 @@ import (
 )
 
 func (s *AuthService) Login(ctx context.Context, loginData *authModels.LoginData) (*authModels.AuthResponse, *models.ErrorResponse) {
+	validErr := validation.ValidateCookie(loginData.Cookie)
+	if validErr != nil {
+		return nil, &models.ErrorResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: *validErr}},
+		}
+	}
+
 	usr, err, code := s.authRepository.UserByEmail(ctx, loginData)
 
 	if err != nil {
@@ -44,8 +54,8 @@ func (s *AuthService) Login(ctx context.Context, loginData *authModels.LoginData
 		}
 	}
 
-	if loginData.Cookie != nil {
-		err, code = s.authRepository.DestroySession(ctx, loginData.Cookie.Value)
+	if loginData.Cookie != "" {
+		err, code = s.authRepository.DestroySession(ctx, loginData.Cookie)
 		if err != nil {
 			return nil, &models.ErrorResponse{
 				Success:    false,
@@ -60,7 +70,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *authModels.LoginData
 		return nil, &models.ErrorResponse{
 			Success:    false,
 			StatusCode: code,
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisWriteCode, errVals.CustomError{Err: ckErr})},
+			Errors:     []errVals.ErrorObj{*ckErr},
 		}
 	}
 

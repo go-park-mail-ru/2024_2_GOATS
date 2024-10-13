@@ -14,105 +14,120 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockRepositoryInterface is a mock of RepositoryInterface interface.
-type MockRepositoryInterface struct {
+// MockAuthRepositoryInterface is a mock of AuthRepositoryInterface interface.
+type MockAuthRepositoryInterface struct {
 	ctrl     *gomock.Controller
-	recorder *MockRepositoryInterfaceMockRecorder
+	recorder *MockAuthRepositoryInterfaceMockRecorder
 }
 
-// MockRepositoryInterfaceMockRecorder is the mock recorder for MockRepositoryInterface.
-type MockRepositoryInterfaceMockRecorder struct {
-	mock *MockRepositoryInterface
+// MockAuthRepositoryInterfaceMockRecorder is the mock recorder for MockAuthRepositoryInterface.
+type MockAuthRepositoryInterfaceMockRecorder struct {
+	mock *MockAuthRepositoryInterface
 }
 
-// NewMockRepositoryInterface creates a new mock instance.
-func NewMockRepositoryInterface(ctrl *gomock.Controller) *MockRepositoryInterface {
-	mock := &MockRepositoryInterface{ctrl: ctrl}
-	mock.recorder = &MockRepositoryInterfaceMockRecorder{mock}
+// NewMockAuthRepositoryInterface creates a new mock instance.
+func NewMockAuthRepositoryInterface(ctrl *gomock.Controller) *MockAuthRepositoryInterface {
+	mock := &MockAuthRepositoryInterface{ctrl: ctrl}
+	mock.recorder = &MockAuthRepositoryInterfaceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder {
+func (m *MockAuthRepositoryInterface) EXPECT() *MockAuthRepositoryInterfaceMockRecorder {
 	return m.recorder
 }
 
-// GetCollection mocks base method.
-func (m *MockRepositoryInterface) GetCollection(ctx context.Context) ([]models.Collection, *errors.ErrorObj, int) {
+// CreateUser mocks base method.
+func (m *MockAuthRepositoryInterface) CreateUser(ctx context.Context, registerData *auth.RegisterData) (*models.User, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCollection", ctx)
-	ret0, _ := ret[0].([]models.Collection)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// GetCollection indicates an expected call of GetCollection.
-func (mr *MockRepositoryInterfaceMockRecorder) GetCollection(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockRepositoryInterface)(nil).GetCollection), ctx)
-}
-
-// Login mocks base method.
-func (m *MockRepositoryInterface) Login(ctx context.Context, loginData *auth.LoginData) ([]*auth.CookieData, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Login", ctx, loginData)
-	ret0, _ := ret[0].([]*auth.CookieData)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// Login indicates an expected call of Login.
-func (mr *MockRepositoryInterfaceMockRecorder) Login(ctx, loginData interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockRepositoryInterface)(nil).Login), ctx, loginData)
-}
-
-// Logout mocks base method.
-func (m *MockRepositoryInterface) Logout(ctx context.Context, cookie string) (*auth.CookieData, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Logout", ctx, cookie)
-	ret0, _ := ret[0].(*auth.CookieData)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// Logout indicates an expected call of Logout.
-func (mr *MockRepositoryInterfaceMockRecorder) Logout(ctx, cookie interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockRepositoryInterface)(nil).Logout), ctx, cookie)
-}
-
-// Register mocks base method.
-func (m *MockRepositoryInterface) Register(ctx context.Context, registerData *auth.RegisterData) (*auth.CookieData, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Register", ctx, registerData)
-	ret0, _ := ret[0].(*auth.CookieData)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// Register indicates an expected call of Register.
-func (mr *MockRepositoryInterfaceMockRecorder) Register(ctx, registerData interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockRepositoryInterface)(nil).Register), ctx, registerData)
-}
-
-// Session mocks base method.
-func (m *MockRepositoryInterface) Session(ctx context.Context, cookie string) (*models.User, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Session", ctx, cookie)
+	ret := m.ctrl.Call(m, "CreateUser", ctx, registerData)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	ret2, _ := ret[2].(int)
 	return ret0, ret1, ret2
 }
 
-// Session indicates an expected call of Session.
-func (mr *MockRepositoryInterfaceMockRecorder) Session(ctx, cookie interface{}) *gomock.Call {
+// CreateUser indicates an expected call of CreateUser.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) CreateUser(ctx, registerData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Session", reflect.TypeOf((*MockRepositoryInterface)(nil).Session), ctx, cookie)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).CreateUser), ctx, registerData)
+}
+
+// DestroySession mocks base method.
+func (m *MockAuthRepositoryInterface) DestroySession(ctx context.Context, cookie string) (*errors.ErrorObj, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DestroySession", ctx, cookie)
+	ret0, _ := ret[0].(*errors.ErrorObj)
+	ret1, _ := ret[1].(int)
+	return ret0, ret1
+}
+
+// DestroySession indicates an expected call of DestroySession.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) DestroySession(ctx, cookie interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestroySession", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).DestroySession), ctx, cookie)
+}
+
+// GetFromCookie mocks base method.
+func (m *MockAuthRepositoryInterface) GetFromCookie(ctx context.Context, cookie string) (string, *errors.ErrorObj, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFromCookie", ctx, cookie)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(*errors.ErrorObj)
+	ret2, _ := ret[2].(int)
+	return ret0, ret1, ret2
+}
+
+// GetFromCookie indicates an expected call of GetFromCookie.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) GetFromCookie(ctx, cookie interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFromCookie", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).GetFromCookie), ctx, cookie)
+}
+
+// SetCookie mocks base method.
+func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *auth.Token) (*auth.CookieData, *errors.ErrorObj, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCookie", ctx, token)
+	ret0, _ := ret[0].(*auth.CookieData)
+	ret1, _ := ret[1].(*errors.ErrorObj)
+	ret2, _ := ret[2].(int)
+	return ret0, ret1, ret2
+}
+
+// SetCookie indicates an expected call of SetCookie.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) SetCookie(ctx, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCookie", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).SetCookie), ctx, token)
+}
+
+// UserByEmail mocks base method.
+func (m *MockAuthRepositoryInterface) UserByEmail(ctx context.Context, loginData *auth.LoginData) (*models.User, *errors.ErrorObj, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserByEmail", ctx, loginData)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(*errors.ErrorObj)
+	ret2, _ := ret[2].(int)
+	return ret0, ret1, ret2
+}
+
+// UserByEmail indicates an expected call of UserByEmail.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) UserByEmail(ctx, loginData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserByEmail", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).UserByEmail), ctx, loginData)
+}
+
+// UserById mocks base method.
+func (m *MockAuthRepositoryInterface) UserById(ctx context.Context, userId string) (*models.User, *errors.ErrorObj, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserById", ctx, userId)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].(*errors.ErrorObj)
+	ret2, _ := ret[2].(int)
+	return ret0, ret1, ret2
+}
+
+// UserById indicates an expected call of UserById.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) UserById(ctx, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserById", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).UserById), ctx, userId)
 }

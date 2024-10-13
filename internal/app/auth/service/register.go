@@ -56,7 +56,7 @@ func (s *AuthService) Register(ctx context.Context, registerData *authModels.Reg
 	if errCk != nil {
 		return nil, &models.ErrorResponse{
 			Success:    false,
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisWriteCode, errVals.CustomError{Err: errCk})},
+			Errors:     []errVals.ErrorObj{*errCk},
 			StatusCode: code,
 		}
 	}
