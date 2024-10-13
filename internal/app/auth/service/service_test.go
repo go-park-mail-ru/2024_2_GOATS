@@ -42,7 +42,6 @@ func TestService_Register(t *testing.T) {
 		expectedResponse *authModels.AuthResponse
 		expectedError    *models.ErrorResponse
 		statusCode       int
-		isValidation     bool
 		WithCookie       bool
 	}{
 		{
@@ -143,58 +142,6 @@ func TestService_Register(t *testing.T) {
 			statusCode: 500,
 			WithCookie: true,
 		},
-		{
-			name: "Validation Error",
-			args: &struct {
-				ctx          context.Context
-				registerData *authModels.RegisterData
-			}{
-				ctx:          ctx,
-				registerData: &authModels.RegisterData{},
-			},
-			mockUserErr:   nil,
-			mockCookieErr: nil,
-			expectedError: &models.ErrorResponse{
-				Success:    false,
-				StatusCode: 422,
-				Errors: []errVals.ErrorObj{
-					{
-						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordText.Err},
-					},
-					{
-						Code: errVals.ErrInvalidEmailCode, Error: errVals.CustomError{Err: errVals.ErrInvalidEmailText.Err},
-					},
-				},
-			},
-			isValidation: true,
-			statusCode:   422,
-		},
-		{
-			name: "Password missmatch",
-			args: &struct {
-				ctx          context.Context
-				registerData *authModels.RegisterData
-			}{
-				ctx: ctx,
-				registerData: &authModels.RegisterData{
-					Email:                "test@mail.ru",
-					Username:             "tester",
-					Password:             "test_password",
-					PasswordConfirmation: "test_password_wrong",
-				},
-			},
-			mockUserErr:   nil,
-			mockCookieErr: nil,
-			expectedError: &models.ErrorResponse{
-				Success:    false,
-				StatusCode: 422,
-				Errors: []errVals.ErrorObj{
-					{Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatchText.Err}},
-				},
-			},
-			isValidation: true,
-			statusCode:   422,
-		},
 	}
 
 	for _, test := range tests {
@@ -205,12 +152,11 @@ func TestService_Register(t *testing.T) {
 			repo := servMock.NewMockAuthRepositoryInterface(ctrl)
 			s := NewService(repo)
 
-			if !test.isValidation {
-				repo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
 
-				if test.WithCookie {
-					repo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr, test.statusCode)
-				}
+			repo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
+
+			if test.WithCookie {
+				repo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr, test.statusCode)
 			}
 
 			t.Parallel()
@@ -242,7 +188,6 @@ func TestService_Session(t *testing.T) {
 		expectedResponse     *authModels.SessionResponse
 		expectedError        *models.ErrorResponse
 		statusCode           int
-		isValidation         bool
 		WithGetUser          bool
 	}{
 		{
@@ -332,12 +277,9 @@ func TestService_Session(t *testing.T) {
 			repo := servMock.NewMockAuthRepositoryInterface(ctrl)
 			s := NewService(repo)
 
-			if !test.isValidation {
-				repo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
-
-				if test.WithGetUser {
-					repo.EXPECT().UserById(gomock.Any(), gomock.Any()).Return(test.mockGetUser, test.mockGetUserErr, test.statusCode)
-				}
+			repo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
+			if test.WithGetUser {
+				repo.EXPECT().UserById(gomock.Any(), gomock.Any()).Return(test.mockGetUser, test.mockGetUserErr, test.statusCode)
 			}
 
 			t.Parallel()
@@ -382,7 +324,6 @@ func TestService_Login(t *testing.T) {
 		mockSetCookieErr      *errVals.ErrorObj
 		expectedResponse      *authModels.AuthResponse
 		expectedError         *models.ErrorResponse
-		isValidation          bool
 		statusCode            int
 		withCookieDestruction bool
 		withCookieSetting     bool
@@ -526,24 +467,6 @@ func TestService_Login(t *testing.T) {
 			},
 			statusCode: 409,
 		},
-		{
-			name: "Validation error",
-			args: &args{
-				ctx: ctx,
-				loginData: &authModels.LoginData{
-					Email:    "test@mail.ru",
-					Password: "some different password",
-					Cookie:   "",
-				},
-			},
-			expectedError: &models.ErrorResponse{
-				Success:    false,
-				StatusCode: 400,
-				Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: errVals.ErrBrokenCookieText}},
-			},
-			statusCode:   400,
-			isValidation: true,
-		},
 	}
 
 	for _, test := range tests {
@@ -556,15 +479,13 @@ func TestService_Login(t *testing.T) {
 
 			t.Parallel()
 
-			if !test.isValidation {
-				repo.EXPECT().UserByEmail(gomock.Any(), gomock.Any()).Return(test.mockUser, test.mockUserErr, test.statusCode)
-				if test.withCookieDestruction {
-					repo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
-				}
+			repo.EXPECT().UserByEmail(gomock.Any(), gomock.Any()).Return(test.mockUser, test.mockUserErr, test.statusCode)
+			if test.withCookieDestruction {
+				repo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
+			}
 
-				if test.withCookieSetting {
-					repo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockSetCookieErr, test.statusCode)
-				}
+			if test.withCookieSetting {
+				repo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockSetCookieErr, test.statusCode)
 			}
 
 			response, err := s.Login(test.args.ctx, test.args.loginData)

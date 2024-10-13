@@ -21,6 +21,7 @@ func TestDelivery_Register(t *testing.T) {
 		mockErr          *models.ErrorResponse
 		expectedResponse *authModels.AuthResponse
 		expectedErr      *models.ErrorResponse
+		isValidation     bool
 	}{
 		{
 			name: "Success",
@@ -52,9 +53,10 @@ func TestDelivery_Register(t *testing.T) {
 		{
 			name: "Service Error",
 			registerData: &authModels.RegisterData{
-				Email:    "test@mail.ru",
-				Username: "tester",
-				Password: "some pass",
+				Email:                "test@mail.ru",
+				Username:             "tester",
+				Password:             "some pass",
+				PasswordConfirmation: "some pass",
 			},
 			mockErr: &models.ErrorResponse{
 				Success:    false,
@@ -67,6 +69,68 @@ func TestDelivery_Register(t *testing.T) {
 				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errors.New("some token error")})},
 			},
 		},
+		{
+			name: "Validation Error",
+			registerData: &authModels.RegisterData{
+				Email:                "test",
+				Username:             "tester",
+				Password:             "short",
+				PasswordConfirmation: "short",
+			},
+			mockErr: &models.ErrorResponse{
+				Success:    false,
+				StatusCode: 400,
+				Errors: []errVals.ErrorObj{
+					{
+						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordText.Err},
+					},
+					{
+						Code: errVals.ErrInvalidEmailCode, Error: errVals.CustomError{Err: errVals.ErrInvalidEmailText.Err},
+					},
+				},
+			},
+			expectedErr: &models.ErrorResponse{
+				Success:    false,
+				StatusCode: 400,
+				Errors: []errVals.ErrorObj{
+					{
+						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordText.Err},
+					},
+					{
+						Code: errVals.ErrInvalidEmailCode, Error: errVals.CustomError{Err: errVals.ErrInvalidEmailText.Err},
+					},
+				},
+			},
+			isValidation: true,
+		},
+		{
+			name: "Password mismatch",
+			registerData: &authModels.RegisterData{
+				Email:                "test@mail.ru",
+				Username:             "tester",
+				Password:             "password_good",
+				PasswordConfirmation: "password_bad",
+			},
+			mockErr: &models.ErrorResponse{
+				Success:    false,
+				StatusCode: 400,
+				Errors: []errVals.ErrorObj{
+					{
+						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatchText.Err},
+					},
+				},
+			},
+			expectedErr: &models.ErrorResponse{
+				Success:    false,
+				StatusCode: 400,
+				Errors: []errVals.ErrorObj{
+					{
+						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatchText.Err},
+					},
+				},
+			},
+			isValidation: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -77,7 +141,10 @@ func TestDelivery_Register(t *testing.T) {
 			srv := srvMock.NewMockAuthServiceInterface(ctrl)
 			imp := NewImplementation(context.Background(), srv)
 
-			srv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			if !test.isValidation {
+				srv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			}
+
 			resp, err := imp.Register(context.Background(), test.registerData)
 
 			if test.expectedErr != nil {
@@ -175,6 +242,7 @@ func TestDelivery_Logout(t *testing.T) {
 		mockErr          *models.ErrorResponse
 		expectedResponse *authModels.AuthResponse
 		expectedErr      *models.ErrorResponse
+		isValidation     bool
 	}{
 		{
 			name:   "Success",
@@ -189,7 +257,8 @@ func TestDelivery_Logout(t *testing.T) {
 			},
 		},
 		{
-			name: "Service Error",
+			name:   "Service Error",
+			cookie: "some cookie",
 			mockErr: &models.ErrorResponse{
 				Success:    false,
 				StatusCode: 500,
@@ -201,6 +270,20 @@ func TestDelivery_Logout(t *testing.T) {
 				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some redis error")})},
 			},
 		},
+		{
+			name: "Validation Error",
+			mockErr: &models.ErrorResponse{
+				Success:    false,
+				StatusCode: 400,
+				Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: errVals.CustomError{Err: errVals.ErrBrokenCookieText.Err}}},
+			},
+			expectedErr: &models.ErrorResponse{
+				Success:    false,
+				StatusCode: 400,
+				Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: errVals.CustomError{Err: errVals.ErrBrokenCookieText.Err}}},
+			},
+			isValidation: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -211,7 +294,9 @@ func TestDelivery_Logout(t *testing.T) {
 			srv := srvMock.NewMockAuthServiceInterface(ctrl)
 			imp := NewImplementation(context.Background(), srv)
 
-			srv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			if !test.isValidation {
+				srv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			}
 			resp, err := imp.Logout(context.Background(), test.cookie)
 
 			if test.expectedErr != nil {

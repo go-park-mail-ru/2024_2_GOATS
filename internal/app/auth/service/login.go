@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/validation"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -14,15 +13,6 @@ import (
 )
 
 func (s *AuthService) Login(ctx context.Context, loginData *authModels.LoginData) (*authModels.AuthResponse, *models.ErrorResponse) {
-	validErr := validation.ValidateCookie(loginData.Cookie)
-	if validErr != nil {
-		return nil, &models.ErrorResponse{
-			Success:    false,
-			StatusCode: http.StatusBadRequest,
-			Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: *validErr}},
-		}
-	}
-
 	usr, err, code := s.authRepository.UserByEmail(ctx, loginData)
 
 	if err != nil {
