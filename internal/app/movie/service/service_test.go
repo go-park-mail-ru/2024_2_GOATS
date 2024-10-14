@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	servMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	servMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,8 +18,8 @@ func TestService_GetCollection(t *testing.T) {
 		name             string
 		mockReturn       []models.Collection
 		mockErr          *errVals.ErrorObj
-		expectedResponse *models.CollectionsResponse
-		expectedError    *models.ErrorResponse
+		expectedResponse *models.CollectionsRespData
+		expectedError    *models.ErrorRespData
 		statusCode       int
 	}{
 		{
@@ -29,24 +29,22 @@ func TestService_GetCollection(t *testing.T) {
 				{Id: 2, Title: "Collection 2", Movies: []*models.Movie{}},
 			},
 			mockErr: nil,
-			expectedResponse: &models.CollectionsResponse{
+			expectedResponse: &models.CollectionsRespData{
 				Collections: []models.Collection{
 					{Id: 1, Title: "Collection 1", Movies: []*models.Movie{}},
 					{Id: 2, Title: "Collection 2", Movies: []*models.Movie{}},
 				},
-				StatusCode: 200,
-				Success:    true,
+				StatusCode: http.StatusOK,
 			},
 			expectedError: nil,
-			statusCode:    200,
+			statusCode:    http.StatusOK,
 		},
 		{
 			name:             "Error",
 			mockReturn:       nil,
 			mockErr:          &errVals.ErrorObj{Code: "something_went_wrong", Error: errVals.CustomError{Err: errors.New("Database fail")}},
 			expectedResponse: nil,
-			expectedError: &models.ErrorResponse{
-				Success:    false,
+			expectedError: &models.ErrorRespData{
 				StatusCode: http.StatusUnprocessableEntity,
 				Errors:     []errVals.ErrorObj{{Code: "something_went_wrong", Error: errVals.CustomError{Err: errors.New("Database fail")}}},
 			},
@@ -64,7 +62,6 @@ func TestService_GetCollection(t *testing.T) {
 
 			repo.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr, test.statusCode)
 
-			// Параллельное выполнение теста
 			t.Parallel()
 
 			response, err := s.GetCollection(context.Background())

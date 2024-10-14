@@ -10,7 +10,6 @@ import (
 
 	errors "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	auth "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -38,7 +37,7 @@ func (m *MockAuthRepositoryInterface) EXPECT() *MockAuthRepositoryInterfaceMockR
 }
 
 // CreateUser mocks base method.
-func (m *MockAuthRepositoryInterface) CreateUser(ctx context.Context, registerData *auth.RegisterData) (*models.User, *errors.ErrorObj, int) {
+func (m *MockAuthRepositoryInterface) CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", ctx, registerData)
 	ret0, _ := ret[0].(*models.User)
@@ -85,10 +84,10 @@ func (mr *MockAuthRepositoryInterfaceMockRecorder) GetFromCookie(ctx, cookie int
 }
 
 // SetCookie mocks base method.
-func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *auth.Token) (*auth.CookieData, *errors.ErrorObj, int) {
+func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetCookie", ctx, token)
-	ret0, _ := ret[0].(*auth.CookieData)
+	ret0, _ := ret[0].(*models.CookieData)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	ret2, _ := ret[2].(int)
 	return ret0, ret1, ret2
@@ -101,7 +100,7 @@ func (mr *MockAuthRepositoryInterfaceMockRecorder) SetCookie(ctx, token interfac
 }
 
 // UserByEmail mocks base method.
-func (m *MockAuthRepositoryInterface) UserByEmail(ctx context.Context, loginData *auth.LoginData) (*models.User, *errors.ErrorObj, int) {
+func (m *MockAuthRepositoryInterface) UserByEmail(ctx context.Context, loginData *models.LoginData) (*models.User, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserByEmail", ctx, loginData)
 	ret0, _ := ret[0].(*models.User)
