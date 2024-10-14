@@ -1,17 +1,37 @@
 package delivery
 
 import (
-	"context"
-	"net/url"
+	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 )
 
-func (i *Implementation) GetCollection(ctx context.Context, query url.Values) (*models.CollectionsResponse, *models.ErrorResponse) {
-	colls, errData := i.movieService.GetCollection(ctx)
-	if errData != nil {
-		return nil, errData
+var _ handlers.MovieImplementationInterface = (*MovieHandler)(nil)
+
+type MovieHandler struct {
+	movieService MovieServiceInterface
+	cfg          *config.Config
+}
+
+func NewMovieHandler(srv MovieServiceInterface, cfg *config.Config) *MovieHandler {
+	return &MovieHandler{
+		movieService: srv,
+		cfg:          cfg,
+	}
+}
+
+func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
+	ctx := config.WrapContext(r.Context(), m.cfg)
+	collectionsServResp, errServResp := m.movieService.GetCollection(ctx)
+	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), converter.ToApiErrorResponse(errServResp)
+
+	if errResp != nil {
+		api.Response(w, errResp.StatusCode, errResp)
+		return
 	}
 
-	return colls, nil
+	api.Response(w, collectionsResp.StatusCode, collectionsResp)
 }

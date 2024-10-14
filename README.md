@@ -25,3 +25,14 @@ Backend репозиторий команды GOATS 🐐🐐🐐🐐
 [Фронтенд проекта](https://github.com/frontend-park-mail-ru/2024_2_GOATS)
 
 [Деплой](http://185.241.195.151/)
+
+## Тесты
+
+Перед прогоном тестов запустите докер. Тесты постгреса требуют запущенного докера
+```
+go test -coverprofile=coverage.out ./...
+./filter_coverage.sh coverage.out exclude_from_coverage.txt
+go tool cover -func=coverage.out
+go tool cover -html=coverage.out -o coverage.html
+open coverage.html
+```
