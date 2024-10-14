@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (r *Repo) SetCookie(ctx context.Context, token *authModels.Token) (*authModels.CookieData, *errVals.ErrorObj, int) {
+func (r *Repo) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.ErrorObj, int) {
 	cookieCfg := config.FromContext(ctx).Databases.Redis.Cookie
 
 	err := r.Redis.Set(ctx, token.TokenID, fmt.Sprint(token.UserID), cookieCfg.MaxAge)
@@ -21,10 +21,8 @@ func (r *Repo) SetCookie(ctx context.Context, token *authModels.Token) (*authMod
 		), http.StatusInternalServerError
 	}
 
-	return &authModels.CookieData{
-		Name:   cookieCfg.Name,
-		Value:  token.TokenID,
-		Expiry: token.Expiry,
-		UserID: token.UserID,
+	return &models.CookieData{
+		Name:  cookieCfg.Name,
+		Token: token,
 	}, nil, http.StatusOK
 }

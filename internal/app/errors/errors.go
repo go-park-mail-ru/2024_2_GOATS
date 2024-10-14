@@ -15,6 +15,7 @@ var (
 	ErrUserNotFoundText          = CustomError{Err: errors.New("cannot find user with translated email")}
 	ErrBrokenCookieText          = CustomError{Err: errors.New("broken cookie was given")}
 	ErrBrokenCookieCode          = "broken_cookie"
+	ErrNoCookieCode              = "no_cookie_provided"
 	ErrServerCode                = "something_went_wrong"
 	ErrGenerateTokenCode         = "auth_token_generation_error"
 	ErrCreateUserCode            = "create_user_error"

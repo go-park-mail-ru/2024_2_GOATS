@@ -7,10 +7,9 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository/password"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
-func Create(ctx context.Context, registerData authModels.RegisterData, db *sql.DB) (*models.User, error) {
+func Create(ctx context.Context, registerData models.RegisterData, db *sql.DB) (*models.User, error) {
 	hashPass, err := password.HashAndSalt(registerData.Password)
 	if err != nil {
 		return nil, fmt.Errorf("error hashing password: %w", err)

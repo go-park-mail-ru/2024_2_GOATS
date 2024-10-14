@@ -5,14 +5,12 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
-func (s *AuthService) Session(ctx context.Context, cookie string) (*authModels.SessionResponse, *models.ErrorResponse) {
+func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
 	userId, err, code := s.authRepository.GetFromCookie(ctx, cookie)
 	if err != nil || userId == "" {
-		return nil, &models.ErrorResponse{
-			Success:    false,
+		return nil, &models.ErrorRespData{
 			Errors:     []errVals.ErrorObj{*err},
 			StatusCode: code,
 		}
@@ -23,15 +21,13 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*authModels.S
 		errors := make([]errVals.ErrorObj, 1)
 		errors[0] = *sesErr
 
-		return nil, &models.ErrorResponse{
-			Success:    false,
+		return nil, &models.ErrorRespData{
 			Errors:     errors,
 			StatusCode: code,
 		}
 	}
 
-	return &authModels.SessionResponse{
-		Success:    true,
+	return &models.SessionRespData{
 		StatusCode: code,
 		UserData:   *user,
 	}, nil

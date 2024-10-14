@@ -9,10 +9,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository/user"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
-func (r *Repo) UserByEmail(ctx context.Context, loginData *authModels.LoginData) (*models.User, *errVals.ErrorObj, int) {
+func (r *Repo) UserByEmail(ctx context.Context, loginData *models.LoginData) (*models.User, *errVals.ErrorObj, int) {
 	usr, err := user.FindByEmail(ctx, loginData.Email, r.Database)
 
 	if err != nil {
