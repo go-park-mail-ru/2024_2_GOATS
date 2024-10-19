@@ -2,12 +2,16 @@ package delivery
 
 import (
 	"bytes"
+	"context"
 	"errors"
-	"log"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	srvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
@@ -96,7 +100,7 @@ func TestDelivery_Register(t *testing.T) {
 
 			path := "/api/auth/signup"
 			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, GetCfg())
+			handler := NewAuthHandler(srv, testContext())
 
 			if !test.isValidation {
 				srv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
@@ -160,7 +164,7 @@ func TestDelivery_Login(t *testing.T) {
 
 			path := "/api/auth/login"
 			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, GetCfg())
+			handler := NewAuthHandler(srv, testContext())
 
 			srv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
@@ -233,7 +237,7 @@ func TestDelivery_Logout(t *testing.T) {
 
 			path := "/api/auth/logout"
 			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, GetCfg())
+			handler := NewAuthHandler(srv, testContext())
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.Logout)
@@ -305,7 +309,7 @@ func TestDelivery_Session(t *testing.T) {
 
 			path := "/api/auth/session"
 			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, GetCfg())
+			handler := NewAuthHandler(srv, testContext())
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.Session)
@@ -326,16 +330,18 @@ func TestDelivery_Session(t *testing.T) {
 	}
 }
 
-func GetCfg() *config.Config {
+func testContext() context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
-		log.Fatalf("failed to change directory: %v", err)
+		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
 	}
 
-	cfg, err := config.New(false, nil)
+	cfg, err := config.New(zerolog.Logger{}, false, nil)
 	if err != nil {
-		log.Fatalf("failed to read config from Register test: %v", err)
+		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
 	}
 
-	return cfg
+	ctx := config.WrapContext(context.Background(), cfg)
+
+	return ctx
 }

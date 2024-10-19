@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
@@ -9,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func SetupAuth(ctx context.Context, delLayer handlers.AuthImplementationInterface, router *mux.Router) {
+func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 
@@ -19,7 +18,7 @@ func SetupAuth(ctx context.Context, delLayer handlers.AuthImplementationInterfac
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupMovie(ctx context.Context, delLayer handlers.MovieImplementationInterface, router *mux.Router) {
+func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 
@@ -27,6 +26,7 @@ func SetupMovie(ctx context.Context, delLayer handlers.MovieImplementationInterf
 }
 
 func ActivateMiddlewares(mx *mux.Router) {
-	mx.Use(middleware.CorsMiddleware)
+	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.PanicMiddleware)
+	mx.Use(middleware.CorsMiddleware)
 }

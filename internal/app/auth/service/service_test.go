@@ -13,20 +13,13 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/golang/mock/gomock"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestService_Register(t *testing.T) {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	cfg, err := config.New(false, nil)
-	if err != nil {
-		t.Fatalf("failed to read config from Register test: %v", err)
-	}
-	ctx := config.WrapContext(context.Background(), cfg)
+	ctx := testContext()
 
 	tests := []struct {
 		name string
@@ -129,14 +122,14 @@ func TestService_Register(t *testing.T) {
 			},
 			mockCookieErr: errVals.NewErrorObj(
 				errVals.ErrCreateUserCode,
-				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)},
+				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")},
 			),
 			expectedResponse: nil,
 			expectedError: &models.ErrorRespData{
 				StatusCode: 500,
 				Errors: []errVals.ErrorObj{*errVals.NewErrorObj(
 					errVals.ErrCreateUserCode,
-					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)},
+					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")},
 				)},
 			},
 			statusCode: 500,
@@ -299,16 +292,7 @@ func TestService_Login(t *testing.T) {
 		loginData *models.LoginData
 	}
 
-	err := os.Chdir("../../../..")
-	if err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	cfg, err := config.New(false, nil)
-	if err != nil {
-		t.Fatalf("failed to read config from Register test: %v", err)
-	}
-	ctx := config.WrapContext(context.Background(), cfg)
+	ctx := testContext()
 
 	tests := []struct {
 		name                  string
@@ -380,11 +364,11 @@ func TestService_Login(t *testing.T) {
 				Username: "test",
 			},
 			mockUserErr:           nil,
-			mockDestroySessionErr: errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: err}),
+			mockDestroySessionErr: errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some err")}),
 			expectedResponse:      nil,
 			expectedError: &models.ErrorRespData{
 				StatusCode: 500,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: err})},
+				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some err")})},
 			},
 			statusCode:            500,
 			withCookieDestruction: true,
@@ -408,13 +392,13 @@ func TestService_Login(t *testing.T) {
 			mockUserErr: nil,
 			mockSetCookieErr: errVals.NewErrorObj(
 				errVals.ErrCreateUserCode,
-				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)}),
+				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")}),
 			expectedResponse: nil,
 			expectedError: &models.ErrorRespData{
 				StatusCode: 500,
 				Errors: []errVals.ErrorObj{*errVals.NewErrorObj(
 					errVals.ErrCreateUserCode,
-					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)})},
+					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")})},
 			},
 			statusCode:            500,
 			withCookieDestruction: true,
@@ -502,16 +486,7 @@ func TestService_Logout(t *testing.T) {
 		cookie string
 	}
 
-	err := os.Chdir("../../../..")
-	if err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	cfg, err := config.New(false, nil)
-	if err != nil {
-		t.Fatalf("failed to read config from Register test: %v", err)
-	}
-	ctx := config.WrapContext(context.Background(), cfg)
+	ctx := testContext()
 
 	tests := []struct {
 		name                  string
@@ -568,4 +543,18 @@ func TestService_Logout(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testContext() context.Context {
+	err := os.Chdir("../../../..")
+	if err != nil {
+		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
+	}
+
+	cfg, err := config.New(zerolog.Logger{}, false, nil)
+	if err != nil {
+		log.Fatal().Msg(fmt.Sprintf("failed to read config from Register test: %v", err))
+	}
+
+	return config.WrapContext(context.Background(), cfg)
 }
