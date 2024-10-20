@@ -18,11 +18,11 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*models.Sessi
 
 	user, sesErr, code := s.authRepository.UserById(ctx, userId)
 	if sesErr != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *sesErr
+		errs := make([]errVals.ErrorObj, 1)
+		errs[0] = *sesErr
 
 		return nil, &models.ErrorRespData{
-			Errors:     errors,
+			Errors:     errs,
 			StatusCode: code,
 		}
 	}
