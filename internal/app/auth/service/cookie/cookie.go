@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {
+func GenerateToken(ctx context.Context, userID int) (*models.Token, error) {
 	tokenID, err := generateRandomString(32)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate cookie token: %w", err)
@@ -19,7 +19,7 @@ func GenerateToken(ctx context.Context, userID int) (*authModels.Token, error) {
 
 	expiry := time.Now().Add(config.FromContext(ctx).Databases.Redis.Cookie.MaxAge)
 
-	return &authModels.Token{
+	return &models.Token{
 		UserID:  userID,
 		TokenID: tokenID,
 		Expiry:  expiry,
