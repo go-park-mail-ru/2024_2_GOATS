@@ -26,16 +26,20 @@ func TestAppIntegration(t *testing.T) {
 		Started:          true,
 	})
 
+	if err != nil {
+		t.Fatalf("failed to generate container: %v", err)
+	}
+
 	port, err := postgresC.MappedPort(ctx, "5432")
 	if err != nil {
 		t.Fatalf("failed to get mapped port: %v", err)
 	}
 
-	if err != nil {
-		t.Fatalf("failed to start container: %v", err)
-	}
-
-	defer postgresC.Terminate(ctx)
+	defer func() {
+		if err := postgresC.Terminate(ctx); err != nil {
+			t.Fatalf("cannot destroy test container: %v", err)
+		}
+	}()
 
 	err = os.Chdir("../..")
 	if err != nil {
@@ -60,6 +64,9 @@ func TestAppIntegration(t *testing.T) {
 		t.Fatalf("failed to ping database: %v", err)
 	}
 
-	app.GracefulShutdown()
+	if err := app.GracefulShutdown(); err != nil {
+		t.Fatalf("failed to perform gracefulShutdown: %v", err)
+	}
+
 	<-done
 }

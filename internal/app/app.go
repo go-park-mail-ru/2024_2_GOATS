@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -93,11 +94,15 @@ func (a *App) Run() {
 	a.logger.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
 
 	// Not ready yet
-	defer a.GracefulShutdown()
+	defer func() {
+		if err := a.GracefulShutdown(); err != nil {
+			log.Fatalf("failed to graceful shutdown: %v", err)
+		}
+	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		a.logger.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
+	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("server stopped: %v", err)
 	}
 }
 

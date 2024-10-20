@@ -4,10 +4,10 @@ import (
 	"context"
 )
 
-type ConfigContextKey struct{}
+type ContextConfigKey struct{}
 
 func WrapContext(ctx context.Context, cfg *Config) context.Context {
-	return context.WithValue(ctx, ConfigContextKey{}, cfg)
+	return context.WithValue(ctx, ContextConfigKey{}, cfg)
 }
 
 func WrapRedisContext(ctx context.Context, cfg *Redis) context.Context {
@@ -15,7 +15,7 @@ func WrapRedisContext(ctx context.Context, cfg *Redis) context.Context {
 }
 
 func FromContext(ctx context.Context) *Config {
-	value, ok := ctx.Value(ConfigContextKey{}).(*Config)
+	value, ok := ctx.Value(ContextConfigKey{}).(*Config)
 
 	if !ok {
 		return nil
