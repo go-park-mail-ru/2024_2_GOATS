@@ -68,4 +68,5 @@ type User struct {
 	Username  string `json:"username"`
 	Birthdate string `json:"birthdate"`
 	Sex       string `json:"sex"`
+	AvatarUrl string `json:"avatar_url"`
 }

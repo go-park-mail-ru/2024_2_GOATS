@@ -107,9 +107,9 @@ func UpdatePassword(ctx context.Context, userId int, pass string, db *sql.DB) er
 func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error {
 	logger := log.Ctx(ctx)
 
-	sqlStatement := "UPDATE users SET email = $1, username = $2, sex = $3, avatar_url = $4 WHERE id = $5"
+	sqlStatement := "UPDATE users SET email = $1, username = $2, sex = $3, birthdate = $4, avatar_url = $5 WHERE id = $6"
 
-	_, err := db.ExecContext(ctx, sqlStatement, usrData.Email, usrData.Username, usrData.Sex, usrData.AvatarUrl, usrData.Id)
+	_, err := db.ExecContext(ctx, sqlStatement, usrData.Email, usrData.Username, usrData.Sex, usrData.Birthdate, usrData.AvatarUrl, usrData.Id)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)

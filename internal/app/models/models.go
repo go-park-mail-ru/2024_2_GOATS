@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -48,27 +49,27 @@ type User struct {
 	Email     string
 	Username  string
 	Password  string
-	Birthdate string
+	Birthdate sql.NullTime
 	AvatarUrl string
-	Sex       string
+	Sex       sql.NullString
 }
 
 type Collection struct {
-	Id     int
-	Title  string
-	Movies []*Movie
+	Id     int      `json:"id"`
+	Title  string   `json:"title"`
+	Movies []*Movie `json:"movies"`
 }
 
 type Movie struct {
-	Id          int
-	Title       string
-	Description string
-	CardUrl     string
-	AlbumUrl    string
-	Rating      float32
-	ReleaseDate time.Time
-	MovieType   string
-	Country     string
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CardUrl     string    `json:"card_url"`
+	AlbumUrl    string    `json:"album_url"`
+	Rating      float32   `json:"rating"`
+	ReleaseDate time.Time `json:"release_date"`
+	MovieType   string    `json:"movie_type"`
+	Country     string    `json:"country"`
 }
 
 type CookieData struct {
