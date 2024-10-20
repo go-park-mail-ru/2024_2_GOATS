@@ -22,7 +22,7 @@ func NewMovieHandler(api *delivery.Implementation, cfg *config.Config) *MovieHan
 func (m *MovieHandler) GetCollections(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := config.WrapContext(r.Context(), m.Config)
-		collectionsResp, errResp := m.ApiLayer.GetCollection(ctx, r.URL.Query())
+		collectionsResp, errResp := m.ApiLayer.GetCollection(ctx)
 		if errResp != nil {
 			Response(w, errResp.StatusCode, errResp)
 			return

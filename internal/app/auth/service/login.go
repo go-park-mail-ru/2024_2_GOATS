@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
@@ -16,13 +15,13 @@ func (s *AuthService) Login(ctx context.Context, loginData *authModels.LoginData
 	usr, err, code := s.authRepository.UserByEmail(ctx, loginData)
 
 	if err != nil {
-		errors := make([]errors.ErrorObj, 1)
-		errors[0] = *err
+		errs := make([]errVals.ErrorObj, 1)
+		errs[0] = *err
 
 		return nil, &models.ErrorResponse{
 			Success:    false,
 			StatusCode: code,
-			Errors:     errors,
+			Errors:     errs,
 		}
 	}
 

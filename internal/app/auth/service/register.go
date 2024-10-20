@@ -13,32 +13,31 @@ import (
 
 func (s *AuthService) Register(ctx context.Context, registerData *authModels.RegisterData) (*authModels.AuthResponse, *models.ErrorResponse) {
 	success := true
-	errors := make([]errVals.ErrorObj, 0)
+	errs := make([]errVals.ErrorObj, 0)
 
 	if err := validation.ValidatePassword(registerData.Password, registerData.PasswordConfirmation); err != nil {
-		success = addError(errVals.ErrInvalidPasswordCode, *err, &errors)
+		success = addError(errVals.ErrInvalidPasswordCode, *err, &errs)
 	}
 
 	if err := validation.ValidateEmail(registerData.Email); err != nil {
-		success = addError(errVals.ErrInvalidEmailCode, *err, &errors)
+		success = addError(errVals.ErrInvalidEmailCode, *err, &errs)
 	}
 
-	if len(errors) > 0 {
+	if len(errs) > 0 {
 		return nil, &models.ErrorResponse{
 			Success:    success,
-			Errors:     errors,
+			Errors:     errs,
 			StatusCode: http.StatusUnprocessableEntity,
 		}
 	}
 
 	usr, err, code := s.authRepository.CreateUser(ctx, registerData)
 	if err != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *err
+		errs[0] = *err
 
 		return nil, &models.ErrorResponse{
 			Success:    false,
-			Errors:     errors,
+			Errors:     errs,
 			StatusCode: code,
 		}
 	}
@@ -68,13 +67,13 @@ func (s *AuthService) Register(ctx context.Context, registerData *authModels.Reg
 	}, nil
 }
 
-func addError(code string, err errVals.CustomError, errors *[]errVals.ErrorObj) bool {
+func addError(code string, err errVals.CustomError, errs *[]errVals.ErrorObj) bool {
 	errStruct := errVals.ErrorObj{
 		Code:  code,
 		Error: err,
 	}
 
-	*errors = append(*errors, errStruct)
+	*errs = append(*errs, errStruct)
 
 	return false
 }
