@@ -36,22 +36,6 @@ func (m *MockAuthRepositoryInterface) EXPECT() *MockAuthRepositoryInterfaceMockR
 	return m.recorder
 }
 
-// CreateUser mocks base method.
-func (m *MockAuthRepositoryInterface) CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", ctx, registerData)
-	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// CreateUser indicates an expected call of CreateUser.
-func (mr *MockAuthRepositoryInterfaceMockRecorder) CreateUser(ctx, registerData interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).CreateUser), ctx, registerData)
-}
-
 // DestroySession mocks base method.
 func (m *MockAuthRepositoryInterface) DestroySession(ctx context.Context, cookie string) (*errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
@@ -97,36 +81,4 @@ func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *mode
 func (mr *MockAuthRepositoryInterfaceMockRecorder) SetCookie(ctx, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCookie", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).SetCookie), ctx, token)
-}
-
-// UserByEmail mocks base method.
-func (m *MockAuthRepositoryInterface) UserByEmail(ctx context.Context, email string) (*models.User, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserByEmail", ctx, email)
-	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// UserByEmail indicates an expected call of UserByEmail.
-func (mr *MockAuthRepositoryInterfaceMockRecorder) UserByEmail(ctx, email interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserByEmail", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).UserByEmail), ctx, email)
-}
-
-// UserById mocks base method.
-func (m *MockAuthRepositoryInterface) UserById(ctx context.Context, userId string) (*models.User, *errors.ErrorObj, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserById", ctx, userId)
-	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// UserById indicates an expected call of UserById.
-func (mr *MockAuthRepositoryInterfaceMockRecorder) UserById(ctx, userId interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserById", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).UserById), ctx, userId)
 }

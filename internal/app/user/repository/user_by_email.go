@@ -6,13 +6,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository/user"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/user"
 )
 
-func (r *Repo) UserById(ctx context.Context, userId string) (*models.User, *errVals.ErrorObj, int) {
-	usr, err := user.FindById(ctx, userId, r.Database)
+func (u *UserRepo) UserByEmail(ctx context.Context, email string) (*models.User, *errVals.ErrorObj, int) {
+	usr, err := user.FindByEmail(ctx, email, u.Database)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound

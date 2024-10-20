@@ -10,7 +10,7 @@ import (
 )
 
 func (s *AuthService) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *models.ErrorRespData) {
-	usr, err, code := s.authRepository.CreateUser(ctx, registerData)
+	usr, err, code := s.userRepository.CreateUser(ctx, registerData)
 	if err != nil {
 		errors := make([]errVals.ErrorObj, 1)
 		errors[0] = *err

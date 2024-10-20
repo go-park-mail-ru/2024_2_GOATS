@@ -68,7 +68,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 
 			path := "/api/movie/movie_collections"
 			srv := srvMock.NewMockMovieServiceInterface(ctrl)
-			handler := NewMovieHandler(srv, testContext())
+			handler := NewMovieHandler(testContext(), srv)
 
 			srv.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr)
 

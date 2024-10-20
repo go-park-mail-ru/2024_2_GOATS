@@ -29,6 +29,10 @@ type AuthRespData struct {
 	StatusCode int
 }
 
+type UpdateUserRespData struct {
+	StatusCode int
+}
+
 type CollectionsRespData struct {
 	Collections []Collection
 	StatusCode  int
@@ -40,10 +44,13 @@ type ErrorRespData struct {
 }
 
 type User struct {
-	Id       int
-	Email    string
-	Username string
-	Password string
+	Id        int
+	Email     string
+	Username  string
+	Password  string
+	Birthdate string
+	AvatarUrl string
+	Sex       string
 }
 
 type Collection struct {
@@ -73,4 +80,11 @@ type Token struct {
 	UserID  int
 	TokenID string
 	Expiry  time.Time
+}
+
+type PasswordData struct {
+	UserId               int
+	OldPassword          string
+	Password             string
+	PasswordConfirmation string
 }

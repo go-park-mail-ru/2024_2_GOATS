@@ -11,9 +11,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/validation"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	userDel "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
 	"github.com/rs/zerolog"
 )
 
@@ -21,16 +22,18 @@ var _ handlers.AuthImplementationInterface = (*AuthHandler)(nil)
 
 type AuthHandler struct {
 	authService AuthServiceInterface
+	userService userDel.UserServiceInterface
 	redisCfg    *config.Redis
 	logger      *zerolog.Logger
 }
 
-func NewAuthHandler(authSrv AuthServiceInterface, ctx context.Context) *AuthHandler {
+func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) *AuthHandler {
 	redisCfg := config.FromContext(ctx).Databases.Redis
 	logger := config.FromContext(ctx).Logger
 
 	return &AuthHandler{
 		authService: authSrv,
+		userService: usrSrv,
 		redisCfg:    &redisCfg,
 		logger:      &logger,
 	}
@@ -41,7 +44,7 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if errors.Is(err, http.ErrNoCookie) {
 		errMsg := fmt.Errorf("Logout action: No cookie err - %w", err)
 		a.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusForbidden, preparedDefaultError(errVals.ErrNoCookieCode, errMsg))
+		api.Response(w, http.StatusForbidden, api.PreparedDefaultError(errVals.ErrNoCookieCode, errMsg))
 
 		return
 	}
@@ -50,7 +53,7 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if validErr != nil {
 		errMsg := fmt.Errorf("Logout action: Invalid cookie err - %w", validErr.Err)
 		a.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusBadRequest, preparedDefaultError("cookie_validation_error", errMsg))
+		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("cookie_validation_error", errMsg))
 
 		return
 	}
@@ -148,7 +151,7 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	if errors.Is(err, http.ErrNoCookie) {
 		errMsg := fmt.Errorf("Session action: No cookie err - %w", err)
 		a.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusForbidden, preparedDefaultError(errVals.ErrNoCookieCode, errMsg))
+		api.Response(w, http.StatusForbidden, api.PreparedDefaultError(errVals.ErrNoCookieCode, errMsg))
 
 		return
 	}
@@ -184,16 +187,6 @@ func preparedExpiredCookie() *http.Cookie {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
-	}
-}
-
-func preparedDefaultError(code string, err error) *api.ErrorResponse {
-	return &api.ErrorResponse{
-		StatusCode: http.StatusForbidden,
-		Errors: []errVals.ErrorObj{{
-			Code:  code,
-			Error: errVals.CustomError{Err: err},
-		}},
 	}
 }
 

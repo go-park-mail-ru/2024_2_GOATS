@@ -12,6 +12,22 @@ type RegisterRequest struct {
 	PasswordConfirmation string `json:"passwordConfirmation"`
 }
 
+type UpdateProfileRequest struct {
+	UserId    int    `json:"user_id"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	Birthdate string `json:"birthdate"`
+	Avatar    string `json:"avatar"`
+	Sex       string `json:"sex"`
+}
+
+type UpdatePasswordRequest struct {
+	UserId               int    `json:"user_id"`
+	OldPassword          string `json:"oldPassword"`
+	Password             string `json:"password"`
+	PasswordConfirmation string `json:"passwordConfirmation"`
+}
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -20,6 +36,11 @@ type LoginRequest struct {
 type SessionResponse struct {
 	Success    bool `json:"success"`
 	UserData   User `json:"user_data"`
+	StatusCode int  `json:"-"`
+}
+
+type UpdateUserResponse struct {
+	Success    bool `json:"success"`
 	StatusCode int  `json:"-"`
 }
 
@@ -42,7 +63,9 @@ type ErrorResponse struct {
 }
 
 type User struct {
-	Id       int    `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
+	Id        int    `json:"id"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	Birthdate string `json:"birthdate"`
+	Sex       string `json:"sex"`
 }

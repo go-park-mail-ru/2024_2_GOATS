@@ -18,7 +18,7 @@ type MovieHandler struct {
 	logger       *zerolog.Logger
 }
 
-func NewMovieHandler(srv MovieServiceInterface, ctx context.Context) *MovieHandler {
+func NewMovieHandler(ctx context.Context, srv MovieServiceInterface) *MovieHandler {
 	return &MovieHandler{
 		movieService: srv,
 		logger:       &config.FromContext(ctx).Logger,
