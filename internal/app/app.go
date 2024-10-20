@@ -96,13 +96,13 @@ func (a *App) Run() {
 	// Not ready yet
 	defer func() {
 		if err := a.GracefulShutdown(); err != nil {
-			log.Fatalf("failed to graceful shutdown: %v", err)
+			a.logger.Fatal().Msg(fmt.Sprintf("failed to graceful shutdown: %v", err))
 		}
 	}()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("server stopped: %v", err)
+		a.logger.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
 	}
 }
 
