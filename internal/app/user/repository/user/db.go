@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
@@ -66,8 +68,8 @@ func FindById(ctx context.Context, userId int, db *sql.DB) (*models.User, error)
 	logger := log.Ctx(ctx)
 	err := db.QueryRowContext(
 		ctx,
-		"SELECT id, email, username, password_hash, sex, birthdate FROM USERS WHERE id = $1", userId,
-	).Scan(&usr.Id, &usr.Email, &usr.Username, &usr.Password, &usr.Sex, &usr.Birthdate)
+		"SELECT id, email, username, password_hash, sex, birthdate, avatar_url FROM USERS WHERE id = $1", userId,
+	).Scan(&usr.Id, &usr.Email, &usr.Username, &usr.Password, &usr.Sex, &usr.Birthdate, &usr.AvatarUrl)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
@@ -88,9 +90,9 @@ func UpdatePassword(ctx context.Context, userId int, pass string, db *sql.DB) er
 		return fmt.Errorf("error hashing password: %w", err)
 	}
 
-	sqlStatement := "UPDATE users SET password_hash = $1 WHERE id = $2"
+	sqlStatement := "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
 
-	_, err = db.ExecContext(ctx, sqlStatement, hashPass, userId)
+	_, err = db.ExecContext(ctx, sqlStatement, hashPass, time.Now(), userId)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)
@@ -107,18 +109,60 @@ func UpdatePassword(ctx context.Context, userId int, pass string, db *sql.DB) er
 func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error {
 	logger := log.Ctx(ctx)
 
-	sqlStatement := "UPDATE users SET email = $1, username = $2, sex = $3, birthdate = $4, avatar_url = $5 WHERE id = $6"
+	sqlStatement := "UPDATE users SET "
+	var sets []string
+	var args []interface{}
+	argCount := 1
 
-	_, err := db.ExecContext(ctx, sqlStatement, usrData.Email, usrData.Username, usrData.Sex, usrData.Birthdate, usrData.AvatarUrl, usrData.Id)
+	if usrData.Email != "" {
+		sets = append(sets, fmt.Sprintf("email = $%d", argCount))
+		args = append(args, usrData.Email)
+		argCount++
+	}
+	if usrData.Username != "" {
+		sets = append(sets, fmt.Sprintf("username = $%d", argCount))
+		args = append(args, usrData.Username)
+		argCount++
+	}
+	if usrData.Sex.String != "" {
+		sets = append(sets, fmt.Sprintf("sex = $%d", argCount))
+		args = append(args, usrData.Sex)
+		argCount++
+	}
+	if usrData.Birthdate.Valid {
+		sets = append(sets, fmt.Sprintf("birthdate = $%d", argCount))
+		args = append(args, usrData.Birthdate)
+		argCount++
+	}
+	if usrData.AvatarUrl != "" {
+		sets = append(sets, fmt.Sprintf("avatar_url = $%d", argCount))
+		args = append(args, usrData.AvatarUrl)
+		argCount++
+	}
 
-	if err != nil {
-		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)
+	if len(sets) == 0 {
+		errMsg := fmt.Errorf("no data to update")
 		logger.Error().Msg(errMsg.Error())
 
 		return errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: successfully update profile for user with id - %d", usrData.Id))
+	sets = append(sets, fmt.Sprintf("updated_at = $%d", argCount))
+	args = append(args, time.Now())
+	argCount++
+
+	sqlStatement += strings.Join(sets, ", ") + fmt.Sprintf(" WHERE id = $%d", argCount)
+	args = append(args, usrData.Id)
+
+	_, err := db.ExecContext(ctx, sqlStatement, args...)
+	if err != nil {
+		errMsg := fmt.Errorf("postgres: error while updating user profile - %w", err)
+		logger.Error().Msg(errMsg.Error())
+
+		return errMsg
+	}
+
+	logger.Info().Msg(fmt.Sprintf("postgres: successfully updated profile for user with id - %d", usrData.Id))
 
 	return nil
 }

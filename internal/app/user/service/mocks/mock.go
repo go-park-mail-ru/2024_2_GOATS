@@ -52,6 +52,21 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) CreateUser(ctx, registerData 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CreateUser), ctx, registerData)
 }
 
+// SaveAvatar mocks base method.
+func (m *MockUserRepositoryInterface) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errors.ErrorObj) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveAvatar", ctx, usrData)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(*errors.ErrorObj)
+	return ret0, ret1
+}
+
+// SaveAvatar indicates an expected call of SaveAvatar.
+func (mr *MockUserRepositoryInterfaceMockRecorder) SaveAvatar(ctx, usrData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAvatar", reflect.TypeOf((*MockUserRepositoryInterface)(nil).SaveAvatar), ctx, usrData)
+}
+
 // UpdatePassword mocks base method.
 func (m *MockUserRepositoryInterface) UpdatePassword(ctx context.Context, usrId int, pass string) (*errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
@@ -68,18 +83,18 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) UpdatePassword(ctx, usrId, pa
 }
 
 // UpdateProfileData mocks base method.
-func (m *MockUserRepositoryInterface) UpdateProfileData(ctx context.Context, profileData *models.User) (*errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) UpdateProfileData(ctx context.Context, usrData *models.User) (*errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfileData", ctx, profileData)
+	ret := m.ctrl.Call(m, "UpdateProfileData", ctx, usrData)
 	ret0, _ := ret[0].(*errors.ErrorObj)
 	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
 // UpdateProfileData indicates an expected call of UpdateProfileData.
-func (mr *MockUserRepositoryInterfaceMockRecorder) UpdateProfileData(ctx, profileData interface{}) *gomock.Call {
+func (mr *MockUserRepositoryInterfaceMockRecorder) UpdateProfileData(ctx, usrData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileData", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UpdateProfileData), ctx, profileData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileData", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UpdateProfileData), ctx, usrData)
 }
 
 // UserByEmail mocks base method.

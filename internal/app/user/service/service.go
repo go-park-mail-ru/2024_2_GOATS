@@ -15,8 +15,9 @@ type UserRepositoryInterface interface {
 	UserByEmail(ctx context.Context, email string) (*models.User, *errVals.ErrorObj, int)
 	CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errVals.ErrorObj, int)
 	UserById(ctx context.Context, userId int) (*models.User, *errVals.ErrorObj, int)
-	UpdateProfileData(ctx context.Context, profileData *models.User) (*errVals.ErrorObj, int)
+	UpdateProfileData(ctx context.Context, usrData *models.User) (*errVals.ErrorObj, int)
 	UpdatePassword(ctx context.Context, usrId int, pass string) (*errVals.ErrorObj, int)
+	SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj)
 }
 
 type UserService struct {

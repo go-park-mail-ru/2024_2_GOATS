@@ -51,12 +51,13 @@ func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 	}
 
 	return &models.User{
-		Id:        pr.UserId,
-		Email:     pr.Email,
-		Username:  pr.Username,
-		Birthdate: birthdate,
-		Sex:       StringToNullString(pr.Sex),
-		AvatarUrl: pr.Avatar,
+		Id:         pr.UserId,
+		Email:      pr.Email,
+		Username:   pr.Username,
+		Birthdate:  birthdate,
+		Sex:        StringToNullString(pr.Sex),
+		AvatarName: pr.AvatarName,
+		Avatar:     pr.Avatar,
 	}
 }
 

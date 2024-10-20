@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"mime/multipart"
 	"time"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -45,13 +46,15 @@ type ErrorRespData struct {
 }
 
 type User struct {
-	Id        int
-	Email     string
-	Username  string
-	Password  string
-	Birthdate sql.NullTime
-	AvatarUrl string
-	Sex       sql.NullString
+	Id         int
+	Email      string
+	Username   string
+	Password   string
+	Birthdate  sql.NullTime
+	AvatarUrl  string
+	AvatarName string
+	Avatar     multipart.File
+	Sex        sql.NullString
 }
 
 type Collection struct {

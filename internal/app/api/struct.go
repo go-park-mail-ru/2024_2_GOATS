@@ -1,6 +1,8 @@
 package api
 
 import (
+	"mime/multipart"
+
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
@@ -13,12 +15,13 @@ type RegisterRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	UserId    int    `json:"user_id"`
-	Email     string `json:"email"`
-	Username  string `json:"username"`
-	Birthdate string `json:"birthdate"`
-	Avatar    string `json:"avatar"`
-	Sex       string `json:"sex"`
+	UserId     int    `json:"user_id"`
+	Email      string `json:"email"`
+	Username   string `json:"username"`
+	Birthdate  string `json:"birthdate"`
+	Sex        string `json:"sex"`
+	Avatar     multipart.File
+	AvatarName string
 }
 
 type UpdatePasswordRequest struct {
