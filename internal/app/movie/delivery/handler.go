@@ -1,30 +1,32 @@
 package delivery
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
+	"github.com/rs/zerolog"
 )
 
 var _ handlers.MovieImplementationInterface = (*MovieHandler)(nil)
 
 type MovieHandler struct {
 	movieService MovieServiceInterface
-	cfg          *config.Config
+	logger       *zerolog.Logger
 }
 
-func NewMovieHandler(srv MovieServiceInterface, cfg *config.Config) *MovieHandler {
+func NewMovieHandler(srv MovieServiceInterface, ctx context.Context) *MovieHandler {
 	return &MovieHandler{
 		movieService: srv,
-		cfg:          cfg,
+		logger:       &config.FromContext(ctx).Logger,
 	}
 }
 
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
-	ctx := config.WrapContext(r.Context(), m.cfg)
+	ctx := m.logger.WithContext(r.Context())
 	collectionsServResp, errServResp := m.movieService.GetCollection(ctx)
 	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), converter.ToApiErrorResponse(errServResp)
 

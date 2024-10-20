@@ -12,7 +12,7 @@ var _ delivery.AuthServiceInterface = (*AuthService)(nil)
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type AuthRepositoryInterface interface {
-	UserByEmail(ctx context.Context, loginData *models.LoginData) (*models.User, *errVals.ErrorObj, int)
+	UserByEmail(ctx context.Context, email string) (*models.User, *errVals.ErrorObj, int)
 	CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errVals.ErrorObj, int)
 	UserById(ctx context.Context, userId string) (*models.User, *errVals.ErrorObj, int)
 	DestroySession(ctx context.Context, cookie string) (*errVals.ErrorObj, int)

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	"github.com/labstack/gommon/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -26,7 +26,7 @@ func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, err
 				return DB, nil
 			}
 
-			log.Errorf("Failed to connect to database. Error: %v. Retrying...", err)
+			log.Error().Msg(fmt.Sprintf("Failed to connect to database. Error: %v. Retrying...", err))
 			time.Sleep(5 * time.Second)
 		}
 	}
@@ -44,7 +44,10 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 
 	DB, err := sql.Open("postgres", connString)
 	if err != nil {
-		return nil, fmt.Errorf("error while opening DB: %w", err)
+		errMsg := fmt.Errorf("error while opening DB: %w", err)
+		log.Error().Msg(errMsg.Error())
+
+		return nil, errMsg
 	}
 
 	log.Printf("Database connection opened successfully")
@@ -52,7 +55,10 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 
 	err = DB.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("error while pinging DB: %w", err)
+		errMsg := fmt.Errorf("error while pinging DB: %w", err)
+		log.Error().Msg(errMsg.Error())
+
+		return nil, errMsg
 	}
 
 	log.Printf("Database pinged successfully")
@@ -71,14 +77,21 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 func migrate(db *sql.DB) error {
 	sqlFile, err := os.ReadFile(viper.GetString("SCHEMA_PATH"))
 	if err != nil {
-		return fmt.Errorf("error read sql script: %w", err)
+		errMsg := fmt.Errorf("migration: error read sql script - %w", err)
+		log.Error().Msg(errMsg.Error())
+
+		return errMsg
 	}
 
 	_, err = db.Exec(string(sqlFile))
 	if err != nil {
-		return fmt.Errorf("error while exec sqlFile: %w", err)
+		errMsg := fmt.Errorf("migration: error while exec sqlFile: %w", err)
+		log.Error().Msg(errMsg.Error())
+
+		return errMsg
 	}
 
+	log.Info().Msg("database successfully migrated")
 	return nil
 }
 
@@ -86,13 +99,20 @@ func seed(db *sql.DB) error {
 	seedsFile, err := os.ReadFile(viper.GetString("SEEDS_PATH"))
 
 	if err != nil {
-		return fmt.Errorf("error read sql script: %w", err)
+		errMsg := fmt.Errorf("seed: error read sql script - %w", err)
+		log.Error().Msg(errMsg.Error())
+
+		return errMsg
 	}
 
 	_, err = db.Exec(string(seedsFile))
 	if err != nil {
-		return fmt.Errorf("error while exec seedsFile: %w", err)
+		errMsg := fmt.Errorf("seed: error while exec seedsFile - %w", err)
+		log.Error().Msg(errMsg.Error())
+
+		return errMsg
 	}
 
+	log.Info().Msg("database successfully seeded")
 	return nil
 }

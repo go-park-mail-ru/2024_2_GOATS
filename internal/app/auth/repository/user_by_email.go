@@ -11,8 +11,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (r *Repo) UserByEmail(ctx context.Context, loginData *models.LoginData) (*models.User, *errVals.ErrorObj, int) {
-	usr, err := user.FindByEmail(ctx, loginData.Email, r.Database)
+func (r *Repo) UserByEmail(ctx context.Context, email string) (*models.User, *errVals.ErrorObj, int) {
+	usr, err := user.FindByEmail(ctx, email, r.Database)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

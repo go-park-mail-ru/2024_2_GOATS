@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/rs/zerolog/log"
 )
 
 func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
@@ -19,7 +20,10 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 			&movie.Id, &movie.Title, &movie.CardUrl, &movie.AlbumUrl, &movie.Rating, &movie.ReleaseDate, &movie.Country)
 
 		if err != nil {
-			return nil, fmt.Errorf("error while scanning movie collections: %w", err)
+			errMsg := fmt.Errorf("error while scanning movie collections: %w", err)
+			log.Err(errMsg)
+
+			return nil, errMsg
 		}
 
 		if _, exists := collections[collectionID]; !exists {

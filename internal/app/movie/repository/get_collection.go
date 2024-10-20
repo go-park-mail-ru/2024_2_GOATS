@@ -8,7 +8,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	movieCollection "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/movie_collection"
-	"github.com/labstack/gommon/log"
+	"github.com/rs/zerolog/log"
 )
 
 func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int) {
@@ -19,12 +19,11 @@ func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			log.Errorf("cannot close rows while taking collections: %v", err)
+			log.Ctx(ctx).Err(fmt.Errorf("cannot close rows while taking collections: %w", err))
 		}
 	}()
 
 	collections, err := movieCollection.ScanConnections(rows)
-	fmt.Println(collections)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}

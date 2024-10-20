@@ -4,10 +4,14 @@ import (
 	"net/http"
 )
 
+const serviceStoppedMsg = "Services is not started"
+
 func (a *App) AppReadyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !a.AcceptConnections {
-			http.Error(w, "Services is not started", http.StatusServiceUnavailable)
+			a.logger.Error().Msg(serviceStoppedMsg)
+			http.Error(w, serviceStoppedMsg, http.StatusServiceUnavailable)
+
 			return
 		}
 
