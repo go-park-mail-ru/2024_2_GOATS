@@ -14,7 +14,7 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 	for rows.Next() {
 		var collectionID int
 		var collectionTitle string
-		var movie models.Movie
+		var movie models.MovieBaseInfo
 
 		err := rows.Scan(&collectionID, &collectionTitle,
 			&movie.Id, &movie.Title, &movie.CardUrl, &movie.AlbumUrl, &movie.Rating, &movie.ReleaseDate, &movie.Country)
@@ -27,7 +27,7 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 		}
 
 		if _, exists := collections[collectionID]; !exists {
-			collections[collectionID] = models.Collection{Id: collectionID, Title: collectionTitle, Movies: []*models.Movie{}}
+			collections[collectionID] = models.Collection{Id: collectionID, Title: collectionTitle, Movies: []*models.MovieBaseInfo{}}
 		}
 
 		tempCollection := collections[collectionID]

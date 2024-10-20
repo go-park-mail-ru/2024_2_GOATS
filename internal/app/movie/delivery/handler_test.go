@@ -36,7 +36,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 					{
 						Id:    1,
 						Title: "Test collection",
-						Movies: []*models.Movie{
+						Movies: []*models.MovieBaseInfo{
 							{
 								Id:          1,
 								Title:       "test movie",

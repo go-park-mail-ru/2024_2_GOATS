@@ -25,14 +25,14 @@ func TestService_GetCollection(t *testing.T) {
 		{
 			name: "Success",
 			mockReturn: []models.Collection{
-				{Id: 1, Title: "Collection 1", Movies: []*models.Movie{}},
-				{Id: 2, Title: "Collection 2", Movies: []*models.Movie{}},
+				{Id: 1, Title: "Collection 1", Movies: []*models.MovieBaseInfo{}},
+				{Id: 2, Title: "Collection 2", Movies: []*models.MovieBaseInfo{}},
 			},
 			mockErr: nil,
 			expectedResponse: &models.CollectionsRespData{
 				Collections: []models.Collection{
-					{Id: 1, Title: "Collection 1", Movies: []*models.Movie{}},
-					{Id: 2, Title: "Collection 2", Movies: []*models.Movie{}},
+					{Id: 1, Title: "Collection 1", Movies: []*models.MovieBaseInfo{}},
+					{Id: 2, Title: "Collection 2", Movies: []*models.MovieBaseInfo{}},
 				},
 				StatusCode: http.StatusOK,
 			},

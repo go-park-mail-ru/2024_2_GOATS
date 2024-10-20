@@ -137,3 +137,20 @@ VALUES
   (25, 3),
   (26, 3),
   (27, 3);
+
+INSERT INTO public.actors (first_name, second_name, patronymic, biography)
+VALUES
+  ('Райан', 'Гослинг', '', 'Снимался в барби'),
+  ('Александр', 'Петров', 'Федорович', 'Лучший русский актер');
+
+INSERT INTO public.movie_actors (movie_id, actor_id)
+VALUES
+  (1, 1),
+  (1, 2),
+  (2, 1),
+  (3, 1),
+  (3, 2),
+  (4, 2),
+  (5, 2),
+  (6, 2),
+  (7, 2);

@@ -21,8 +21,10 @@ func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router
 func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
+	movieRouter := apiMux.PathPrefix("/movies").Subrouter()
 
 	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions)
 }
 
 func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {

@@ -7,6 +7,7 @@ import (
 //go:generate mockgen -source=interface.go -destination=mocks/mock.go
 type MovieImplementationInterface interface {
 	GetCollections(w http.ResponseWriter, r *http.Request)
+	GetMovie(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthImplementationInterface interface {

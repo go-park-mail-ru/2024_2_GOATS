@@ -58,12 +58,12 @@ type User struct {
 }
 
 type Collection struct {
-	Id     int      `json:"id"`
-	Title  string   `json:"title"`
-	Movies []*Movie `json:"movies"`
+	Id     int              `json:"id"`
+	Title  string           `json:"title"`
+	Movies []*MovieBaseInfo `json:"movies"`
 }
 
-type Movie struct {
+type MovieBaseInfo struct {
 	Id          int       `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
@@ -73,6 +73,20 @@ type Movie struct {
 	ReleaseDate time.Time `json:"release_date"`
 	MovieType   string    `json:"movie_type"`
 	Country     string    `json:"country"`
+	VideoUrl    string    `json:"video_url"`
+}
+
+type MovieFullData struct {
+	MovieBaseInfo *MovieBaseInfo `json:"movie_info"`
+	Actors        []*ActorInfo   `json:"actors_info"`
+}
+
+type ActorInfo struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic"`
+	PhotoUrl   string `json:"photo_url"`
 }
 
 type CookieData struct {

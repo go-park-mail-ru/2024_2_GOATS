@@ -51,3 +51,19 @@ func (mr *MockMovieRepositoryInterfaceMockRecorder) GetCollection(ctx interface{
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetCollection), ctx)
 }
+
+// GetMovie mocks base method.
+func (m *MockMovieRepositoryInterface) GetMovie(ctx context.Context, mvId int) (*models.MovieFullData, *errors.ErrorObj, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMovie", ctx, mvId)
+	ret0, _ := ret[0].(*models.MovieFullData)
+	ret1, _ := ret[1].(*errors.ErrorObj)
+	ret2, _ := ret[2].(int)
+	return ret0, ret1, ret2
+}
+
+// GetMovie indicates an expected call of GetMovie.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovie(ctx, mvId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovie", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovie), ctx, mvId)
+}
