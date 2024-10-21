@@ -9,10 +9,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func FindById(ctx context.Context, mvId int, db *sql.DB) (*models.MovieFullData, *sql.Rows, error) {
+func FindById(ctx context.Context, mvId int, db *sql.DB) (*models.MovieInfo, *sql.Rows, error) {
 	logger := log.Ctx(ctx)
-	mv := &models.MovieFullData{}
-	mvInfo := &models.MovieBaseInfo{}
+	mvInfo := &models.MovieInfo{}
 
 	mvSqlStatement := `
 		SELECT
@@ -52,7 +51,6 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*models.MovieFullData,
 		return nil, nil, errMsg
 	}
 
-	mv.MovieBaseInfo = mvInfo
 	logger.Info().Msg("postgres: successfully select movie info")
 
 	actorsSqlStatement := `
@@ -73,8 +71,8 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*models.MovieFullData,
 		errMsg := fmt.Errorf("postgres: error while selecting movie info: %w", err)
 		logger.Err(errMsg)
 
-		return mv, nil, errMsg
+		return mvInfo, nil, errMsg
 	}
 
-	return mv, rows, nil
+	return mvInfo, rows, nil
 }

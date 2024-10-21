@@ -2,6 +2,7 @@ package api
 
 import (
 	"mime/multipart"
+	"time"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -54,9 +55,70 @@ type AuthResponse struct {
 }
 
 type CollectionsResponse struct {
-	Success     bool                `json:"success"`
-	Collections []models.Collection `json:"collections"`
-	StatusCode  int                 `json:"-"`
+	Success     bool         `json:"success"`
+	Collections []Collection `json:"collections"`
+	StatusCode  int          `json:"-"`
+}
+
+type Collection struct {
+	Id     int                `json:"id"`
+	Title  string             `json:"title"`
+	Movies *[]CollectionMovie `json:"movies"`
+}
+
+type CollectionMovie struct {
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	CardUrl     string    `json:"card_url"`
+	AlbumUrl    string    `json:"album_url"`
+	Rating      float32   `json:"rating"`
+	ReleaseDate time.Time `json:"release_date"`
+	MovieType   string    `json:"movie_type"`
+	Country     string    `json:"country"`
+}
+
+type MovieResponse struct {
+	Success   bool       `json:"success"`
+	MovieInfo *MovieInfo `json:"movie_info"`
+}
+
+type MovieInfo struct {
+	Id          int               `json:"id"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	CardUrl     string            `json:"card_url"`
+	AlbumUrl    string            `json:"album_url"`
+	Rating      float32           `json:"rating"`
+	ReleaseDate time.Time         `json:"release_date"`
+	MovieType   string            `json:"movie_type"`
+	Country     string            `json:"country"`
+	VideoUrl    string            `json:"video_url"`
+	Actors      []*ActorShortInfo `json:"actors_info"`
+}
+
+type ActorResponse struct {
+	Success   bool   `json:"success"`
+	ActorInfo *Actor `json:"actor_info"`
+}
+
+type ActorShortInfo struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic"`
+	PhotoUrl   string `json:"photo_url"`
+	Country    string `json:"country"`
+}
+
+type Actor struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic"`
+	Biography  string `json:"biography"`
+	Birthdate  string `json:"birthdate"`
+	PhotoUrl   string `json:"photo_url"`
+	Country    string `json:"country"`
 }
 
 type ErrorResponse struct {

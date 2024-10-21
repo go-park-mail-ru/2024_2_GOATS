@@ -58,35 +58,34 @@ type User struct {
 }
 
 type Collection struct {
-	Id     int              `json:"id"`
-	Title  string           `json:"title"`
-	Movies []*MovieBaseInfo `json:"movies"`
+	Id     int          `json:"id"`
+	Title  string       `json:"title"`
+	Movies []*MovieInfo `json:"movies"`
 }
 
-type MovieBaseInfo struct {
-	Id          int       `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	CardUrl     string    `json:"card_url"`
-	AlbumUrl    string    `json:"album_url"`
-	Rating      float32   `json:"rating"`
-	ReleaseDate time.Time `json:"release_date"`
-	MovieType   string    `json:"movie_type"`
-	Country     string    `json:"country"`
-	VideoUrl    string    `json:"video_url"`
-}
-
-type MovieFullData struct {
-	MovieBaseInfo *MovieBaseInfo `json:"movie_info"`
-	Actors        []*ActorInfo   `json:"actors_info"`
+type MovieInfo struct {
+	Id          int          `json:"id"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	CardUrl     string       `json:"card_url"`
+	AlbumUrl    string       `json:"album_url"`
+	Rating      float32      `json:"rating"`
+	ReleaseDate time.Time    `json:"release_date"`
+	MovieType   string       `json:"movie_type"`
+	Country     string       `json:"country"`
+	VideoUrl    string       `json:"video_url"`
+	Actors      []*ActorInfo `json:"actors_info"`
 }
 
 type ActorInfo struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic"`
-	PhotoUrl   string `json:"photo_url"`
+	Id         int          `json:"id"`
+	Name       string       `json:"name"`
+	Surname    string       `json:"surname"`
+	Patronymic string       `json:"patronymic"`
+	Biography  string       `json:"biography"`
+	Birthdate  sql.NullTime `json:"birthdate"`
+	PhotoUrl   string       `json:"photo_url"`
+	Country    string       `json:"country"`
 }
 
 type CookieData struct {

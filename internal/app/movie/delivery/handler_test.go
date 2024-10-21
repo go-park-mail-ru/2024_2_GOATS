@@ -36,7 +36,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 					{
 						Id:    1,
 						Title: "Test collection",
-						Movies: []*models.MovieBaseInfo{
+						Movies: []*models.MovieInfo{
 							{
 								Id:          1,
 								Title:       "test movie",
@@ -47,7 +47,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"collections":[{"Id":1,"Title":"Test collection","Movies":[{"Id":1,"Title":"test movie","Description":"some interesting movie","CardUrl":"","AlbumUrl":"","Rating":0,"ReleaseDate":"0001-01-01T00:00:00Z","MovieType":"","Country":""}]}]}`,
+			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"","album_url":"","rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{

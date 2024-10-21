@@ -52,7 +52,8 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movieResp, errResp := m.movieService.GetMovie(ctx, mvId)
+	movieServResp, errServResp := m.movieService.GetMovie(ctx, mvId)
+	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), converter.ToApiErrorResponse(errServResp)
 
 	if errResp != nil {
 		api.Response(w, errResp.StatusCode, errResp)
@@ -60,4 +61,26 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.Response(w, http.StatusOK, movieResp)
+}
+
+func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
+	ctx := m.logger.WithContext(r.Context())
+	actorId, err := strconv.Atoi(mux.Vars(r)["actor_id"])
+	if err != nil {
+		errMsg := fmt.Errorf("GetActor action: Bad request - %w", err)
+		m.logger.Error().Msg(errMsg.Error())
+		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
+
+		return
+	}
+
+	actorServResp, errServResp := m.movieService.GetActor(ctx, actorId)
+	actorResp, errResp := converter.ToApiGetActorResponse(actorServResp), converter.ToApiErrorResponse(errServResp)
+
+	if errResp != nil {
+		api.Response(w, errResp.StatusCode, errResp)
+		return
+	}
+
+	api.Response(w, http.StatusOK, actorResp)
 }

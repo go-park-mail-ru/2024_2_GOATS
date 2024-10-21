@@ -283,7 +283,7 @@ func TestDelivery_Session(t *testing.T) {
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester"}}`,
+			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","birthdate":"","sex":"","avatar_url":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{

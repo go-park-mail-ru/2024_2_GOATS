@@ -7,8 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (s *MovieService) GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *models.ErrorRespData) {
-	mv, err, code := s.movieRepository.GetMovie(ctx, mvId)
+func (s *MovieService) GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *models.ErrorRespData) {
+	actor, err, code := s.movieRepository.GetActor(ctx, actorId)
 
 	if err != nil {
 		errs := make([]errVals.ErrorObj, 1)
@@ -20,5 +20,5 @@ func (s *MovieService) GetMovie(ctx context.Context, mvId int) (*models.MovieInf
 		}
 	}
 
-	return mv, nil
+	return actor, nil
 }

@@ -20,7 +20,7 @@ import (
 )
 
 func TestService_Register(t *testing.T) {
-	ctx := testContext()
+	ctx := testContext(true)
 
 	tests := []struct {
 		name string
@@ -295,7 +295,7 @@ func TestService_Login(t *testing.T) {
 		loginData *models.LoginData
 	}
 
-	ctx := testContext()
+	ctx := testContext(true)
 
 	tests := []struct {
 		name                  string
@@ -490,7 +490,7 @@ func TestService_Logout(t *testing.T) {
 		cookie string
 	}
 
-	ctx := testContext()
+	ctx := testContext(true)
 
 	tests := []struct {
 		name                  string
@@ -550,7 +550,7 @@ func TestService_Logout(t *testing.T) {
 	}
 }
 
-func testContext() context.Context {
+func testContext(isRedis bool) context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
@@ -561,5 +561,9 @@ func testContext() context.Context {
 		log.Fatal().Msg(fmt.Sprintf("failed to read config from Register test: %v", err))
 	}
 
-	return config.WrapContext(context.Background(), cfg)
+	if isRedis {
+		return config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
+	} else {
+		return config.WrapContext(context.Background(), cfg)
+	}
 }

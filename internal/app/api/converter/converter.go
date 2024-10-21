@@ -120,10 +120,98 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 		return nil
 	}
 
+	colls := []api.Collection{}
+	for _, coll := range cl.Collections {
+		tempCol := api.Collection{Id: coll.Id, Title: coll.Title, Movies: &[]api.CollectionMovie{}}
+		for _, movie := range coll.Movies {
+			tempMv := api.CollectionMovie{
+				Id:          movie.Id,
+				Title:       movie.Title,
+				CardUrl:     movie.CardUrl,
+				AlbumUrl:    movie.AlbumUrl,
+				Rating:      movie.Rating,
+				ReleaseDate: movie.ReleaseDate,
+				MovieType:   movie.MovieType,
+				Country:     movie.Country,
+			}
+
+			*tempCol.Movies = append(*tempCol.Movies, tempMv)
+		}
+
+		colls = append(colls, tempCol)
+	}
+
 	return &api.CollectionsResponse{
 		Success:     true,
-		Collections: cl.Collections,
+		Collections: colls,
 		StatusCode:  cl.StatusCode,
+	}
+}
+
+func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
+	if mv == nil {
+		return nil
+	}
+
+	mvInfo := &api.MovieInfo{
+		Id:          mv.Id,
+		Title:       mv.Title,
+		Description: mv.Description,
+		CardUrl:     mv.CardUrl,
+		AlbumUrl:    mv.AlbumUrl,
+		Rating:      mv.Rating,
+		ReleaseDate: mv.ReleaseDate,
+		MovieType:   mv.MovieType,
+		Country:     mv.Country,
+		VideoUrl:    mv.VideoUrl,
+	}
+
+	actors := []*api.ActorShortInfo{}
+	for _, actor := range mv.Actors {
+		tempAct := &api.ActorShortInfo{
+			Id:         actor.Id,
+			Name:       actor.Name,
+			Surname:    actor.Surname,
+			Patronymic: actor.Patronymic,
+			PhotoUrl:   actor.PhotoUrl,
+			Country:    actor.Country,
+		}
+
+		actors = append(actors, tempAct)
+	}
+
+	mvInfo.Actors = actors
+
+	return &api.MovieResponse{
+		Success:   true,
+		MovieInfo: mvInfo,
+	}
+}
+
+func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
+	if ac == nil {
+		return nil
+	}
+
+	actor := &api.Actor{
+		Id:         ac.Id,
+		Name:       ac.Name,
+		Surname:    ac.Surname,
+		Patronymic: ac.Patronymic,
+		Biography:  ac.Biography,
+		PhotoUrl:   ac.PhotoUrl,
+		Country:    ac.Country,
+	}
+
+	if ac.Birthdate.Valid {
+		actor.Birthdate = ac.Birthdate.Time.Format("2006-01-02")
+	} else {
+		actor.Birthdate = ""
+	}
+
+	return &api.ActorResponse{
+		Success:   true,
+		ActorInfo: actor,
 	}
 }
 
@@ -150,6 +238,7 @@ func StringToNullTime(s string) (sql.NullTime, error) {
 	if s == "" {
 		return sql.NullTime{Valid: false}, nil
 	}
+
 	t, err := time.Parse("2006-01-02", s)
 	if err != nil {
 		errMsg := fmt.Errorf("cannot parse given string to date: %w", err)
@@ -157,5 +246,6 @@ func StringToNullTime(s string) (sql.NullTime, error) {
 
 		return sql.NullTime{}, errMsg
 	}
+
 	return sql.NullTime{Time: t, Valid: true}, nil
 }
