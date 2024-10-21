@@ -86,6 +86,133 @@ func TestDelivery_GetCollection(t *testing.T) {
 	}
 }
 
+func TestDelivery_GetMovie(t *testing.T) {
+	tests := []struct {
+		name       string
+		mockReturn *models.MovieInfo
+		mockErr    *models.ErrorRespData
+		statusCode int
+		resp       string
+	}{
+		{
+			name: "Success",
+			mockReturn: &models.MovieInfo{
+				Id:          1,
+				Title:       "Test",
+				Description: "Test desc",
+				CardUrl:     "card_link",
+				AlbumUrl:    "album_link",
+				Rating:      7.8,
+				MovieType:   "film",
+				Country:     "Russia",
+				VideoUrl:    "video_link",
+			},
+			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","description":"Test desc","card_url":"card_link","album_url":"album_link","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film","country":"Russia","video_url":"video_link","actors_info":[]}}`,
+			statusCode: http.StatusOK,
+		},
+		{
+			name: "Service Error",
+			mockErr: &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
+			},
+			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			path := "/api/movies/1"
+			srv := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(testContext(), srv)
+
+			srv.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+
+			r := mux.NewRouter()
+			r.HandleFunc(path, handler.GetMovie)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", path, nil)
+
+			vars := map[string]string{
+				"movie_id": "1",
+			}
+
+			req = mux.SetURLVars(req, vars)
+
+			handler.GetMovie(w, req)
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
+			assert.JSONEq(t, test.resp, w.Body.String())
+		})
+	}
+}
+
+func TestDelivery_GetActor(t *testing.T) {
+	tests := []struct {
+		name       string
+		mockReturn *models.ActorInfo
+		mockErr    *models.ErrorRespData
+		statusCode int
+		resp       string
+	}{
+		{
+			name: "Success",
+			mockReturn: &models.ActorInfo{
+				Id:         1,
+				Name:       "Tester",
+				Surname:    "Testov",
+				Patronymic: "Testovich",
+			},
+			resp:       `{"success":true,"actor_info":{"id":1,"name":"Tester","surname":"Testov","patronymic":"Testovich","biography":"","birthdate":"","photo_url":"","country":""}}`,
+			statusCode: http.StatusOK,
+		},
+		{
+			name: "Service Error",
+			mockErr: &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
+			},
+			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			path := "/api/actors/1"
+			srv := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(testContext(), srv)
+
+			srv.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+
+			r := mux.NewRouter()
+			r.HandleFunc(path, handler.GetActor)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", path, nil)
+
+			vars := map[string]string{
+				"actor_id": "1",
+			}
+
+			req = mux.SetURLVars(req, vars)
+
+			handler.GetActor(w, req)
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
+			assert.JSONEq(t, test.resp, w.Body.String())
+		})
+	}
+}
+
 func testContext() context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
