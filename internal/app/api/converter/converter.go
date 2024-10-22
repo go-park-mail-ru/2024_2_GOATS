@@ -3,6 +3,7 @@ package converter
 import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	roomsModel "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 )
 
 func ToServLoginData(lg *api.LoginRequest) *models.LoginData {
@@ -71,6 +72,34 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 }
 
 func ToApiErrorResponse(e *models.ErrorRespData) *api.ErrorResponse {
+	if e == nil {
+		return nil
+	}
+
+	return &api.ErrorResponse{
+		Success:    false,
+		StatusCode: e.StatusCode,
+		Errors:     e.Errors,
+	}
+}
+
+func ToApiSessionResponseForRoom(sr *roomsModel.SessionRespData) *api.SessionResponse {
+	if sr == nil {
+		return nil
+	}
+
+	return &api.SessionResponse{
+		Success: true,
+		UserData: api.User{
+			Id:       sr.UserData.Id,
+			Email:    sr.UserData.Email,
+			Username: sr.UserData.Username,
+		},
+		StatusCode: sr.StatusCode,
+	}
+}
+
+func ToApiErrorResponseForRoom(e *roomsModel.ErrorRespData) *api.ErrorResponse {
 	if e == nil {
 		return nil
 	}

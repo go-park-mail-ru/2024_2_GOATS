@@ -4,6 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
+	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
+	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
+	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"log"
 	"net/http"
 	"time"
@@ -17,6 +21,7 @@ import (
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
@@ -34,6 +39,7 @@ type App struct {
 }
 
 func New(isTest bool, port *nat.Port) (*App, error) {
+
 	cfg, err := config.New(isTest, port)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
@@ -57,10 +63,18 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	srvMov := movieServ.NewService(repoMov)
 	delMov := movieApi.NewMovieHandler(srvMov, cfg)
 
+	repoRoom := roomRepo.NewRepository(database, rdb)
+	srvRoom := roomServ.NewService(repoRoom)
+	roomHub := ws.NewRoomHub()
+	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+
+	go roomHub.Run(ctx) // Запуск обработчика Hub'a
+
 	mx := mux.NewRouter()
 	router.ActivateMiddlewares(mx)
 	router.SetupAuth(ctx, delAuth, mx)
 	router.SetupMovie(ctx, delMov, mx)
+	router.SetupRoom(ctx, roomHub, delRoom, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),

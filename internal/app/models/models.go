@@ -47,21 +47,21 @@ type User struct {
 }
 
 type Collection struct {
-	Id     int
-	Title  string
-	Movies []*Movie
+	Id     int      `json:"id"`
+	Title  string   `json:"title"`
+	Movies []*Movie `json:"movies"`
 }
 
 type Movie struct {
-	Id          int
-	Title       string
-	Description string
-	CardUrl     string
-	AlbumUrl    string
-	Rating      float32
-	ReleaseDate time.Time
-	MovieType   string
-	Country     string
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CardUrl     string    `json:"card_url"`
+	AlbumUrl    string    `json:"album_url"`
+	Rating      float32   `json:"rating"`
+	ReleaseDate time.Time `json:"release_date"`
+	MovieType   string    `json:"movie_type"`
+	Country     string    `json:"country"`
 }
 
 type CookieData struct {

@@ -15,3 +15,8 @@ type AuthImplementationInterface interface {
 	Session(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
 }
+
+type RoomImplementationInterface interface {
+	CreateRoom(w http.ResponseWriter, r *http.Request)
+	JoinRoom(w http.ResponseWriter, r *http.Request)
+}

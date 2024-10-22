@@ -32,6 +32,8 @@ services:
       - "postgres_volume:/var/lib/postgresql/data"
     networks:
       - cassette-world
+    ports:
+      - '5432:5432'
   nginx:
     build: ./nginx
     volumes:

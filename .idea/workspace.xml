@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file:///opt/homebrew/opt/go/libexec" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="GitRewordedCommitMessages">
+    <option name="commitMessagesMapping">
+      <RewordedCommitMessageMapping>
+        <option name="originalMessage" value="Service Example (#1)" />
+        <option name="rewordedMessage" value="[GOATS-auth] add auth service" />
+      </RewordedCommitMessageMapping>
+    </option>
+    <option name="currentCommit" value="1" />
+    <option name="onto" value="37c145dea332f0241bedc85dd479da25bc165103" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2mLnJOfZLhnmTrjInvlP9biRXGr" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.go test 2024_2_GOATS.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.go test internal.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.go test service.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.login_test.go.executor&quot;: &quot;Coverage&quot;,
+    &quot;Makefile Target.generate.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;joint__viewing&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.goide.configuration.GoLibrariesConfigurableProvider&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/app/room/service" />
+      <recent name="$PROJECT_DIR$/internal/app/room/room_handler" />
+      <recent name="$PROJECT_DIR$/internal/app/room/repository" />
+      <recent name="$PROJECT_DIR$/internal/app/service" />
+      <recent name="$PROJECT_DIR$/dz0" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/app/room/ws" />
+      <recent name="$PROJECT_DIR$/internal/app/room/room_handler" />
+      <recent name="$PROJECT_DIR$/internal/app/room" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service">
+    <configuration name="TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestService_Login1\E$/^\Qerror\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestService_Login1\E$/^\Qok\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestService_Login\E$/^\Qlogin_success\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go test service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="DIRECTORY" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <directory value="$PROJECT_DIR$/internal/app/service" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+    <configuration name="login_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/internal/app/service/login_test.go" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+        <item itemvalue="Go Test.go test service" />
+        <item itemvalue="Go Test.login_test.go" />
+        <item itemvalue="Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+        <item itemvalue="Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-33c477a475b1-e0158606a674-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-241.17011.92" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-GO-241.17011.92" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="joint_viewing" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="[GOATS-auth] add auth service" />
+    <MESSAGE value="wathing with rooms is done" />
+    <option name="LAST_COMMIT_MESSAGE" value="wathing with rooms is done" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/internal/app/service/login.go</url>
+          <line>11</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_service.out" NAME="go test service Coverage Results" MODIFIED="1727869557386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$login_test_go.out" NAME="login_test.go Coverage Results" MODIFIED="1727858163729" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_internal.out" NAME="go test internal Coverage Results" MODIFIED="1727639649579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_2024_2_GOATS.out" NAME="go test 2024_2_GOATS Coverage Results" MODIFIED="1727639479629" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+</project>
