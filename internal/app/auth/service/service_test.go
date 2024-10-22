@@ -22,7 +22,7 @@ func TestService_Register(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(false, nil)
+	cfg, err := config.New(false)
 	if err != nil {
 		t.Fatalf("failed to read config from Register test: %v", err)
 	}
@@ -304,7 +304,7 @@ func TestService_Login(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(false, nil)
+	cfg, err := config.New(false)
 	if err != nil {
 		t.Fatalf("failed to read config from Register test: %v", err)
 	}
@@ -507,7 +507,7 @@ func TestService_Logout(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(false, nil)
+	cfg, err := config.New(false)
 	if err != nil {
 		t.Fatalf("failed to read config from Register test: %v", err)
 	}

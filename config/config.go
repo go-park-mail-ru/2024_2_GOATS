@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/spf13/viper"
 )
 
@@ -44,7 +43,7 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
-func New(isTest bool, port *nat.Port) (*Config, error) {
+func New(isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("config creation error: %w", err)
@@ -54,10 +53,6 @@ func New(isTest bool, port *nat.Port) (*Config, error) {
 	err = viper.Unmarshal(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal the config file: %w", err)
-	}
-
-	if isTest {
-		cfg.Databases.Postgres.Port = port.Int()
 	}
 
 	return cfg, nil

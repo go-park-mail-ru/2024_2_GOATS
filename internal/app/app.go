@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -34,8 +33,8 @@ type App struct {
 	AcceptConnections bool
 }
 
-func New(isTest bool, port *nat.Port) (*App, error) {
-	cfg, err := config.New(isTest, port)
+func New(isTest bool) (*App, error) {
+	cfg, err := config.New(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}

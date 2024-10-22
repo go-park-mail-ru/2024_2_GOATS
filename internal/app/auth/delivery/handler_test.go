@@ -332,7 +332,7 @@ func GetCfg() *config.Config {
 		log.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(false, nil)
+	cfg, err := config.New(false)
 	if err != nil {
 		log.Fatalf("failed to read config from Register test: %v", err)
 	}

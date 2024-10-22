@@ -12,7 +12,7 @@ import (
 func (s *AuthService) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *models.ErrorRespData) {
 	usr, err, code := s.authRepository.CreateUser(ctx, registerData)
 	if err != nil {
-		errs := make([]errVals.ErrorObj, 0)
+		errs := make([]errVals.ErrorObj, 1)
 		errs[0] = *err
 
 		return nil, &models.ErrorRespData{
