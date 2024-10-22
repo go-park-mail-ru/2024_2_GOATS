@@ -6,39 +6,71 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
+type LoginData struct {
+	Email    string
+	Password string
+	Cookie   string
+}
+
+type RegisterData struct {
+	Email                string
+	Username             string
+	Password             string
+	PasswordConfirmation string
+}
+
+type SessionRespData struct {
+	UserData   User
+	StatusCode int
+}
+
+type AuthRespData struct {
+	NewCookie  *CookieData
+	StatusCode int
+}
+
+type CollectionsRespData struct {
+	Collections []Collection
+	StatusCode  int
+}
+
+type ErrorRespData struct {
+	StatusCode int
+	Errors     []errVals.ErrorObj
+}
+
 type User struct {
-	Id       int    `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"-"`
+	Id       int
+	Email    string
+	Username string
+	Password string
 }
 
 type Collection struct {
-	Id     int      `json:"id"`
-	Title  string   `json:"title"`
-	Movies []*Movie `json:"movies"`
+	Id     int
+	Title  string
+	Movies []*Movie
 }
 
 type Movie struct {
-	Id          int       `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	CardUrl     string    `json:"card_image"`
-	AlbumUrl    string    `json:"album_image"`
-	Rating      float32   `json:"rating"`
-	ReleaseDate time.Time `json:"release_date"`
-	MovieType   string    `json:"movie_type"`
-	Country     string    `json:"country"`
+	Id          int
+	Title       string
+	Description string
+	CardUrl     string
+	AlbumUrl    string
+	Rating      float32
+	ReleaseDate time.Time
+	MovieType   string
+	Country     string
 }
 
-type CollectionsResponse struct {
-	Success     bool         `json:"success"`
-	Collections []Collection `json:"collections"`
-	StatusCode  int          `json:"-"`
+type CookieData struct {
+	Name  string
+	Token *Token
 }
 
-type ErrorResponse struct {
-	Success    bool               `json:"success"`
-	StatusCode int                `json:"-"`
-	Errors     []errVals.ErrorObj `json:"errors"`
+type Token struct {
+	UserID  int
+	TokenID string
+	Expiry  time.Time
 }

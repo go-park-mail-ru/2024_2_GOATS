@@ -34,3 +34,11 @@ func ValidateEmail(email string) *errors.CustomError {
 
 	return nil
 }
+
+func ValidateCookie(cookie string) *errors.CustomError {
+	if len(cookie) == 0 {
+		return &errVals.ErrBrokenCookieText
+	}
+
+	return nil
+}

@@ -33,8 +33,8 @@ type App struct {
 	AcceptConnections bool
 }
 
-func New() (*App, error) {
-	cfg, err := config.New()
+func New(isTest bool) (*App, error) {
+	cfg, err := config.New(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -51,16 +51,16 @@ func New() (*App, error) {
 
 	repoAuth := authRepo.NewRepository(database, rdb)
 	srvAuth := authServ.NewService(repoAuth)
-	delAuth := authApi.NewImplementation(ctx, srvAuth)
+	delAuth := authApi.NewAuthHandler(srvAuth, cfg)
 
 	repoMov := movieRepo.NewRepository(database, rdb)
 	srvMov := movieServ.NewService(repoMov)
-	delMov := movieApi.NewImplementation(ctx, srvMov)
+	delMov := movieApi.NewMovieHandler(srvMov, cfg)
 
 	mx := mux.NewRouter()
+	router.ActivateMiddlewares(mx)
 	router.SetupAuth(ctx, delAuth, mx)
 	router.SetupMovie(ctx, delMov, mx)
-	router.ActivateMiddlewares(mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
