@@ -3,6 +3,7 @@ package converter
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
@@ -154,33 +155,44 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 
 	mvInfo := &api.MovieInfo{
-		Id:          mv.Id,
-		Title:       mv.Title,
-		Description: mv.Description,
-		CardUrl:     mv.CardUrl,
-		AlbumUrl:    mv.AlbumUrl,
-		Rating:      mv.Rating,
-		ReleaseDate: mv.ReleaseDate,
-		MovieType:   mv.MovieType,
-		Country:     mv.Country,
-		VideoUrl:    mv.VideoUrl,
+		Id:               mv.Id,
+		Title:            mv.Title,
+		FullDescription:  mv.FullDescription,
+		ShortDescription: mv.ShortDescription,
+		CardUrl:          mv.CardUrl,
+		AlbumUrl:         mv.AlbumUrl,
+		TitleUrl:         mv.TitleUrl,
+		Rating:           mv.Rating,
+		ReleaseDate:      mv.ReleaseDate,
+		MovieType:        mv.MovieType,
+		Country:          mv.Country,
+		VideoUrl:         mv.VideoUrl,
 	}
 
-	actors := []*api.ActorShortInfo{}
-	for _, actor := range mv.Actors {
-		tempAct := &api.ActorShortInfo{
-			Id:         actor.Id,
-			Name:       actor.Name,
-			Surname:    actor.Surname,
-			Patronymic: actor.Patronymic,
-			PhotoUrl:   actor.PhotoUrl,
-			Country:    actor.Country,
+	actors := []*api.StaffShortInfo{}
+	directors := []*api.StaffShortInfo{}
+	staffs := mv.Actors
+	staffs = append(staffs, mv.Directors...)
+
+	for _, staff := range staffs {
+		tempSt := &api.StaffShortInfo{
+			Id:       staff.Id,
+			FullName: strings.TrimSpace(fmt.Sprintf("%s %s %s", staff.Name, staff.Surname, staff.Patronymic)),
+			PhotoUrl: staff.SmallPhotoUrl,
+			Country:  staff.Country,
 		}
 
-		actors = append(actors, tempAct)
+		if staff.Post == "actor" {
+			actors = append(actors, tempSt)
+		}
+
+		if staff.Post == "director" {
+			directors = append(directors, tempSt)
+		}
 	}
 
 	mvInfo.Actors = actors
+	mvInfo.Directors = directors
 
 	return &api.MovieResponse{
 		Success:   true,
@@ -188,19 +200,17 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 }
 
-func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
+func ToApiGetActorResponse(ac *models.StaffInfo) *api.ActorResponse {
 	if ac == nil {
 		return nil
 	}
 
 	actor := &api.Actor{
-		Id:         ac.Id,
-		Name:       ac.Name,
-		Surname:    ac.Surname,
-		Patronymic: ac.Patronymic,
-		Biography:  ac.Biography,
-		PhotoUrl:   ac.PhotoUrl,
-		Country:    ac.Country,
+		Id:        ac.Id,
+		FullName:  strings.TrimSpace(fmt.Sprintf("%s %s %s", ac.Name, ac.Surname, ac.Patronymic)),
+		Biography: ac.Biography,
+		PhotoUrl:  ac.BigPhotoUrl,
+		Country:   ac.Country,
 	}
 
 	if ac.Birthdate.Valid {

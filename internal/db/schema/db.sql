@@ -1,13 +1,14 @@
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS movies CASCADE;
-DROP TABLE IF EXISTS actors CASCADE;
-DROP TABLE IF EXISTS movie_actors CASCADE;
+DROP TABLE IF EXISTS movie_staff CASCADE;
+DROP TABLE IF EXISTS staff_members CASCADE;
 DROP TABLE IF EXISTS collections CASCADE;
 DROP TABLE IF EXISTS movie_collections CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS movie_genres CASCADE;
 DROP TABLE IF EXISTS countries CASCADE;
 DROP TYPE IF EXISTS movie_type_enum;
+DROP TYPE IF EXISTS movie_staff_type_enum;
 DROP TYPE IF EXISTS sex_enum;
 
 CREATE TABLE public.genres(
@@ -51,9 +52,11 @@ CREATE TYPE public.movie_type_enum AS ENUM ('film', 'serial');
 CREATE TABLE public.movies(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   title text NOT NULL,
-  description text NOT NULL,
+  short_description text NOT NULL,
+  long_description text NOT NULL,
   card_url text DEFAULT '',
   album_url text DEFAULT '',
+  title_url text DEFAULT '',
   release_date date NOT NULL,
   rating decimal(10,2) DEFAULT '0.0',
   movie_type MOVIE_TYPE_ENUM,
@@ -68,27 +71,31 @@ CREATE INDEX idx_movies_movie_type ON public.movies(movie_type);
 CREATE INDEX idx_movies_release_date ON public.movies(release_date);
 CREATE INDEX idx_movies_country_id ON public.movies(country_id);
 
-CREATE TABLE public.actors(
+CREATE TYPE public.movie_staff_type_enum AS ENUM ('actor', 'director');
+CREATE TABLE public.movie_staff(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   first_name text NOT NULL,
   second_name text NOT NULL,
   patronymic text,
   country_id int REFERENCES public.countries(id),
-  photo_url text DEFAULT '',
+  small_photo_url text DEFAULT '',
+  big_photo_url text DEFAULT '',
   birthdate date,
+  post movie_staff_type_enum,
   biography text DEFAULT ''
 );
 
-CREATE INDEX idx_actors_country_id ON public.actors(country_id);
+CREATE INDEX idx_movie_staff_country_id ON public.movie_staff(country_id);
+CREATE INDEX idx_movie_staff_post ON public.movie_staff(post);
 
-CREATE TABLE public.movie_actors(
+CREATE TABLE public.staff_members(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   movie_id int REFERENCES public.movies(id),
-  actor_id int REFERENCES public.actors(id)
+  movie_staff_id int REFERENCES public.movie_staff(id)
 );
 
-CREATE INDEX idx_movie_actors_movie_id ON public.movie_actors(movie_id);
-CREATE INDEX idx_movie_actors_actor_id ON public.movie_actors(actor_id);
+CREATE INDEX idx_staff_members_movie_id ON public.staff_members(movie_id);
+CREATE INDEX idx_staff_members_movie_staff_id ON public.staff_members(movie_staff_id);
 
 CREATE TABLE public.movie_genres(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Repo) GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errVals.ErrorObj, int) {
-	mv, rows, err := movie.FindById(ctx, mvId, r.Database)
+	rows, err := movie.FindById(ctx, mvId, r.Database)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
@@ -23,12 +23,10 @@ func (r *Repo) GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errV
 		}
 	}()
 
-	actorsInfo, err := movie.ScanConnections(rows)
+	movieInfo, err := movie.ScanConnections(rows)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	mv.Actors = actorsInfo
-
-	return mv, nil, http.StatusOK
+	return movieInfo, nil, http.StatusOK
 }

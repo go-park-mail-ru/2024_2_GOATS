@@ -38,9 +38,9 @@ func TestDelivery_GetCollection(t *testing.T) {
 						Title: "Test collection",
 						Movies: []*models.MovieInfo{
 							{
-								Id:          1,
-								Title:       "test movie",
-								Description: "some interesting movie",
+								Id:              1,
+								Title:           "test movie",
+								FullDescription: "some interesting movie",
 							},
 						},
 					},
@@ -97,17 +97,17 @@ func TestDelivery_GetMovie(t *testing.T) {
 		{
 			name: "Success",
 			mockReturn: &models.MovieInfo{
-				Id:          1,
-				Title:       "Test",
-				Description: "Test desc",
-				CardUrl:     "card_link",
-				AlbumUrl:    "album_link",
-				Rating:      7.8,
-				MovieType:   "film",
-				Country:     "Russia",
-				VideoUrl:    "video_link",
+				Id:              1,
+				Title:           "Test",
+				FullDescription: "Test desc",
+				CardUrl:         "card_link",
+				AlbumUrl:        "album_link",
+				Rating:          7.8,
+				MovieType:       "film",
+				Country:         "Russia",
+				VideoUrl:        "video_link",
 			},
-			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","description":"Test desc","card_url":"card_link","album_url":"album_link","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film","country":"Russia","video_url":"video_link","actors_info":[]}}`,
+			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film","country":"Russia","video_url":"video_link","actors_info":[], "directors_info":[]}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -155,20 +155,20 @@ func TestDelivery_GetMovie(t *testing.T) {
 func TestDelivery_GetActor(t *testing.T) {
 	tests := []struct {
 		name       string
-		mockReturn *models.ActorInfo
+		mockReturn *models.StaffInfo
 		mockErr    *models.ErrorRespData
 		statusCode int
 		resp       string
 	}{
 		{
 			name: "Success",
-			mockReturn: &models.ActorInfo{
+			mockReturn: &models.StaffInfo{
 				Id:         1,
 				Name:       "Tester",
 				Surname:    "Testov",
 				Patronymic: "Testovich",
 			},
-			resp:       `{"success":true,"actor_info":{"id":1,"name":"Tester","surname":"Testov","patronymic":"Testovich","biography":"","birthdate":"","photo_url":"","country":""}}`,
+			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov Testovich","biography":"","birthdate":"","photo_url":"","country":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{

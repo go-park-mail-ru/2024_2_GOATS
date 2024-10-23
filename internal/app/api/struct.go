@@ -83,17 +83,20 @@ type MovieResponse struct {
 }
 
 type MovieInfo struct {
-	Id          int               `json:"id"`
-	Title       string            `json:"title"`
-	Description string            `json:"description"`
-	CardUrl     string            `json:"card_url"`
-	AlbumUrl    string            `json:"album_url"`
-	Rating      float32           `json:"rating"`
-	ReleaseDate time.Time         `json:"release_date"`
-	MovieType   string            `json:"movie_type"`
-	Country     string            `json:"country"`
-	VideoUrl    string            `json:"video_url"`
-	Actors      []*ActorShortInfo `json:"actors_info"`
+	Id               int               `json:"id"`
+	Title            string            `json:"title"`
+	FullDescription  string            `json:"full_description"`
+	ShortDescription string            `json:"short_description"`
+	CardUrl          string            `json:"card_url"`
+	AlbumUrl         string            `json:"album_url"`
+	TitleUrl         string            `json:"title_url"`
+	Rating           float32           `json:"rating"`
+	ReleaseDate      time.Time         `json:"release_date"`
+	MovieType        string            `json:"movie_type"`
+	Country          string            `json:"country"`
+	VideoUrl         string            `json:"video_url"`
+	Actors           []*StaffShortInfo `json:"actors_info"`
+	Directors        []*StaffShortInfo `json:"directors_info"`
 }
 
 type ActorResponse struct {
@@ -101,24 +104,20 @@ type ActorResponse struct {
 	ActorInfo *Actor `json:"actor_info"`
 }
 
-type ActorShortInfo struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic"`
-	PhotoUrl   string `json:"photo_url"`
-	Country    string `json:"country"`
+type StaffShortInfo struct {
+	Id       int    `json:"id"`
+	FullName string `json:"full_name"`
+	PhotoUrl string `json:"photo_url"`
+	Country  string `json:"country"`
 }
 
 type Actor struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic"`
-	Biography  string `json:"biography"`
-	Birthdate  string `json:"birthdate"`
-	PhotoUrl   string `json:"photo_url"`
-	Country    string `json:"country"`
+	Id        int    `json:"id"`
+	FullName  string `json:"full_name"`
+	Biography string `json:"biography"`
+	Birthdate string `json:"birthdate"`
+	PhotoUrl  string `json:"photo_url"`
+	Country   string `json:"country"`
 }
 
 type ErrorResponse struct {

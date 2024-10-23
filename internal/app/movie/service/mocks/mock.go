@@ -37,10 +37,10 @@ func (m *MockMovieRepositoryInterface) EXPECT() *MockMovieRepositoryInterfaceMoc
 }
 
 // GetActor mocks base method.
-func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *errors.ErrorObj, int) {
+func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActor", ctx, actorId)
-	ret0, _ := ret[0].(*models.ActorInfo)
+	ret0, _ := ret[0].(*models.StaffInfo)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	ret2, _ := ret[2].(int)
 	return ret0, ret1, ret2
