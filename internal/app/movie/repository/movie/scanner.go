@@ -41,6 +41,12 @@ func ScanConnections(rows *sql.Rows) (*models.MovieInfo, error) {
 		actorsInfo = append(actorsInfo, &actorInfo)
 	}
 
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Err(fmt.Errorf("cannot close rows while taking movie info: %w", err))
+		}
+	}()
+
 	acInfo := []*models.StaffInfo{}
 	directorInfo := []*models.StaffInfo{}
 

@@ -48,14 +48,6 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 		return nil, errMsg
 	}
 
-	hasRows := rows.Next()
-	if !hasRows {
-		errMsg := fmt.Errorf("postgres: error while select movie info: %w", sql.ErrNoRows)
-		logger.Err(errMsg)
-
-		return nil, errMsg
-	}
-
 	logger.Info().Msg("postgres: successfully select movie info")
 
 	return rows, nil
