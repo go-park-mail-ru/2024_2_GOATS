@@ -18,7 +18,7 @@ func NewService(repo repository.RoomRepositoryInterface) *RoomService {
 	}
 }
 
-func (s *RoomService) CreateRoom(ctx context.Context, room *models.Room) (*models.Room, error) {
+func (s *RoomService) CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error) {
 	return s.roomRepository.CreateRoom(ctx, room)
 }
 
@@ -70,6 +70,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error) {
 	qwer, err := s.roomRepository.GetRoomState(ctx, roomID)
+	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", qwer)
 	qwer.Movie = models.Movie{
 		Id:         1,
 		Title:      "Сопрано",

@@ -25,6 +25,7 @@ type Movie struct {
 }
 
 type RoomState struct {
+	Id       string  `json:"id"`        // paused, playing
 	Status   string  `json:"status"`    // paused, playing
 	TimeCode float64 `json:"time_code"` // Текущий момент фильма
 	Movie    Movie   `json:"movie"`

@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository/user"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	"log"
 	"net/http"
 
 	"github.com/go-redis/redis/v8"
@@ -16,7 +17,7 @@ import (
 )
 
 type RoomRepositoryInterface interface {
-	CreateRoom(ctx context.Context, room *models.Room) (*models.Room, error)
+	CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error)
 	UpdateRoomState(ctx context.Context, roomID string, state *models.RoomState) error
 	GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error)
 	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int)
@@ -35,13 +36,14 @@ func NewRepository(db *sql.DB, rdb *redis.Client) RoomRepositoryInterface {
 	}
 }
 
-func (r *Repo) CreateRoom(ctx context.Context, room *models.Room) (*models.Room, error) {
-	room.ID = uuid.New().String() // Генерация уникального ID для комнаты
+func (r *Repo) CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error) {
+	room.Id = uuid.New().String() // Генерация уникального ID для комнаты
 	data, err := json.Marshal(room)
 	if err != nil {
 		return nil, err
 	}
-	err = r.Redis.Set(ctx, "room_state:"+room.ID, data, 0).Err() // Сохранение комнаты в Redis
+	log.Println("data", string(data))
+	err = r.Redis.Set(ctx, "room_state:"+room.Id, data, 0).Err() // Сохранение комнаты в Redis
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +66,11 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomSta
 		return nil, err
 	}
 
+	log.Println("GetRoomStatedatadatadatadatadatadata", data)
+
 	var state models.RoomState
 	err = json.Unmarshal([]byte(data), &state)
+	log.Println("statestatestatestatestatestatestatestatestate", state)
 	if err != nil {
 		return nil, err
 	}
