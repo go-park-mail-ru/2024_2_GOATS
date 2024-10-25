@@ -2,19 +2,30 @@ package service
 
 import (
 	"context"
+	"fmt"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	//model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	movie "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
 	"log"
 )
 
+//type MovieServiceInterface interface {
+//	GetCollection(ctx context.Context) (*model.CollectionsRespData, *models.ErrorRespData)
+//	GetMovie(ctx context.Context, mvId int) (*model.MovieInfo, *models.ErrorRespData)
+//	GetActor(ctx context.Context, actorId int) (*model.StaffInfo, *models.ErrorRespData)
+//}
+
 type RoomService struct {
 	roomRepository repository.RoomRepositoryInterface
+	movieService   movie.MovieServiceInterface
 }
 
-func NewService(repo repository.RoomRepositoryInterface) *RoomService {
+func NewService(repo repository.RoomRepositoryInterface, movieService movie.MovieServiceInterface) *RoomService {
 	return &RoomService{
 		roomRepository: repo,
+		movieService:   movieService,
 	}
 }
 
@@ -69,15 +80,20 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 //};
 
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error) {
-	qwer, err := s.roomRepository.GetRoomState(ctx, roomID)
-	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", qwer)
-	qwer.Movie = models.Movie{
-		Id:         1,
-		Title:      "Сопрано",
-		TitleImage: "https://i.pinimg.com/originals/93/c7/54/93c754126bcdecb6e540e02631f5eda1.png",
-		Video:      "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
+	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", roomState)
+
+	movie, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.Id)
+	if errMovie != nil {
+		return nil, fmt.Errorf("errMovie", errMovie)
 	}
-	return qwer, err
+	roomState.Movie = models.Movie{
+		Id:         movie.Id,
+		Title:      movie.Title,
+		TitleImage: movie.TitleUrl,
+		Video:      movie.VideoUrl,
+	}
+	return roomState, err
 }
 
 func (s *RoomService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
