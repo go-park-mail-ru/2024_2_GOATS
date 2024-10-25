@@ -74,13 +74,13 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	repoMov := movieRepo.NewRepository(database, rdb)
 	srvMov := movieServ.NewService(repoMov)
 	delMov := movieApi.NewMovieHandler(ctx, srvMov)
-	//srvMov.
+
 	repoRoom := roomRepo.NewRepository(database, rdb)
 	srvRoom := roomServ.NewService(repoRoom, srvMov)
 	roomHub := ws.NewRoomHub()
 	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
 
-	go roomHub.Run(ctx) // Запуск обработчика Hub'a
+	go roomHub.Run() // Запуск обработчика Hub'a
 
 	mx := mux.NewRouter()
 	router.ActivateMiddlewares(mx)

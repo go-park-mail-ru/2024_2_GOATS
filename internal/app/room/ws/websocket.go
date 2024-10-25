@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"context"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -39,21 +38,21 @@ func (h *RoomHub) HandleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	h.Register <- conn // регистрируем новое соединение
+	h.Register <- conn //регистрируем новое соединение
 
 	for {
 		var msg models.Action
 		err := conn.ReadJSON(&msg)
 		if err != nil {
-			h.Unregister <- conn // при ошибке — удаляем соединение
+			h.Unregister <- conn //при ошибке — удаляем соединение
 			break
 		}
-		h.Broadcast <- msg // отправляем сообщение через Broadcast
+		h.Broadcast <- msg //отправляем сообщение через Broadcast
 	}
 }
 
 // Run запускает RoomHub и обрабатывает регистрацию, отключение и рассылку сообщений
-func (h *RoomHub) Run(ctx context.Context) {
+func (h *RoomHub) Run() {
 	for {
 		select {
 		case conn := <-h.Register:

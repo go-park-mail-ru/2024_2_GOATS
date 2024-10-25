@@ -39,27 +39,6 @@ func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router
 	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
 }
 
-//// Настройка маршрутов для комнат и WebSocket
-//func SetupRoom(ctx context.Context, hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
-//	apiMux := router.PathPrefix("/api").Subrouter()
-//	roomRouter := apiMux.PathPrefix("/room").Subrouter()
-//	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
-//	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
-//
-//	// Добавляем обработку WebSocket по пути /ws
-//	router.HandleFunc("/ws", hub.HandleConnections).Methods(http.MethodGet)
-//
-//	//// Запуск сервера
-//	//go func() {
-//	//	log.Println("HTTP server started on :8000")
-//	//	err := http.ListenAndServe(":8000", router)
-//	//	if err != nil {
-//	//		log.Fatal("ListenAndServe: ", err)
-//	//	}
-//	//}()
-//
-//}
-
 func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()

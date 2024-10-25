@@ -29,15 +29,15 @@ type Movie struct {
 }
 
 type RoomState struct {
-	Id       string  `json:"id"`        // paused, playing
-	Status   string  `json:"status"`    // paused, playing
-	TimeCode float64 `json:"time_code"` // Текущий момент фильма
+	Id       string  `json:"id"`
+	Status   string  `json:"status"` // paused, playing
+	TimeCode float64 `json:"time_code"`
 	Movie    Movie   `json:"movie"`
 }
 
 type Action struct {
-	Name     string  `json:"name"`      // pause, play, rewind
-	TimeCode float64 `json:"time_code"` // Время, на которое надо перемотать
+	Name     string  `json:"name"` // pause, play, rewind
+	TimeCode float64 `json:"time_code"`
 }
 
 type User struct {

@@ -82,49 +82,6 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdRoom)
 }
 
-/////////
-//func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
-//	roomID := r.URL.Query().Get("room_id")
-//	if roomID == "" {
-//		http.Error(w, "Missing room_id", http.StatusBadRequest)
-//		return
-//	}
-//
-//	// Обновление соединения до WebSocket
-//	conn, err := upgrader.Upgrade(w, r, nil)
-//	log.Println("err", err)
-//	if err != nil {
-//		http.Error(w, "xFailed to upgrade to WebSocket", http.StatusInternalServerError)
-//		return
-//	}
-//	defer conn.Close()
-//
-//	// Получение текущего состояния комнаты
-//	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
-//	if err != nil {
-//		log.Println("Failed to get room state from Redis:", err)
-//	} else {
-//		// Отправка текущего состояния новому пользователю
-//		if err := conn.WriteJSON(roomState); err != nil {
-//			log.Println("Failed to send room state:", err)
-//			return
-//		}
-//	}
-//
-//	// Прослушивание сообщений от клиента
-//	for {
-//		var action models.Action
-//		if err := conn.ReadJSON(&action); err != nil {
-//			log.Println("Error reading action from WebSocket:", err)
-//			break
-//		}
-//		// Обработка действия и обновление состояния комнаты
-//		if err := h.roomService.HandleAction(r.Context(), roomID, action); err != nil {
-//			log.Println("Error handling action:", err)
-//		}
-//	}
-//}
-
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	roomID := r.URL.Query().Get("room_id")
 	if roomID == "" {
