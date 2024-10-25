@@ -143,6 +143,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	// Регистрация клиента в Hub
+	log.Println("11111111")
 	h.roomHub.Register <- conn
 	log.Println("2222222")
 

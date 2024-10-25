@@ -8,7 +8,6 @@ import (
 	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
 	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-	"log"
 	"net/http"
 	"os"
 	"time"

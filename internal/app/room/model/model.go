@@ -1,6 +1,10 @@
 package models
 
-import errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+import (
+	"database/sql"
+	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"mime/multipart"
+)
 
 type Room struct {
 	ID      string `json:"id"`
@@ -37,10 +41,15 @@ type Action struct {
 }
 
 type User struct {
-	Id       int
-	Email    string
-	Username string
-	Password string
+	Id         int
+	Email      string
+	Username   string
+	Password   string
+	Birthdate  sql.NullTime
+	AvatarUrl  string
+	AvatarName string
+	Avatar     multipart.File
+	Sex        sql.NullString
 }
 
 type SessionRespData struct {

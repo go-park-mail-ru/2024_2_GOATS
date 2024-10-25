@@ -6,6 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/model/model.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/model/model.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/repository/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
