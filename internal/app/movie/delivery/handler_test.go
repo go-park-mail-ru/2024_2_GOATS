@@ -2,8 +2,9 @@ package delivery
 
 import (
 	"bytes"
+	"context"
 	"errors"
-	"log"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,6 +16,8 @@ import (
 	srvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,18 +36,18 @@ func TestDelivery_GetCollection(t *testing.T) {
 					{
 						Id:    1,
 						Title: "Test collection",
-						Movies: []*models.Movie{
+						Movies: []*models.MovieInfo{
 							{
-								Id:          1,
-								Title:       "test movie",
-								Description: "some interesting movie",
+								Id:              1,
+								Title:           "test movie",
+								FullDescription: "some interesting movie",
 							},
 						},
 					},
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"collections":[{"Id":1,"Title":"Test collection","Movies":[{"Id":1,"Title":"test movie","Description":"some interesting movie","CardUrl":"","AlbumUrl":"","Rating":0,"ReleaseDate":"0001-01-01T00:00:00Z","MovieType":"","Country":""}]}]}`,
+			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"","album_url":"","rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -65,7 +68,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 
 			path := "/api/movie/movie_collections"
 			srv := srvMock.NewMockMovieServiceInterface(ctrl)
-			handler := NewMovieHandler(srv, GetCfg())
+			handler := NewMovieHandler(testContext(), srv)
 
 			srv.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr)
 
@@ -83,16 +86,145 @@ func TestDelivery_GetCollection(t *testing.T) {
 	}
 }
 
-func GetCfg() *config.Config {
+func TestDelivery_GetMovie(t *testing.T) {
+	tests := []struct {
+		name       string
+		mockReturn *models.MovieInfo
+		mockErr    *models.ErrorRespData
+		statusCode int
+		resp       string
+	}{
+		{
+			name: "Success",
+			mockReturn: &models.MovieInfo{
+				Id:              1,
+				Title:           "Test",
+				FullDescription: "Test desc",
+				CardUrl:         "card_link",
+				AlbumUrl:        "album_link",
+				Rating:          7.8,
+				MovieType:       "film",
+				Country:         "Russia",
+				VideoUrl:        "video_link",
+			},
+			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film","country":"Russia","video_url":"video_link","actors_info":[], "directors_info":[]}}`,
+			statusCode: http.StatusOK,
+		},
+		{
+			name: "Service Error",
+			mockErr: &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
+			},
+			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			path := "/api/movies/1"
+			srv := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(testContext(), srv)
+
+			srv.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+
+			r := mux.NewRouter()
+			r.HandleFunc(path, handler.GetMovie)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", path, nil)
+
+			vars := map[string]string{
+				"movie_id": "1",
+			}
+
+			req = mux.SetURLVars(req, vars)
+
+			handler.GetMovie(w, req)
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
+			assert.JSONEq(t, test.resp, w.Body.String())
+		})
+	}
+}
+
+func TestDelivery_GetActor(t *testing.T) {
+	tests := []struct {
+		name       string
+		mockReturn *models.StaffInfo
+		mockErr    *models.ErrorRespData
+		statusCode int
+		resp       string
+	}{
+		{
+			name: "Success",
+			mockReturn: &models.StaffInfo{
+				Id:         1,
+				Name:       "Tester",
+				Surname:    "Testov",
+				Patronymic: "Testovich",
+			},
+			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov Testovich","biography":"","birthdate":"","photo_url":"","country":""}}`,
+			statusCode: http.StatusOK,
+		},
+		{
+			name: "Service Error",
+			mockErr: &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
+			},
+			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			path := "/api/actors/1"
+			srv := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(testContext(), srv)
+
+			srv.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+
+			r := mux.NewRouter()
+			r.HandleFunc(path, handler.GetActor)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", path, nil)
+
+			vars := map[string]string{
+				"actor_id": "1",
+			}
+
+			req = mux.SetURLVars(req, vars)
+
+			handler.GetActor(w, req)
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
+			assert.JSONEq(t, test.resp, w.Body.String())
+		})
+	}
+}
+
+func testContext() context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
-		log.Fatalf("failed to change directory: %v", err)
+		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
 	}
 
-	cfg, err := config.New(false, nil)
+	cfg, err := config.New(zerolog.Logger{}, false, nil)
 	if err != nil {
-		log.Fatalf("failed to read config from Register test: %v", err)
+		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
 	}
 
-	return cfg
+	ctx := config.WrapContext(context.Background(), cfg)
+
+	return ctx
 }

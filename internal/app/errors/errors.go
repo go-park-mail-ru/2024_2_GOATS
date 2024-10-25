@@ -11,8 +11,9 @@ var (
 	ErrInvalidPasswordCode       = "invalid_password"
 	ErrInvalidPasswordText       = CustomError{Err: errors.New("password is too short. The minimal len is 8")}
 	ErrInvalidPasswordsMatchText = CustomError{Err: errors.New("password doesnt match with passwordConfirmation")}
+	ErrInvalidOldPasswordText    = CustomError{Err: errors.New("invalid old password")}
 	ErrUserNotFoundCode          = "user_not_found"
-	ErrUserNotFoundText          = CustomError{Err: errors.New("cannot find user with translated email")}
+	ErrUserNotFoundText          = CustomError{Err: errors.New("cannot find user by given params")}
 	ErrBrokenCookieText          = CustomError{Err: errors.New("broken cookie was given")}
 	ErrBrokenCookieCode          = "broken_cookie"
 	ErrNoCookieCode              = "no_cookie_provided"

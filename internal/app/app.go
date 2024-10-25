@@ -10,7 +10,10 @@ import (
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/rs/zerolog"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
@@ -26,6 +29,9 @@ import (
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
+	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
+	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
+	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 )
 
@@ -35,12 +41,15 @@ type App struct {
 	Context           context.Context
 	Server            *http.Server
 	Mux               *mux.Router
+	logger            *zerolog.Logger
 	AcceptConnections bool
 }
 
 func New(isTest bool, port *nat.Port) (*App, error) {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	logger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
 
-	cfg, err := config.New(isTest, port)
+	cfg, err := config.New(logger, isTest, port)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -55,13 +64,17 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
+	repoUser := userRepo.NewRepository(database)
+	srvUser := userServ.NewUserService(repoUser)
+	delUser := userApi.NewUserHandler(ctx, srvUser)
+
 	repoAuth := authRepo.NewRepository(database, rdb)
-	srvAuth := authServ.NewService(repoAuth)
-	delAuth := authApi.NewAuthHandler(srvAuth, cfg)
+	srvAuth := authServ.NewService(repoAuth, repoUser)
+	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
 	repoMov := movieRepo.NewRepository(database, rdb)
 	srvMov := movieServ.NewService(repoMov)
-	delMov := movieApi.NewMovieHandler(srvMov, cfg)
+	delMov := movieApi.NewMovieHandler(ctx, srvMov)
 
 	repoRoom := roomRepo.NewRepository(database, rdb)
 	srvRoom := roomServ.NewService(repoRoom)
@@ -72,9 +85,11 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 
 	mx := mux.NewRouter()
 	router.ActivateMiddlewares(mx)
-	router.SetupAuth(ctx, delAuth, mx)
-	router.SetupMovie(ctx, delMov, mx)
-	router.SetupRoom(ctx, roomHub, delRoom, mx)
+	router.SetupAuth(delAuth, mx)
+	router.SetupMovie(delMov, mx)
+	router.SetupUser(delUser, mx)
+
+	router.SetupRoom(roomHub, delRoom, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
@@ -89,6 +104,7 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
+		logger:   &logger,
 		Mux:      mx,
 	}, nil
 }
@@ -97,25 +113,25 @@ func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
 	a.Mux.Use(a.AppReadyMiddleware)
 
-	log.Printf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
+	a.logger.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
 
 	// Not ready yet
 	defer a.GracefulShutdown()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("server stopped: %v", err)
+		a.logger.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
 	}
 }
 
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
-	log.Println("Starting graceful shutdown")
+	a.logger.Info().Msg("Starting graceful shutdown")
 
 	if err := a.Database.Close(); err != nil {
 		return fmt.Errorf("failed to close database: %w", err)
 	}
-	log.Println("Postgres shut down")
+	a.logger.Info().Msg("Postgres shut down")
 
 	shutdownCtx, cancel := context.WithTimeout(a.Context, 10*time.Second)
 	defer cancel()
@@ -123,13 +139,13 @@ func (a *App) GracefulShutdown() error {
 	if err := a.Server.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("failed to shut down HTTP server: %w", err)
 	}
-	log.Println("HTTP server shut down")
+	a.logger.Info().Msg("HTTP server shut down")
 
 	select {
 	case <-shutdownCtx.Done():
-		log.Println("Graceful shutdown complete")
+		a.logger.Info().Msg("Graceful shutdown complete")
 	default:
-		log.Println("Waiting for all goroutines to finish...")
+		a.logger.Info().Msg("Waiting for all goroutines to finish...")
 		time.Sleep(500 * time.Millisecond)
 	}
 

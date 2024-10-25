@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
@@ -11,8 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Настройка маршрутов для аутентификации
-func SetupAuth(ctx context.Context, delLayer handlers.AuthImplementationInterface, router *mux.Router) {
+func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 
@@ -22,12 +20,23 @@ func SetupAuth(ctx context.Context, delLayer handlers.AuthImplementationInterfac
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
 }
 
-// Настройка маршрутов для фильмов
-func SetupMovie(ctx context.Context, delLayer handlers.MovieImplementationInterface, router *mux.Router) {
+func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
+	movieRouter := apiMux.PathPrefix("/movies").Subrouter()
+	actorRouter := apiMux.PathPrefix("/actors").Subrouter()
 
 	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions)
+	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
+}
+
+func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	userRouter := apiMux.PathPrefix("/users").Subrouter()
+
+	userRouter.HandleFunc("/{id:[0-9]+}/update_profile", delLayer.UpdateProfile).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
 }
 
 //// Настройка маршрутов для комнат и WebSocket
@@ -51,7 +60,7 @@ func SetupMovie(ctx context.Context, delLayer handlers.MovieImplementationInterf
 //
 //}
 
-func SetupRoom(ctx context.Context, hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
+func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()
 	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost)
@@ -61,6 +70,7 @@ func SetupRoom(ctx context.Context, hub *webSocket.RoomHub, roomHandler handlers
 }
 
 func ActivateMiddlewares(mx *mux.Router) {
-	mx.Use(middleware.CorsMiddleware)
+	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.PanicMiddleware)
+	mx.Use(middleware.CorsMiddleware)
 }

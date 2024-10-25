@@ -1,9 +1,9 @@
 package delivery
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -11,51 +11,54 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/validation"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	userDel "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
+	"github.com/rs/zerolog"
 )
 
 var _ handlers.AuthImplementationInterface = (*AuthHandler)(nil)
 
 type AuthHandler struct {
 	authService AuthServiceInterface
-	cfg         *config.Config
+	userService userDel.UserServiceInterface
+	redisCfg    *config.Redis
+	logger      *zerolog.Logger
 }
 
-func NewAuthHandler(authSrv AuthServiceInterface, cfg *config.Config) *AuthHandler {
+func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) *AuthHandler {
+	redisCfg := config.FromContext(ctx).Databases.Redis
+	logger := config.FromContext(ctx).Logger
+
 	return &AuthHandler{
 		authService: authSrv,
-		cfg:         cfg,
+		userService: usrSrv,
+		redisCfg:    &redisCfg,
+		logger:      &logger,
 	}
 }
 
 func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ck, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		api.Response(w, http.StatusForbidden,
-			preparedDefaultError(
-				errVals.ErrNoCookieCode,
-				fmt.Errorf("Logout action: No cookie err - %w", err),
-			),
-		)
+		errMsg := fmt.Errorf("Logout action: No cookie err - %w", err)
+		a.logger.Error().Msg(errMsg.Error())
+		api.Response(w, http.StatusForbidden, api.PreparedDefaultError(errVals.ErrNoCookieCode, errMsg))
 
 		return
 	}
 
 	validErr := validation.ValidateCookie(ck.Value)
 	if validErr != nil {
-		api.Response(w, http.StatusBadRequest,
-			preparedDefaultError(
-				"cookie_validation_error",
-				fmt.Errorf("Logout action: Invalid cookie err - %w", validErr.Err),
-			),
-		)
+		errMsg := fmt.Errorf("Logout action: Invalid cookie err - %w", validErr.Err)
+		a.logger.Error().Msg(errMsg.Error())
+		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("cookie_validation_error", errMsg))
 
 		return
 	}
 
-	ctx := config.WrapContext(r.Context(), a.cfg)
+	ctx := a.logger.WithContext(r.Context())
 	logoutSrvResp, errSrvResp := a.authService.Logout(ctx, ck.Value)
 
 	logoutResp, errResp := converter.ToApiAuthResponse(logoutSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -74,7 +77,8 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	api.DecodeBody(w, r, loginRequest)
 
 	loginServData := converter.ToServLoginData(loginRequest)
-	ctx := config.WrapContext(r.Context(), a.cfg)
+	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
+	ctx = a.logger.WithContext(ctx)
 	authSrvResp, errSrvResp := a.authService.Login(ctx, loginServData)
 
 	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -85,14 +89,16 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	oldCookie, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		log.Printf("user dont have old cookie")
+		a.logger.Info().Msg("user dont have old cookie")
 	}
 
 	if oldCookie != nil && authResp.NewCookie.Token.TokenID != oldCookie.Value {
+		a.logger.Info().Msg("successfully expire cookie")
 		http.SetCookie(w, preparedExpiredCookie())
 	}
 
 	http.SetCookie(w, preparedCookie(authResp.NewCookie))
+	a.logger.Info().Msg("successfully set new cookie")
 
 	api.Response(w, authResp.StatusCode, authResp)
 }
@@ -104,10 +110,12 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	errs := make([]errVals.ErrorObj, 0)
 
 	if err := validation.ValidatePassword(registerReq.Password, registerReq.PasswordConfirmation); err != nil {
+		a.logger.Error().Msg(err.Err.Error())
 		addError(errVals.ErrInvalidPasswordCode, *err, &errs)
 	}
 
 	if err := validation.ValidateEmail(registerReq.Email); err != nil {
+		a.logger.Error().Msg(err.Err.Error())
 		addError(errVals.ErrInvalidEmailCode, *err, &errs)
 	}
 
@@ -121,7 +129,9 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := config.WrapContext(r.Context(), a.cfg)
+	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
+	ctx = a.logger.WithContext(ctx)
+
 	registerServData := converter.ToServRegisterData(registerReq)
 	authSrvResp, errSrvResp := a.authService.Register(ctx, registerServData)
 	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -139,17 +149,14 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	ck, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		api.Response(w, http.StatusForbidden,
-			preparedDefaultError(
-				errVals.ErrNoCookieCode,
-				fmt.Errorf("Session action: No cookie err - %w", err),
-			),
-		)
+		errMsg := fmt.Errorf("Session action: No cookie err - %w", err)
+		a.logger.Error().Msg(errMsg.Error())
+		api.Response(w, http.StatusForbidden, api.PreparedDefaultError(errVals.ErrNoCookieCode, errMsg))
 
 		return
 	}
 
-	ctx := config.WrapContext(r.Context(), a.cfg)
+	ctx := a.logger.WithContext(r.Context())
 	sessionSrvResp, errSrvResp := a.authService.Session(ctx, ck.Value)
 
 	sessionResp, errResp := converter.ToApiSessionResponse(sessionSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -180,16 +187,6 @@ func preparedExpiredCookie() *http.Cookie {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
-	}
-}
-
-func preparedDefaultError(code string, err error) *api.ErrorResponse {
-	return &api.ErrorResponse{
-		StatusCode: http.StatusForbidden,
-		Errors: []errVals.ErrorObj{{
-			Code:  code,
-			Error: errVals.CustomError{Err: err},
-		}},
 	}
 }
 

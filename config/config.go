@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
+	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
+	Logger    zerolog.Logger
 }
 
 type Databases struct {
@@ -44,7 +46,7 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
-func New(isTest bool, port *nat.Port) (*Config, error) {
+func New(logger zerolog.Logger, isTest bool, port *nat.Port) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("config creation error: %w", err)
@@ -59,6 +61,8 @@ func New(isTest bool, port *nat.Port) (*Config, error) {
 	if isTest {
 		cfg.Databases.Postgres.Port = port.Int()
 	}
+
+	cfg.Logger = logger
 
 	return cfg, nil
 }
