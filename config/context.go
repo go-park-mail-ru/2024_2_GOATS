@@ -23,3 +23,13 @@ func FromContext(ctx context.Context) *Config {
 
 	return value
 }
+
+func FromRedisContext(ctx context.Context) *Redis {
+	value, ok := ctx.Value(ConfigContextKey{}).(*Redis)
+
+	if !ok {
+		return nil
+	}
+
+	return value
+}
