@@ -34,8 +34,8 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 			countries.title
 		FROM movies
 		JOIN countries ON countries.id = movies.country_id
-		join staff_members on staff_members.movie_id = movies.id
-		join movie_staff on staff_members.movie_staff_id = movie_staff.id
+		LEFT JOIN staff_members on staff_members.movie_id = movies.id
+		LEFT JOIN movie_staff on staff_members.movie_staff_id = movie_staff.id
 		WHERE movies.id = $1
 	`
 
