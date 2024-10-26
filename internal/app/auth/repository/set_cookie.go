@@ -13,7 +13,7 @@ import (
 
 func (r *Repo) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.ErrorObj, int) {
 	logger := log.Ctx(ctx)
-	cookieCfg := config.FromContext(ctx).Databases.Redis.Cookie
+	cookieCfg := config.FromRedisContext(ctx).Cookie
 
 	err := r.Redis.Set(ctx, token.TokenID, fmt.Sprint(token.UserID), cookieCfg.MaxAge)
 	if err.Err() != nil {

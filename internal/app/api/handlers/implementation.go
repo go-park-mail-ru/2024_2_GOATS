@@ -15,3 +15,8 @@ type AuthImplementationInterface interface {
 	Session(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
 }
+
+type UserImplementationInterface interface {
+	UpdateProfile(w http.ResponseWriter, r *http.Request)
+	UpdatePassword(w http.ResponseWriter, r *http.Request)
+}

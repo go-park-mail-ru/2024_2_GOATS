@@ -21,7 +21,7 @@ func GenerateToken(ctx context.Context, userID int) (*models.Token, error) {
 		return nil, errMsg
 	}
 
-	expiry := time.Now().Add(config.FromContext(ctx).Databases.Redis.Cookie.MaxAge)
+	expiry := time.Now().Add(config.FromRedisContext(ctx).Cookie.MaxAge)
 
 	return &models.Token{
 		UserID:  userID,
@@ -36,7 +36,7 @@ func generateRandomString(length int) (string, error) {
 	if err != nil {
 		errMsg := fmt.Errorf("cookie: failed to generate random string - %w", err)
 		log.Error().Msg(errMsg.Error())
-		
+
 		return "", errMsg
 	}
 
