@@ -37,10 +37,10 @@ func (m *MockMovieRepositoryInterface) EXPECT() *MockMovieRepositoryInterfaceMoc
 }
 
 // GetActor mocks base method.
-func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *errors.ErrorObj, int) {
+func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActor", ctx, actorId)
-	ret0, _ := ret[0].(*models.StaffInfo)
+	ret0, _ := ret[0].(*models.ActorInfo)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	ret2, _ := ret[2].(int)
 	return ret0, ret1, ret2
@@ -84,18 +84,18 @@ func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovie(ctx, mvId interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovie", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovie), ctx, mvId)
 }
 
-// GetStaffInfo mocks base method.
-func (m *MockMovieRepositoryInterface) GetStaffInfo(ctx context.Context, actorId int) ([]*models.StaffInfo, *errors.ErrorObj, int) {
+// GetMovieActors mocks base method.
+func (m *MockMovieRepositoryInterface) GetMovieActors(ctx context.Context, actorId int) ([]*models.ActorInfo, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStaffInfo", ctx, actorId)
-	ret0, _ := ret[0].([]*models.StaffInfo)
+	ret := m.ctrl.Call(m, "GetMovieActors", ctx, actorId)
+	ret0, _ := ret[0].([]*models.ActorInfo)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	ret2, _ := ret[2].(int)
 	return ret0, ret1, ret2
 }
 
-// GetStaffInfo indicates an expected call of GetStaffInfo.
-func (mr *MockMovieRepositoryInterfaceMockRecorder) GetStaffInfo(ctx, actorId interface{}) *gomock.Call {
+// GetMovieActors indicates an expected call of GetMovieActors.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovieActors(ctx, actorId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStaffInfo", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetStaffInfo), ctx, actorId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieActors", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovieActors), ctx, actorId)
 }

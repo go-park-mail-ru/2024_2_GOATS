@@ -20,7 +20,7 @@ func (s *MovieService) GetMovie(ctx context.Context, mvId int) (*models.MovieInf
 		}
 	}
 
-	staffs, err, code := s.movieRepository.GetStaffInfo(ctx, mv.Id)
+	actors, err, code := s.movieRepository.GetMovieActors(ctx, mv.Id)
 
 	if err != nil {
 		errs := make([]errVals.ErrorObj, 1)
@@ -32,21 +32,8 @@ func (s *MovieService) GetMovie(ctx context.Context, mvId int) (*models.MovieInf
 		}
 	}
 
-	acInfo := []*models.StaffInfo{}
-	directorInfo := []*models.StaffInfo{}
 
-	for _, staff := range staffs {
-		if staff.Post == "actor" {
-			acInfo = append(acInfo, staff)
-		}
-
-		if staff.Post == "director" {
-			directorInfo = append(directorInfo, staff)
-		}
-	}
-
-	mv.Actors = acInfo
-	mv.Directors = directorInfo
+	mv.Actors = actors
 
 	return mv, nil
 }

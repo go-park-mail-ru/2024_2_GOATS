@@ -24,8 +24,11 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 			movies.video_url,
 			movies.movie_type,
 			movies.title_url,
+			directors.first_name,
+			directors.second_name,
 			countries.title
 		FROM movies
+		JOIN directors ON directors.id = movies.director_id
 		JOIN countries ON countries.id = movies.country_id
 		WHERE movies.id = $1
 	`
@@ -44,33 +47,32 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 	return rows, nil
 }
 
-func GetStaff(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
+func GetMovieActors(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 	logger := log.Ctx(ctx)
 
-	staffStatement := `
+	actorsStatement := `
 		SELECT
-			movie_staff.id,
-			movie_staff.first_name,
-			movie_staff.second_name,
-			movie_staff.biography,
-			movie_staff.post,
-			movie_staff.small_photo_url
-		FROM movie_staff
-		JOIN staff_members on staff_members.movie_staff_id = movie_staff.id
-		JOIN movies on staff_members.movie_id = movies.id
+			actors.id,
+			actors.first_name,
+			actors.second_name,
+			actors.biography,
+			actors.small_photo_url
+		FROM actors
+		JOIN movie_actors on movie_actors.actor_id = actors.id
+		JOIN movies on movie_actors.movie_id = movies.id
 		WHERE movies.id = $1
 	`
 
-	rows, err := db.QueryContext(ctx, staffStatement, mvId)
+	rows, err := db.QueryContext(ctx, actorsStatement, mvId)
 
 	if err != nil {
-		errMsg := fmt.Errorf("postgres: error while selecting movie staff info: %w", err)
+		errMsg := fmt.Errorf("postgres: error while selecting movie actors info: %w", err)
 		logger.Err(errMsg)
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg("postgres: successfully select movie staff info")
+	logger.Info().Msg("postgres: successfully select movie actors info")
 
 	return rows, nil
 }

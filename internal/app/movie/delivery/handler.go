@@ -45,7 +45,7 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	ctx := m.logger.WithContext(r.Context())
 	mvId, err := strconv.Atoi(mux.Vars(r)["movie_id"])
 	if err != nil {
-		errMsg := fmt.Errorf("GetMovie action: Bad request - %w", err)
+		errMsg := fmt.Errorf("getMovie action: Bad request - %w", err)
 		m.logger.Error().Msg(errMsg.Error())
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
 
@@ -67,7 +67,7 @@ func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	ctx := m.logger.WithContext(r.Context())
 	actorId, err := strconv.Atoi(mux.Vars(r)["actor_id"])
 	if err != nil {
-		errMsg := fmt.Errorf("GetActor action: Bad request - %w", err)
+		errMsg := fmt.Errorf("getActor action: Bad request - %w", err)
 		m.logger.Error().Msg(errMsg.Error())
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
 

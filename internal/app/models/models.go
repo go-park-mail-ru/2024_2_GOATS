@@ -66,32 +66,36 @@ type Collection struct {
 }
 
 type MovieInfo struct {
-	Id               int          `json:"id"`
-	Title            string       `json:"title"`
-	ShortDescription string       `json:"short_description"`
-	FullDescription  string       `json:"full_description"`
-	CardUrl          string       `json:"card_url"`
-	AlbumUrl         string       `json:"album_url"`
-	TitleUrl         string       `json:"title_url"`
-	Rating           float32      `json:"rating"`
-	ReleaseDate      time.Time    `json:"release_date"`
-	MovieType        string       `json:"movie_type"`
-	Country          string       `json:"country"`
-	VideoUrl         string       `json:"video_url"`
-	Actors           []*StaffInfo `json:"actors_info"`
-	Directors        []*StaffInfo `json:"directors_info"`
+	Id               int           `json:"id"`
+	Title            string        `json:"title"`
+	ShortDescription string        `json:"short_description"`
+	FullDescription  string        `json:"full_description"`
+	CardUrl          string        `json:"card_url"`
+	AlbumUrl         string        `json:"album_url"`
+	TitleUrl         string        `json:"title_url"`
+	Rating           float32       `json:"rating"`
+	ReleaseDate      time.Time     `json:"release_date"`
+	MovieType        string        `json:"movie_type"`
+	Country          string        `json:"country"`
+	VideoUrl         string        `json:"video_url"`
+	Actors           []*ActorInfo  `json:"actors_info"`
+	Director         *DirectorInfo `json:"director_info"`
 }
 
-type StaffInfo struct {
+type ActorInfo struct {
+	Person
 	Id            int          `json:"id"`
-	Name          string       `json:"name"`
-	Surname       string       `json:"surname"`
 	Biography     string       `json:"biography"`
 	Post          string       `json:"post"`
 	Birthdate     sql.NullTime `json:"birthdate"`
 	SmallPhotoUrl string       `json:"small_photo_url"`
 	BigPhotoUrl   string       `json:"big_photo_url"`
 	Country       string       `json:"country"`
+}
+
+type DirectorInfo struct {
+	Person
+	Id int
 }
 
 type CookieData struct {
@@ -112,6 +116,11 @@ type PasswordData struct {
 	PasswordConfirmation string
 }
 
-func (s StaffInfo) FullName() string {
-	return strings.TrimSpace(fmt.Sprintf("%s %s", s.Name, s.Surname))
+type Person struct {
+	Name    string
+	Surname string
+}
+
+func (p Person) FullName() string {
+	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
 }

@@ -21,7 +21,7 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*models.Sessi
 
 	usrId, convErr := strconv.Atoi(strUserId)
 	if convErr != nil {
-		errMsg := fmt.Errorf("Session service: failed to convert string into integer: %w", convErr)
+		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
 		log.Ctx(ctx).Error().Msg(errMsg.Error())
 
 		return nil, &models.ErrorRespData{

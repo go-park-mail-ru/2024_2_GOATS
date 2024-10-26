@@ -7,7 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (s *MovieService) GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *models.ErrorRespData) {
+func (s *MovieService) GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *models.ErrorRespData) {
 	actor, err, code := s.movieRepository.GetActor(ctx, actorId)
 
 	if err != nil {

@@ -95,8 +95,8 @@ type MovieInfo struct {
 	MovieType        string       `json:"movie_type"`
 	Country          string       `json:"country"`
 	VideoUrl         string       `json:"video_url"`
+	Director         string       `json:"director"`
 	Actors           []*ActorInfo `json:"actors_info"`
-	Directors        []string     `json:"directors_info"`
 }
 
 type ActorResponse struct {

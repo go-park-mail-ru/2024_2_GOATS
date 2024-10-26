@@ -36,7 +36,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	usrId, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		errMsg := fmt.Errorf("UpdateProfile action: Path params err - %w", err)
+		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
 		u.logger.Error().Msg(errMsg.Error())
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
 
@@ -46,7 +46,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	passwordReq.UserId = usrId
 
 	if err := validation.ValidatePassword(passwordReq.Password, passwordReq.PasswordConfirmation); err != nil {
-		errMsg := fmt.Errorf("UpdatePassword action: Password err - %w", err.Err)
+		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err.Err)
 		u.logger.Error().Msg(errMsg.Error())
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("password_validation_error", errMsg))
 
@@ -70,7 +70,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	usrId, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		errMsg := fmt.Errorf("UpdateProfile action: Path params err - %w", err)
+		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
 		u.logger.Error().Msg(errMsg.Error())
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
 
@@ -117,7 +117,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
-		errMsg := fmt.Errorf("UpdateProfile action: Email err - %w", valErr.Err)
+		errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
 		u.logger.Error().Msg(errMsg.Error())
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("email_validation_error", errMsg))
 

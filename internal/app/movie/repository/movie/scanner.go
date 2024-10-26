@@ -10,11 +10,9 @@ import (
 
 func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	mvInfo := &models.MovieInfo{}
-	actorsInfo := []*models.StaffInfo{}
+	directorInfo := &models.DirectorInfo{}
 
 	for rows.Next() {
-		var actorInfo models.StaffInfo
-
 		err := rows.Scan(
 			&mvInfo.Id,
 			&mvInfo.Title,
@@ -27,6 +25,8 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 			&mvInfo.VideoUrl,
 			&mvInfo.MovieType,
 			&mvInfo.TitleUrl,
+			&directorInfo.Name,
+			&directorInfo.Surname,
 			&mvInfo.Country,
 		)
 
@@ -36,8 +36,6 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 
 			return nil, errMsg
 		}
-
-		actorsInfo = append(actorsInfo, &actorInfo)
 	}
 
 	defer func() {
@@ -46,38 +44,23 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 		}
 	}()
 
-	acInfo := []*models.StaffInfo{}
-	directorInfo := []*models.StaffInfo{}
-
-	for _, staff := range actorsInfo {
-		if staff.Post == "actor" {
-			acInfo = append(acInfo, staff)
-		}
-
-		if staff.Post == "director" {
-			directorInfo = append(directorInfo, staff)
-		}
-	}
-
-	mvInfo.Actors = acInfo
-	mvInfo.Directors = directorInfo
+	mvInfo.Director = directorInfo
 
 	return mvInfo, nil
 }
 
-func ScanStaffConnections(rows *sql.Rows) ([]*models.StaffInfo, error) {
-	staffInfos := []*models.StaffInfo{}
+func ScanActorsConnections(rows *sql.Rows) ([]*models.ActorInfo, error) {
+	actorInfos := []*models.ActorInfo{}
 
 	for rows.Next() {
-		var staffInfo models.StaffInfo
+		var actorInfo models.ActorInfo
 
 		err := rows.Scan(
-			&staffInfo.Id,
-			&staffInfo.Name,
-			&staffInfo.Surname,
-			&staffInfo.Biography,
-			&staffInfo.Post,
-			&staffInfo.SmallPhotoUrl,
+			&actorInfo.Id,
+			&actorInfo.Name,
+			&actorInfo.Surname,
+			&actorInfo.Biography,
+			&actorInfo.SmallPhotoUrl,
 		)
 
 		if err != nil {
@@ -87,7 +70,7 @@ func ScanStaffConnections(rows *sql.Rows) ([]*models.StaffInfo, error) {
 			return nil, errMsg
 		}
 
-		staffInfos = append(staffInfos, &staffInfo)
+		actorInfos = append(actorInfos, &actorInfo)
 	}
 
 	defer func() {
@@ -96,5 +79,5 @@ func ScanStaffConnections(rows *sql.Rows) ([]*models.StaffInfo, error) {
 		}
 	}()
 
-	return staffInfos, nil
+	return actorInfos, nil
 }

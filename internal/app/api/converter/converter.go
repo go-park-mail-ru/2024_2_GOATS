@@ -166,32 +166,22 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		MovieType:        mv.MovieType,
 		Country:          mv.Country,
 		VideoUrl:         mv.VideoUrl,
+		Director:         mv.Director.FullName(),
 	}
 
 	actors := []*api.ActorInfo{}
-	directors := make([]string, 0)
-	staffs := mv.Actors
-	staffs = append(staffs, mv.Directors...)
-
-	for _, staff := range staffs {
-		if staff.Post == "actor" {
-			tempSt := &api.ActorInfo{
-				Id:       staff.Id,
-				FullName: staff.FullName(),
-				PhotoUrl: staff.SmallPhotoUrl,
-				Country:  staff.Country,
-			}
-
-			actors = append(actors, tempSt)
+	for _, actor := range mv.Actors {
+		tempSt := &api.ActorInfo{
+			Id:       actor.Id,
+			FullName: actor.FullName(),
+			PhotoUrl: actor.SmallPhotoUrl,
+			Country:  actor.Country,
 		}
 
-		if staff.Post == "director" {
-			directors = append(directors, staff.FullName())
-		}
+		actors = append(actors, tempSt)
 	}
 
 	mvInfo.Actors = actors
-	mvInfo.Directors = directors
 
 	return &api.MovieResponse{
 		Success:   true,
@@ -199,7 +189,7 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 }
 
-func ToApiGetActorResponse(ac *models.StaffInfo) *api.ActorResponse {
+func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 	if ac == nil {
 		return nil
 	}

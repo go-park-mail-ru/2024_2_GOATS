@@ -106,8 +106,9 @@ func TestDelivery_GetMovie(t *testing.T) {
 				MovieType:       "film",
 				Country:         "Russia",
 				VideoUrl:        "video_link",
+				Director:        &models.DirectorInfo{},
 			},
-			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film","country":"Russia","video_url":"video_link","actors_info":[], "directors_info":[]}}`,
+			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film", "director": "", "country":"Russia","video_url":"video_link","actors_info":[]}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -155,17 +156,19 @@ func TestDelivery_GetMovie(t *testing.T) {
 func TestDelivery_GetActor(t *testing.T) {
 	tests := []struct {
 		name       string
-		mockReturn *models.StaffInfo
+		mockReturn *models.ActorInfo
 		mockErr    *models.ErrorRespData
 		statusCode int
 		resp       string
 	}{
 		{
 			name: "Success",
-			mockReturn: &models.StaffInfo{
-				Id:      1,
-				Name:    "Tester",
-				Surname: "Testov",
+			mockReturn: &models.ActorInfo{
+				Id: 1,
+				Person: models.Person{
+					Name:    "Tester",
+					Surname: "Testov",
+				},
 			},
 			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":""}}`,
 			statusCode: http.StatusOK,

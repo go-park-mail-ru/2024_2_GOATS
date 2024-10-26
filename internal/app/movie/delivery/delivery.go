@@ -10,5 +10,5 @@ import (
 type MovieServiceInterface interface {
 	GetCollection(ctx context.Context) (*models.CollectionsRespData, *models.ErrorRespData)
 	GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *models.ErrorRespData)
-	GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *models.ErrorRespData)
+	GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *models.ErrorRespData)
 }
