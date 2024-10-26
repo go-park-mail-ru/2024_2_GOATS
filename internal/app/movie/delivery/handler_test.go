@@ -167,7 +167,7 @@ func TestDelivery_GetActor(t *testing.T) {
 				Name:    "Tester",
 				Surname: "Testov",
 			},
-			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov Testovich","biography":"","birthdate":"","photo_url":"","country":""}}`,
+			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{
