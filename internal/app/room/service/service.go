@@ -54,6 +54,10 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		roomState.Status = "playing"
 	case "rewind":
 		roomState.TimeCode = action.TimeCode
+	case "timer":
+		roomState.TimeCode = action.TimeCode
+	case "message":
+		roomState.Message = action.Message
 	}
 
 	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)

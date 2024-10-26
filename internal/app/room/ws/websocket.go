@@ -8,6 +8,7 @@ import (
 
 type RoomHub struct {
 	Clients    map[*websocket.Conn]bool
+	Users      map[*websocket.Conn]models.User
 	Broadcast  chan models.Action
 	Register   chan *websocket.Conn
 	Unregister chan *websocket.Conn
@@ -23,6 +24,7 @@ var upgrader = websocket.Upgrader{
 func NewRoomHub() *RoomHub {
 	return &RoomHub{
 		Clients:    make(map[*websocket.Conn]bool),
+		Users:      make(map[*websocket.Conn]models.User),
 		Broadcast:  make(chan models.Action),
 		Register:   make(chan *websocket.Conn),
 		Unregister: make(chan *websocket.Conn),

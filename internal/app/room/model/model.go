@@ -33,20 +33,22 @@ type RoomState struct {
 	Status   string  `json:"status"` // paused, playing
 	TimeCode float64 `json:"time_code"`
 	Movie    Movie   `json:"movie"`
+	Message  string  `json:"message"`
 }
 
 type Action struct {
 	Name     string  `json:"name"` // pause, play, rewind
 	TimeCode float64 `json:"time_code"`
+	Message  string  `json:"message"`
 }
 
 type User struct {
-	Id         int
-	Email      string
-	Username   string
+	Id         int    `json:"id"`
+	Email      string `json:"email"`
+	Username   string `json:"username"`
 	Password   string
 	Birthdate  sql.NullTime
-	AvatarUrl  string
+	AvatarUrl  string `json:"avatar"`
 	AvatarName string
 	Avatar     multipart.File
 	Sex        sql.NullString

@@ -3,11 +3,17 @@ package delivery
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"github.com/gorilla/websocket"
+	"github.com/rs/zerolog"
 	"log"
 	"net/http"
+	"os"
 )
 
 type RoomServiceInterface interface {
@@ -36,33 +42,6 @@ func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHand
 }
 
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	//ck, err := r.Cookie("session_id")
-	//if errors.Is(err, http.ErrNoCookie) {
-	//	api.Response(w, http.StatusForbidden,
-	//		preparedDefaultError(
-	//			errVals.ErrNoCookieCode,
-	//			fmt.Errorf("Session action: No cookie err - %w", err),
-	//		),
-	//	)
-	//
-	//	return
-	//}
-	//
-	//cfg, err := config.New(true, nil)
-	//ctx := config.WrapContext(r.Context(), cfg)
-	//sessionSrvResp, errSrvResp := h.roomService.Session(ctx, ck.Value)
-	//
-	//sessionResp, errResp := converter.ToApiSessionResponseForRoom(sessionSrvResp), converter.ToApiErrorResponseForRoom(errSrvResp)
-	//
-	//if errResp != nil {
-	//	api.Response(w, errResp.StatusCode, errResp)
-	//	return
-	//}
-	//
-	//userId := sessionResp.UserData.Id
-	//userUsername := sessionResp.UserData.Username
-	//userEmail := sessionResp.UserData.Email
-
 	var room models.RoomState
 	log.Println("room", room)
 	if err := json.NewDecoder(r.Body).Decode(&room); err != nil {
@@ -83,13 +62,37 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
+	ck, err := r.Cookie("session_id")
+	if errors.Is(err, http.ErrNoCookie) {
+		log.Println("Session action: No cookie err", err)
+		return
+	}
+
+	logger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
+
+	cfg, err := config.New(logger, true, nil)
+	ctx := config.WrapContext(r.Context(), cfg)
+	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, ck.Value)
+
+	sessionResp, errResp := converter.ToApiSessionResponseForRoom(sessionSrvResp), converter.ToApiErrorResponseForRoom(errSrvResp)
+
+	if errResp != nil {
+		api.Response(w, errResp.StatusCode, errResp)
+		return
+	}
+
+	user := models.User{
+		Id:        sessionResp.UserData.Id,
+		AvatarUrl: sessionResp.UserData.AvatarUrl,
+		Username:  sessionResp.UserData.Email,
+		Email:     sessionResp.UserData.Username,
+	}
+
 	roomID := r.URL.Query().Get("room_id")
 	if roomID == "" {
 		http.Error(w, "Missing room_id", http.StatusBadRequest)
 		return
 	}
-
-	log.Println("JoinRoom1111")
 
 	// Обновление соединения до WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -100,9 +103,10 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	// Регистрация клиента в Hub
-	log.Println("11111111")
 	h.roomHub.Register <- conn
-	log.Println("2222222")
+	h.roomHub.Users[conn] = user
+
+	h.broadcastUserList()
 
 	// Получение состояния комнаты
 	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
@@ -118,8 +122,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Println("333333333")
-
 	for {
 		var action models.Action
 		if err := conn.ReadJSON(&action); err != nil {
@@ -127,6 +129,8 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 			log.Println("Unregister action:", action.TimeCode)
 			log.Println("Unregister action:", action.Name)
 			h.roomHub.Unregister <- conn
+			delete(h.roomHub.Users, conn)
+			h.broadcastUserList()
 			break
 		}
 		log.Println("Received action:", action.TimeCode)
@@ -136,6 +140,21 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		// Обработка действия и обновление состояния комнаты
 		if err := h.roomService.HandleAction(r.Context(), roomID, action); err != nil {
 			log.Println("Error handling action:", err)
+		}
+	}
+
+}
+
+func (h *RoomHandler) broadcastUserList() {
+	userList := make([]models.User, 0, len(h.roomHub.Users))
+	for _, user := range h.roomHub.Users {
+		userList = append(userList, user)
+	}
+
+	for conn := range h.roomHub.Clients {
+		if err := conn.WriteJSON(userList); err != nil {
+			h.roomHub.Unregister <- conn
+			delete(h.roomHub.Users, conn)
 		}
 	}
 }
