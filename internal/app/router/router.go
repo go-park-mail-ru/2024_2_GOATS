@@ -37,6 +37,14 @@ func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router
 	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
 }
 
+func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	userRouter := apiMux.PathPrefix("/users").Subrouter()
+
+	userRouter.HandleFunc("/{id:[0-9]+}/update_profile", delLayer.UpdateProfile).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
+}
+
 func ActivateMiddlewares(mx *mux.Router) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.PanicMiddleware)
