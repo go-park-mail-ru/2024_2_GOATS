@@ -3,7 +3,6 @@ package converter
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
@@ -46,7 +45,7 @@ func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 }
 
 func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
-	birthdate, err := StringToNullTime(pr.Birthdate)
+	birthdate, err := stringToNullTime(pr.Birthdate)
 	if err != nil {
 		return nil
 	}
@@ -56,7 +55,7 @@ func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 		Email:      pr.Email,
 		Username:   pr.Username,
 		Birthdate:  birthdate,
-		Sex:        StringToNullString(pr.Sex),
+		Sex:        stringToNullString(pr.Sex),
 		AvatarName: pr.AvatarName,
 		Avatar:     pr.Avatar,
 	}
@@ -169,25 +168,25 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		VideoUrl:         mv.VideoUrl,
 	}
 
-	actors := []*api.StaffShortInfo{}
-	directors := []*api.StaffShortInfo{}
+	actors := []*api.ActorInfo{}
+	directors := make([]string, 0)
 	staffs := mv.Actors
 	staffs = append(staffs, mv.Directors...)
 
 	for _, staff := range staffs {
-		tempSt := &api.StaffShortInfo{
-			Id:       staff.Id,
-			FullName: strings.TrimSpace(fmt.Sprintf("%s %s %s", staff.Name, staff.Surname, staff.Patronymic)),
-			PhotoUrl: staff.SmallPhotoUrl,
-			Country:  staff.Country,
-		}
-
 		if staff.Post == "actor" {
+			tempSt := &api.ActorInfo{
+				Id:       staff.Id,
+				FullName: staff.FullName(),
+				PhotoUrl: staff.SmallPhotoUrl,
+				Country:  staff.Country,
+			}
+
 			actors = append(actors, tempSt)
 		}
 
 		if staff.Post == "director" {
-			directors = append(directors, tempSt)
+			directors = append(directors, staff.FullName())
 		}
 	}
 
@@ -207,7 +206,7 @@ func ToApiGetActorResponse(ac *models.StaffInfo) *api.ActorResponse {
 
 	actor := &api.Actor{
 		Id:        ac.Id,
-		FullName:  strings.TrimSpace(fmt.Sprintf("%s %s %s", ac.Name, ac.Surname, ac.Patronymic)),
+		FullName:  ac.FullName(),
 		Biography: ac.Biography,
 		PhotoUrl:  ac.BigPhotoUrl,
 		Country:   ac.Country,
@@ -237,14 +236,14 @@ func ToApiErrorResponse(e *models.ErrorRespData) *api.ErrorResponse {
 	}
 }
 
-func StringToNullString(s string) sql.NullString {
+func stringToNullString(s string) sql.NullString {
 	if s == "" {
 		return sql.NullString{Valid: false}
 	}
 	return sql.NullString{String: s, Valid: true}
 }
 
-func StringToNullTime(s string) (sql.NullTime, error) {
+func stringToNullTime(s string) (sql.NullTime, error) {
 	if s == "" {
 		return sql.NullTime{Valid: false}, nil
 	}

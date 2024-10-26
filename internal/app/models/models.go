@@ -2,7 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"mime/multipart"
+	"strings"
 	"time"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -84,7 +86,6 @@ type StaffInfo struct {
 	Id            int          `json:"id"`
 	Name          string       `json:"name"`
 	Surname       string       `json:"surname"`
-	Patronymic    string       `json:"patronymic"`
 	Biography     string       `json:"biography"`
 	Post          string       `json:"post"`
 	Birthdate     sql.NullTime `json:"birthdate"`
@@ -109,4 +110,8 @@ type PasswordData struct {
 	OldPassword          string
 	Password             string
 	PasswordConfirmation string
+}
+
+func (s StaffInfo) FullName() string {
+	return strings.TrimSpace(fmt.Sprintf("%s %s", s.Name, s.Surname))
 }

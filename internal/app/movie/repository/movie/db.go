@@ -13,13 +13,6 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 
 	mvSqlStatement := `
 		SELECT
-			movie_staff.id,
-			movie_staff.first_name,
-			movie_staff.second_name,
-			movie_staff.patronymic,
-			movie_staff.biography,
-			movie_staff.post,
-			movie_staff.small_photo_url,
 			movies.id,
 			movies.title,
 			movies.short_description,
@@ -34,8 +27,6 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 			countries.title
 		FROM movies
 		JOIN countries ON countries.id = movies.country_id
-		LEFT JOIN staff_members on staff_members.movie_id = movies.id
-		LEFT JOIN movie_staff on staff_members.movie_staff_id = movie_staff.id
 		WHERE movies.id = $1
 	`
 
@@ -49,6 +40,37 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 	}
 
 	logger.Info().Msg("postgres: successfully select movie info")
+
+	return rows, nil
+}
+
+func GetStaff(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
+	logger := log.Ctx(ctx)
+
+	staffStatement := `
+		SELECT
+			movie_staff.id,
+			movie_staff.first_name,
+			movie_staff.second_name,
+			movie_staff.biography,
+			movie_staff.post,
+			movie_staff.small_photo_url
+		FROM movie_staff
+		JOIN staff_members on staff_members.movie_staff_id = movie_staff.id
+		JOIN movies on staff_members.movie_id = movies.id
+		WHERE movies.id = $1
+	`
+
+	rows, err := db.QueryContext(ctx, staffStatement, mvId)
+
+	if err != nil {
+		errMsg := fmt.Errorf("postgres: error while selecting movie staff info: %w", err)
+		logger.Err(errMsg)
+
+		return nil, errMsg
+	}
+
+	logger.Info().Msg("postgres: successfully select movie staff info")
 
 	return rows, nil
 }

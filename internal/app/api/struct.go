@@ -83,20 +83,20 @@ type MovieResponse struct {
 }
 
 type MovieInfo struct {
-	Id               int               `json:"id"`
-	Title            string            `json:"title"`
-	FullDescription  string            `json:"full_description"`
-	ShortDescription string            `json:"short_description"`
-	CardUrl          string            `json:"card_url"`
-	AlbumUrl         string            `json:"album_url"`
-	TitleUrl         string            `json:"title_url"`
-	Rating           float32           `json:"rating"`
-	ReleaseDate      time.Time         `json:"release_date"`
-	MovieType        string            `json:"movie_type"`
-	Country          string            `json:"country"`
-	VideoUrl         string            `json:"video_url"`
-	Actors           []*StaffShortInfo `json:"actors_info"`
-	Directors        []*StaffShortInfo `json:"directors_info"`
+	Id               int          `json:"id"`
+	Title            string       `json:"title"`
+	FullDescription  string       `json:"full_description"`
+	ShortDescription string       `json:"short_description"`
+	CardUrl          string       `json:"card_url"`
+	AlbumUrl         string       `json:"album_url"`
+	TitleUrl         string       `json:"title_url"`
+	Rating           float32      `json:"rating"`
+	ReleaseDate      time.Time    `json:"release_date"`
+	MovieType        string       `json:"movie_type"`
+	Country          string       `json:"country"`
+	VideoUrl         string       `json:"video_url"`
+	Actors           []*ActorInfo `json:"actors_info"`
+	Directors        []string     `json:"directors_info"`
 }
 
 type ActorResponse struct {
@@ -104,13 +104,12 @@ type ActorResponse struct {
 	ActorInfo *Actor `json:"actor_info"`
 }
 
-type StaffShortInfo struct {
+type ActorInfo struct {
 	Id       int    `json:"id"`
 	FullName string `json:"full_name"`
 	PhotoUrl string `json:"photo_url"`
 	Country  string `json:"country"`
 }
-
 type Actor struct {
 	Id        int    `json:"id"`
 	FullName  string `json:"full_name"`

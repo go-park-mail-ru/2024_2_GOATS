@@ -8,15 +8,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ScanConnections(rows *sql.Rows) (*models.MovieInfo, error) {
+func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	mvInfo := &models.MovieInfo{}
 	actorsInfo := []*models.StaffInfo{}
 
 	for rows.Next() {
 		var actorInfo models.StaffInfo
 
-		err := rows.Scan(&actorInfo.Id, &actorInfo.Name, &actorInfo.Surname,
-			&actorInfo.Patronymic, &actorInfo.Biography, &actorInfo.Post, &actorInfo.SmallPhotoUrl,
+		err := rows.Scan(
 			&mvInfo.Id,
 			&mvInfo.Title,
 			&mvInfo.ShortDescription,
@@ -64,4 +63,38 @@ func ScanConnections(rows *sql.Rows) (*models.MovieInfo, error) {
 	mvInfo.Directors = directorInfo
 
 	return mvInfo, nil
+}
+
+func ScanStaffConnections(rows *sql.Rows) ([]*models.StaffInfo, error) {
+	staffInfos := []*models.StaffInfo{}
+
+	for rows.Next() {
+		var staffInfo models.StaffInfo
+
+		err := rows.Scan(
+			&staffInfo.Id,
+			&staffInfo.Name,
+			&staffInfo.Surname,
+			&staffInfo.Biography,
+			&staffInfo.Post,
+			&staffInfo.SmallPhotoUrl,
+		)
+
+		if err != nil {
+			errMsg := fmt.Errorf("error while scanning actors info: %w", err)
+			log.Err(errMsg)
+
+			return nil, errMsg
+		}
+
+		staffInfos = append(staffInfos, &staffInfo)
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Err(fmt.Errorf("cannot close rows while taking movie info: %w", err))
+		}
+	}()
+
+	return staffInfos, nil
 }

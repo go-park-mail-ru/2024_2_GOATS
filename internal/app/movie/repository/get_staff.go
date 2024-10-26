@@ -9,16 +9,16 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/movie"
 )
 
-func (r *Repo) GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errVals.ErrorObj, int) {
-	rows, err := movie.FindById(ctx, mvId, r.Database)
+func (r *Repo) GetStaffInfo(ctx context.Context, mvId int) ([]*models.StaffInfo, *errVals.ErrorObj, int) {
+	rows, err := movie.GetStaff(ctx, mvId, r.Database)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	movieInfo, err := movie.ScanMovieConnection(rows)
+	staffInfos, err := movie.ScanStaffConnections(rows)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	return movieInfo, nil, http.StatusOK
+	return staffInfos, nil, http.StatusOK
 }

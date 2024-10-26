@@ -138,11 +138,11 @@ VALUES
   (26, 3),
   (27, 3);
 
-INSERT INTO public.movie_staff (first_name, second_name, patronymic, biography, country_id, post)
+INSERT INTO public.movie_staff (first_name, second_name, biography, country_id, post)
 VALUES
-  ('Райан', 'Гослинг', '', 'Снимался в барби', 2, 'actor'),
-  ('Кристофер', 'Нолан', '', 'Крутой', 2, 'director'),
-  ('Александр', 'Петров', 'Федорович', 'Лучший русский актер', 1, 'actor');
+  ('Райан', 'Гослинг', 'Снимался в барби', 2, 'actor'),
+  ('Кристофер', 'Нолан', 'Крутой', 2, 'director'),
+  ('Александр', 'Петров', 'Лучший русский актер', 1, 'actor');
 
 INSERT INTO public.staff_members (movie_id, movie_staff_id)
 VALUES

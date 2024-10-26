@@ -163,10 +163,9 @@ func TestDelivery_GetActor(t *testing.T) {
 		{
 			name: "Success",
 			mockReturn: &models.StaffInfo{
-				Id:         1,
-				Name:       "Tester",
-				Surname:    "Testov",
-				Patronymic: "Testovich",
+				Id:      1,
+				Name:    "Tester",
+				Surname: "Testov",
 			},
 			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov Testovich","biography":"","birthdate":"","photo_url":"","country":""}}`,
 			statusCode: http.StatusOK,

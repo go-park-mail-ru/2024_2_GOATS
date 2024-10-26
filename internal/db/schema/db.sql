@@ -76,7 +76,6 @@ CREATE TABLE public.movie_staff(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   first_name text NOT NULL,
   second_name text NOT NULL,
-  patronymic text,
   country_id int REFERENCES public.countries(id),
   small_photo_url text DEFAULT '',
   big_photo_url text DEFAULT '',

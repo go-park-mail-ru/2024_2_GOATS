@@ -20,7 +20,6 @@ func FindById(ctx context.Context, staffId int, post string, db *sql.DB) (*model
 		&actorInfo.Id,
 		&actorInfo.Name,
 		&actorInfo.Surname,
-		&actorInfo.Patronymic,
 		&actorInfo.Biography,
 		&actorInfo.Birthdate,
 		&actorInfo.BigPhotoUrl,
