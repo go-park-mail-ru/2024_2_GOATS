@@ -86,10 +86,13 @@ func initPostgres(ctx context.Context, pool *dockertest.Pool) (*dockertest.Resou
 
 	resource, err := pool.RunWithOptions(&opts)
 	if err != nil {
-		return nil, fmt.Errorf("error while initing postgres")
+		return nil, fmt.Errorf("error while initing postgres: %w", err)
 	}
 
-	resource.Expire(30)
+	err = resource.Expire(30)
+	if err != nil {
+		return nil, fmt.Errorf("auto expiration err: %w", err)
+	}
 
 	return resource, nil
 }
