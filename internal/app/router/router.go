@@ -42,7 +42,7 @@ func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router
 func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()
-	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost)
+	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
 	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
 
 	router.HandleFunc("/ws", hub.HandleConnections).Methods(http.MethodGet)
