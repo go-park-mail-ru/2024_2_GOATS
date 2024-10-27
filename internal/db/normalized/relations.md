@@ -37,14 +37,12 @@
 - email
 - avatar_url - ссылка на аватарку
 - password_hash - захэшированный пароль
-- sex - пол
-- birthdate - дата рождения
 - created_at
 - updated_at
 
-{id} → username, email, avatar_url, password_hash, sex, birthdate, created_at, updated_at
-{username} → id, email, avatar_url, password_hash, sex, birthdate, created_at, updated_at
-{email} → id, username, avatar_url, password_hash, sex, birthdate, created_at, updated_at
+{id} → username, email, avatar_url, password_hash, created_at, updated_at
+{username} → id, email, avatar_url, password_hash, created_at, updated_at
+{email} → id, username, avatar_url, password_hash, created_at, updated_at
 
 ### Потенциальные ключи
 - id
@@ -145,10 +143,8 @@
 - video_url
 - movie_id
 - quality_id
-- created_at
-- updated_at
 
-{movie_id, quality_id} -> video_url, created_at, updated_at
+{movie_id, quality_id} -> video_url
 
 ### Потенциальные ключи
 - movie_id, quality_id

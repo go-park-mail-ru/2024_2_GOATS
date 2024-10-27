@@ -15,12 +15,10 @@ erDiagram
 
     users {
       BIGINT id PK
-      TEXT username "NOT NULL"
+      TEXT username "NOT NULL, UNIQUE"
       TEXT email "NOT NULL, UNIQUE"
       TEXT avatar_url "DEFAULT '/static/avatars/default.png'"
       TEXT password_hash "NOT NULL"
-      SEX_ENUM sex "IN ('male', 'female', 'other', 'secret'), DEFAULT 'secret'"
-      DATE birthdate
       TIMESTAMPTZ created_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
       TIMESTAMPTZ updated_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
     }
@@ -41,7 +39,6 @@ erDiagram
       TEXT album_url "DEFAULT '/static/movies/default_poster.png'"
       TEXT title_url "DEFAULT '/static/movies/default_title.png'"
       DATE release_date "NOT NULL"
-      DECIMAL rating "DEFAULT '0.0', (10,2)"
       MOVIE_TYPE_ENUM movie_type "IN ('movie', 'serial'), NOT NULL"
       BIGINT country_id FK "NOT NULL"
       BIGINT director_id FK "NOT NULL"
@@ -49,7 +46,7 @@ erDiagram
       TIMESTAMPTZ updated_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
     }
 
-    series {
+    episodes {
       BIGINT id PK
       TEXT title "NOT NULL"
       TEXT description "NOT NULL"
@@ -67,7 +64,7 @@ erDiagram
       BIGINT user_id FK "NOT NULL"
       BIGINT movie_id FK "NOT NULL"
       BIGING episode_id FK
-      DECIMAL rating "NOT NULL, (10,2)"
+      DECIMAL rating "NOT NULL, (10,2), DEFAULT '0.0'"
       TIMESTAMPTZ created_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
       TIMESTAMPTZ updated_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
     }
@@ -76,13 +73,11 @@ erDiagram
       TEXT video_url "DEFAULT '/static/movies/cassette_video.mp4'"
       BIGINT movie_id FK "PK1.1 NOT NULL"
       BIGINT quality_id FK "PK1.2 NOT NULL"
-      TIMESTAMPTZ created_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
-      TIMESTAMPTZ updated_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
     }
 
     qualities {
       BIGINT id PK
-      TEXT quality "NOT NULL, IN ("144", "360", "720p50", "1080p50")"
+      TEXT quality "NOT NULL, IN ('144', '360', '720p50', '1080p50')"
     }
 
     actors {
@@ -124,17 +119,17 @@ erDiagram
 
     subscriptions {
       BIGINT id PK
-      DECIMAL price "DEFAULT 0.0, (10,2)"
+      DECIMAL price "NOT NULL, DEFAULT 0.0, (10,2)"
       BIGINT user_id FK "NOT NULL"
-      DATETIME start_date "NOT NULL"
+      DATE start_date "NOT NULL"
       INT days_counter "NOT NULL"
       TIMESTAMPTZ created_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
     }
 
     payments {
       BIGINT id PK
-      DECIMAL captured_total "DEFAULT 0.0, (10,2)"
-      DECIMAL refunded_total "DEFAULT 0.0, (10,2)"
+      DECIMAL captured_total "NOT NULL, DEFAULT 0.0, (10,2)"
+      DECIMAL refunded_total "NOT NULL, DEFAULT 0.0, (10,2)"
       BIGINT subscription_id FK "NOT NULL"
       INT payment_number "NOT NULL, DEFAULT 1"
       PAYMENT_STATUS_ENUM status "IN ('started', 'processing', 'finished'), DEFAULT 'started'"
@@ -145,7 +140,7 @@ erDiagram
     receipts {
       BIGINT id PK
       BIGINT payment_id FK "NOT NULL"
-      RECEIPT_TYPES_ENUM receipt_type "IN ('created', 'processing', 'fiscalized'), DEFAULT 'created'"
+      RECEIPT_TYPES_ENUM receipt_type "NOT NULL, IN ('created', 'processing', 'fiscalized'), DEFAULT 'created'"
       TIMESTAMPTZ created_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
       TIMESTAMPTZ updated_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
     }
@@ -154,7 +149,7 @@ erDiagram
       BIGINT id PK
       BIGINT receipt_id FK "NOT NULL"
       TEXT title "NOT NULL"
-      DECIMAL total "DEFAULT 0.0, (10,2)"
+      DECIMAL total "NOT NULL, DEFAULT 0.0, (10,2)"
       LINE_ITEM_TYPES_ENUM line_item_type "NOT NULL, IN ('full_prepayment', 'prepayment', 'refund')"
       TIMESTAMPTZ created_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
       TIMESTAMPTZ updated_at "WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
@@ -170,8 +165,8 @@ erDiagram
     movie_qualities o{--|| movies : "one movie to many movie_qualities"
     movie_qualities o{--|| qualities : "one quality to many movie_qualities"
     episodes o{--|| movies : "one movie to many serials"
-    ratings o{--|| episodes : "one movie to many ratings"
-    ratings o{--|| movies : "one episode to many ratings"
+    ratings o{--|| episodes : "one episode to many ratings"
+    ratings o{--|| movies : "one movie to many ratings"
     movies o{--|| countries : "one country to many movies"
     actors o{--|| countries : "one country to many actors"
     directors ||--|| movies : "one movie to one director"
