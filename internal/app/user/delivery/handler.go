@@ -20,12 +20,16 @@ var _ handlers.UserImplementationInterface = (*UserHandler)(nil)
 type UserHandler struct {
 	userService UserServiceInterface
 	logger      *zerolog.Logger
+	locS        *config.LocalStorage
 }
 
 func NewUserHandler(ctx context.Context, srv UserServiceInterface) *UserHandler {
+	locS := config.FromContext(ctx).Databases.LocalStorage
+
 	return &UserHandler{
 		userService: srv,
 		logger:      &config.FromContext(ctx).Logger,
+		locS:        &locS,
 	}
 }
 
@@ -92,7 +96,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	profileReq := &api.UpdateProfileRequest{
-    UserId: usrId,
+		UserId: usrId,
 	}
 
 	if email, ok := formData["email"]; ok && len(email) > 0 {
@@ -124,7 +128,8 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := u.logger.WithContext(r.Context())
+	ctx := config.WrapLocalStorageContext(r.Context(), u.locS)
+	ctx = u.logger.WithContext(ctx)
 	profileServData := converter.ToServUserData(profileReq)
 	usrSrvResp, errSrvResp := u.userService.UpdateProfile(ctx, profileServData)
 	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)

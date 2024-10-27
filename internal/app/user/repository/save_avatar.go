@@ -12,7 +12,7 @@ import (
 )
 
 func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
-	locS := config.FromContext(ctx).Databases.LocalStorage
+	locS := config.FromLocalStorageContext(ctx)
 	fullPath := locS.UserAvatarsFullUrl + usrData.AvatarName
 	relativePath := locS.UserAvatarsRelativeUrl + usrData.AvatarName
 

@@ -18,12 +18,12 @@ type Config struct {
 type Databases struct {
 	Postgres     Postgres     `yaml:"postgres"`
 	Redis        Redis        `yaml:"redis"`
-	LocalStorage LocalStorage `yaml:"local_storage"`
+	LocalStorage LocalStorage `yaml:"localStorage"`
 }
 
 type LocalStorage struct {
-	UserAvatarsFullUrl     string `yaml:"user_avatars_full_url"`
-	UserAvatarsRelativeUrl string `yaml:"user_avatars_relative_url"`
+	UserAvatarsFullUrl     string `yaml:"userAvatarsFullUrl"`
+	UserAvatarsRelativeUrl string `yaml:"userAvatarsRelativeUrl"`
 }
 
 type Postgres struct {
