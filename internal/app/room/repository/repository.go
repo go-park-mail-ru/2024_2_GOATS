@@ -80,7 +80,10 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomSta
 
 func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
 	var userID string
+	log.Println("cookie =", cookie)
+	log.Println("userID1 =", userID)
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)
+	log.Println("err =", err)
 	if err != nil {
 		return "", errVals.NewErrorObj(
 			errVals.ErrCreateUserCode,

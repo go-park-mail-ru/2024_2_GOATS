@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -51,18 +52,23 @@ func New(logger zerolog.Logger, isTest bool, port *nat.Port) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("config creation error: %w", err)
 	}
+	log.Println("qwer232222rrewq")
 
 	cfg := &Config{}
 	err = viper.Unmarshal(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal the config file: %w", err)
 	}
+	log.Println("qw22er232222rrewq")
 
 	if isTest {
 		cfg.Databases.Postgres.Port = port.Int()
 	}
+	log.Println("qw3333333er232222rrewq")
 
 	cfg.Logger = logger
+
+	log.Println("q6666666ewq")
 
 	return cfg, nil
 }

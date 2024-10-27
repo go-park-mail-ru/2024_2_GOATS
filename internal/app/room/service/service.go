@@ -64,6 +64,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 }
 
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error) {
+	log.Println("qqqwwqq111")
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", roomState)
 
@@ -81,15 +82,17 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.
 }
 
 func (s *RoomService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
-	userId, err, code := s.roomRepository.GetFromCookie(ctx, cookie)
-	if err != nil || userId == "" {
-		return nil, &models.ErrorRespData{
-			Errors:     []errVals.ErrorObj{*err},
-			StatusCode: code,
-		}
-	}
+	//userId, err, code := s.roomRepository.GetFromCookie(ctx, cookie)
+	//log.Println("userId =", userId)
+	//if err != nil || userId == "" {
+	//	return nil, &models.ErrorRespData{
+	//		Errors:     []errVals.ErrorObj{*err},
+	//		StatusCode: code,
+	//	}
+	//}
+	//log.Println("userId =", userId)
 
-	user, sesErr, code := s.roomRepository.UserById(ctx, userId)
+	user, sesErr, code := s.roomRepository.UserById(ctx, cookie)
 	if sesErr != nil {
 		errors := make([]errVals.ErrorObj, 1)
 		errors[0] = *sesErr
@@ -99,6 +102,8 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*models.Sessi
 			StatusCode: code,
 		}
 	}
+
+	//log.Println("1qaz =", userId)
 
 	return &models.SessionRespData{
 		StatusCode: code,
