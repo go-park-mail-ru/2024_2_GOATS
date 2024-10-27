@@ -11,7 +11,7 @@ import (
 )
 
 func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
-	path := fmt.Sprintf("static/user_avatars/%s", usrData.AvatarName)
+	path := fmt.Sprintf("/home/ubuntu/images/user_avatars/%s", usrData.AvatarName)
 	outFile, osErr := os.Create(path)
 	if osErr != nil {
 		return "", &errVals.ErrorObj{
