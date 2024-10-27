@@ -8,6 +8,8 @@ services:
       context: ./
       dockerfile: Dockerfile
     restart: always
+    volumes:
+      - /home/ubuntu/images/user_avatars:/home/ubuntu/images/user_avatars
     ports:
       - 8080:8080
     networks:
