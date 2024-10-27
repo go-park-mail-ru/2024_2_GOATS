@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -41,21 +42,21 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// func PanicMiddleware(next http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func PanicMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-// 		defer func() {
-// 			if err := recover(); err != nil {
-// 				log.Error().Msg(fmt.Sprintf("panicMiddleware: Fail to recover err: %v", err))
-// 				http.Error(w, "Internal server error", 500)
-// 			}
-// 		}()
+		defer func() {
+			if err := recover(); err != nil {
+				log.Error().Msg(fmt.Sprintf("panicMiddleware: Panic happend: %v", err))
+				http.Error(w, "Internal server error", 500)
+			}
+		}()
 
-// 		log.Info().Msg("panicMiddleware: END")
+		log.Info().Msg("panicMiddleware: END")
 
-// 		next.ServeHTTP(w, r)
-// 	})
-// }
+		next.ServeHTTP(w, r)
+	})
+}
 
 func logRequest(r *http.Request, start time.Time, msg string) {
 	log.Info().
