@@ -76,3 +76,31 @@ func GetMovieActors(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error
 
 	return rows, nil
 }
+
+func FindByActorId(ctx context.Context, actorId int, db *sql.DB) (*sql.Rows, error) {
+	logger := log.Ctx(ctx)
+
+	mvStatement := `
+		SELECT
+			movies.id,
+			movies.title,
+			movies.card_url,
+			movies.rating,
+			movies.release_date
+		FROM movies
+		JOIN movie_actors ON movie_actors.movie_id = movies.id
+		JOIN actors ON movie_actors.actor_id = actors.id
+		WHERE actors.id = $1
+	`
+
+	rows, err := db.QueryContext(ctx, mvStatement, actorId)
+
+	if err != nil {
+		errMsg := fmt.Errorf("postgres: error while selecting actor's movies: %w", err)
+		logger.Err(errMsg)
+
+		return nil, errMsg
+	}
+
+	return rows, nil
+}

@@ -200,6 +200,7 @@ func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 		Biography: ac.Biography,
 		PhotoUrl:  ac.BigPhotoUrl,
 		Country:   ac.Country,
+		Movies:    ac.Movies,
 	}
 
 	if ac.Birthdate.Valid {

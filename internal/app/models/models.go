@@ -82,15 +82,24 @@ type MovieInfo struct {
 	Director         *DirectorInfo `json:"director_info"`
 }
 
+type MovieShortInfo struct {
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	CardUrl     string    `json:"card_url"`
+	Rating      float32   `json:"rating"`
+	ReleaseDate time.Time `json:"release_date"`
+}
+
 type ActorInfo struct {
 	Person
-	Id            int          `json:"id"`
-	Biography     string       `json:"biography"`
-	Post          string       `json:"post"`
-	Birthdate     sql.NullTime `json:"birthdate"`
-	SmallPhotoUrl string       `json:"small_photo_url"`
-	BigPhotoUrl   string       `json:"big_photo_url"`
-	Country       string       `json:"country"`
+	Id            int               `json:"id"`
+	Biography     string            `json:"biography"`
+	Post          string            `json:"post"`
+	Birthdate     sql.NullTime      `json:"birthdate"`
+	SmallPhotoUrl string            `json:"small_photo_url"`
+	BigPhotoUrl   string            `json:"big_photo_url"`
+	Country       string            `json:"country"`
+	Movies        []*MovieShortInfo `json:"movies"`
 }
 
 type DirectorInfo struct {

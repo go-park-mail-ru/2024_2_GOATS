@@ -81,3 +81,36 @@ func ScanActorsConnections(rows *sql.Rows) ([]*models.ActorInfo, error) {
 
 	return actorInfos, nil
 }
+
+func ScanActorMoviesConnections(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
+	actMvs := []*models.MovieShortInfo{}
+
+	for rows.Next() {
+		var mvShortInfo models.MovieShortInfo
+
+		err := rows.Scan(
+			&mvShortInfo.Id,
+			&mvShortInfo.Title,
+			&mvShortInfo.CardUrl,
+			&mvShortInfo.Rating,
+			&mvShortInfo.ReleaseDate,
+		)
+
+		if err != nil {
+			errMsg := fmt.Errorf("error while scanning actor's movies short info: %w", err)
+			log.Err(errMsg)
+
+			return nil, errMsg
+		}
+
+		actMvs = append(actMvs, &mvShortInfo)
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Err(fmt.Errorf("cannot close rows while taking actor's movies short info: %w", err))
+		}
+	}()
+
+	return actMvs, nil
+}

@@ -111,12 +111,13 @@ type ActorInfo struct {
 	Country  string `json:"country"`
 }
 type Actor struct {
-	Id        int    `json:"id"`
-	FullName  string `json:"full_name"`
-	Biography string `json:"biography"`
-	Birthdate string `json:"birthdate"`
-	PhotoUrl  string `json:"photo_url"`
-	Country   string `json:"country"`
+	Id        int                      `json:"id"`
+	FullName  string                   `json:"full_name"`
+	Biography string                   `json:"biography"`
+	Birthdate string                   `json:"birthdate"`
+	PhotoUrl  string                   `json:"photo_url"`
+	Country   string                   `json:"country"`
+	Movies    []*models.MovieShortInfo `json:"movies"`
 }
 
 type ErrorResponse struct {
