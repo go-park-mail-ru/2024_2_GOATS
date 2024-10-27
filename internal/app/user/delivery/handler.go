@@ -144,12 +144,17 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 		}
 	}()
 
+	var filename string
+	if handler != nil {
+		filename = handler.Filename
+	}
+
 	profileReq := &api.UpdateProfileRequest{
 		UserId:     usrId,
 		Email:      getFormValue(formData, "email"),
 		Username:   getFormValue(formData, "username"),
 		Avatar:     file,
-		AvatarName: handler.Filename,
+		AvatarName: filename,
 	}
 
 	return profileReq, nil
