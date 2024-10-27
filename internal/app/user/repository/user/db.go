@@ -68,8 +68,8 @@ func FindById(ctx context.Context, userId int, db *sql.DB) (*models.User, error)
 	logger := log.Ctx(ctx)
 	err := db.QueryRowContext(
 		ctx,
-		"SELECT id, email, username, password_hash, sex, birthdate, avatar_url FROM USERS WHERE id = $1", userId,
-	).Scan(&usr.Id, &usr.Email, &usr.Username, &usr.Password, &usr.Sex, &usr.Birthdate, &usr.AvatarUrl)
+		"SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = $1", userId,
+	).Scan(&usr.Id, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarUrl)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
@@ -122,16 +122,6 @@ func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error 
 	if usrData.Username != "" {
 		sets = append(sets, fmt.Sprintf("username = $%d", argCount))
 		args = append(args, usrData.Username)
-		argCount++
-	}
-	if usrData.Sex.String != "" {
-		sets = append(sets, fmt.Sprintf("sex = $%d", argCount))
-		args = append(args, usrData.Sex)
-		argCount++
-	}
-	if usrData.Birthdate.Valid {
-		sets = append(sets, fmt.Sprintf("birthdate = $%d", argCount))
-		args = append(args, usrData.Birthdate)
 		argCount++
 	}
 	if usrData.AvatarUrl != "" {

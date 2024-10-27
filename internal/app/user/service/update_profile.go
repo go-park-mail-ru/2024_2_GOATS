@@ -9,15 +9,17 @@ import (
 )
 
 func (u *UserService) UpdateProfile(ctx context.Context, usrData *models.User) (*models.UpdateUserRespData, *models.ErrorRespData) {
-	avatarUrl, err := u.userRepo.SaveAvatar(ctx, usrData)
-	if err != nil {
-		return nil, &models.ErrorRespData{
-			StatusCode: http.StatusInternalServerError,
-			Errors:     []errVals.ErrorObj{*err},
+	if usrData.AvatarName != "" {
+		avatarUrl, err := u.userRepo.SaveAvatar(ctx, usrData)
+		if err != nil {
+			return nil, &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors:     []errVals.ErrorObj{*err},
+			}
 		}
+		usrData.AvatarUrl = avatarUrl
 	}
 
-	usrData.AvatarUrl = avatarUrl
 	err, status := u.userRepo.UpdateProfileData(ctx, usrData)
 	if err != nil {
 		return nil, &models.ErrorRespData{
