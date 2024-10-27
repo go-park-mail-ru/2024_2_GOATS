@@ -39,6 +39,7 @@ services:
     volumes:
       - ../frontend/2024_2_GOATS/dist:/var/www/dist
       - ../disk:/usr/share/nginx/html/static
+      - ../images:/usr/share/nginx/html/images
     ports:
       - 80:80
     depends_on:
