@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -16,6 +17,12 @@ import (
 )
 
 var _ handlers.UserImplementationInterface = (*UserHandler)(nil)
+
+const (
+	rParseErr      = "user_request_parse_error"
+	vlErr          = "user_validation_error"
+	uploadFileSize = 5 * 1024 * 1024
+)
 
 type UserHandler struct {
 	userService UserServiceInterface
@@ -38,11 +45,10 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	api.DecodeBody(w, r, passwordReq)
 
 	vars := mux.Vars(r)
-	usrId, err := strconv.Atoi(vars["id"])
+	usrId, err := getUserId(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
-		u.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
+		api.RequestError(w, u.logger, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -51,8 +57,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	if err := validation.ValidatePassword(passwordReq.Password, passwordReq.PasswordConfirmation); err != nil {
 		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err.Err)
-		u.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("password_validation_error", errMsg))
+		api.RequestError(w, u.logger, vlErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -72,19 +77,23 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	usrId, err := strconv.Atoi(vars["id"])
+	usrId, err := getUserId(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
-		u.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
+		api.RequestError(w, u.logger, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
 
-	r.ParseMultipartForm(5 * 1024 * 1024)
-	formData := r.MultipartForm.Value
+	err = r.ParseMultipartForm(uploadFileSize)
+	if err != nil {
+		errMsg := fmt.Errorf("updateProfile action: Error parsing multipartForm - %w", err)
+		api.RequestError(w, u.logger, rParseErr, http.StatusBadRequest, errMsg)
 
-	file, handler, err := r.FormFile("avatar")
+		return
+	}
+
+	profileReq, err := u.parseProfileRequest(r, usrId)
 	if err != nil {
 		errMsg := fmt.Errorf("cannot read file from request: %w", err)
 		u.logger.Err(errMsg)
@@ -93,37 +102,9 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer file.Close()
-
-	profileReq := &api.UpdateProfileRequest{
-		UserId: usrId,
-	}
-
-	if email, ok := formData["email"]; ok && len(email) > 0 {
-		profileReq.Email = email[0]
-	}
-
-	if username, ok := formData["username"]; ok && len(username) > 0 {
-		profileReq.Username = username[0]
-	}
-
-	if birthdate, ok := formData["birthdate"]; ok && len(birthdate) > 0 {
-		profileReq.Birthdate = birthdate[0]
-	}
-
-	if sex, ok := formData["sex"]; ok && len(sex) > 0 {
-		profileReq.Sex = sex[0]
-	}
-
-	if file != nil && handler.Filename != "" {
-		profileReq.Avatar = file
-		profileReq.AvatarName = handler.Filename
-	}
-
 	if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
 		errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
-		u.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("email_validation_error", errMsg))
+		api.RequestError(w, u.logger, vlErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -140,4 +121,51 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.Response(w, usrResp.StatusCode, usrResp)
+}
+
+func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.UpdateProfileRequest, error) {
+	formData := r.MultipartForm.Value
+	file, handler, err := r.FormFile("avatar")
+
+	if errors.Is(err, http.ErrMissingFile) {
+		u.logger.Info().Msg("file was not given")
+	} else {
+		errMsg := fmt.Errorf("cannot read file from request: %w", err)
+		u.logger.Err(errMsg)
+
+		return nil, err
+	}
+
+	defer func() {
+		if file != nil {
+			if err := file.Close(); err != nil {
+				u.logger.Err(fmt.Errorf("cannot close file: %w", err))
+			}
+		}
+	}()
+
+	profileReq := &api.UpdateProfileRequest{
+		UserId:     usrId,
+		Email:      getFormValue(formData, "email"),
+		Username:   getFormValue(formData, "username"),
+		Avatar:     file,
+		AvatarName: handler.Filename,
+	}
+
+	return profileReq, nil
+}
+
+func getFormValue(formData map[string][]string, key string) string {
+	if val, ok := formData[key]; ok && len(val) > 0 {
+		return val[0]
+	}
+	return ""
+}
+
+func getUserId(vars map[string]string) (int, error) {
+	usrId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return 0, err
+	}
+	return usrId, nil
 }

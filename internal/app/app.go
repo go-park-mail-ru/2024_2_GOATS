@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
@@ -101,7 +102,11 @@ func (a *App) Run() {
 	a.logger.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
 
 	// Not ready yet
-	defer a.GracefulShutdown()
+	defer func() {
+		if err := a.GracefulShutdown(); err != nil {
+			a.logger.Fatal().Msg(fmt.Sprintf("error while graceful shutdown: %v", err))
+		}
+	}()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -124,13 +129,13 @@ func (a *App) GracefulShutdown() error {
 	if err := a.Server.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("failed to shut down HTTP server: %w", err)
 	}
-	a.logger.Info().Msg("HTTP server shut down")
+	log.Info().Msg("HTTP shut down")
 
 	select {
 	case <-shutdownCtx.Done():
-		a.logger.Info().Msg("Graceful shutdown complete")
+		log.Info().Msg("Graceful shutdown complete")
 	default:
-		a.logger.Info().Msg("Waiting for all goroutines to finish...")
+		log.Info().Msg("Waiting for all goroutines to finish...")
 		time.Sleep(500 * time.Millisecond)
 	}
 

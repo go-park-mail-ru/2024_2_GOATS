@@ -222,14 +222,14 @@ func TestDelivery_Logout(t *testing.T) {
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,
-			resp:         `{"success":false,"errors":[{"Code":"cookie_validation_error","Error":"logout action: Invalid cookie err - broken cookie was given"}]}`,
+			resp:         `{"success":false,"errors":[{"Code":"auth_validation_error","Error":"request error: logout action: Invalid cookie err - broken cookie was given"}]}`,
 		},
 		{
 			name:         "No cookie provided",
-			statusCode:   http.StatusForbidden,
+			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			noCookie:     true,
-			resp:         `{"success":false,"errors":[{"Code":"no_cookie_provided","Error":"logout action: No cookie err - http: named cookie not present"}]}`,
+			resp:         `{"success":false,"errors":[{"Code":"auth_request_parse_error","Error":"request error: logout action: No cookie err - http: named cookie not present"}]}`,
 		},
 	}
 
@@ -283,7 +283,7 @@ func TestDelivery_Session(t *testing.T) {
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","birthdate":"","sex":"","avatar_url":""}}`,
+			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -300,7 +300,7 @@ func TestDelivery_Session(t *testing.T) {
 		},
 		{
 			name:       "Forbidden",
-			resp:       `{"success":false,"errors":[{"Code":"no_cookie_provided","Error":"session action: No cookie err - http: named cookie not present"}]}`,
+			resp:       `{"success":false,"errors":[{"Code":"auth_request_parse_error","Error":"request error: session action: No cookie err - http: named cookie not present"}]}`,
 			statusCode: http.StatusForbidden,
 			noCookie:   true,
 		},

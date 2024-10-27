@@ -52,11 +52,9 @@ type User struct {
 	Email      string
 	Username   string
 	Password   string
-	Birthdate  sql.NullTime
 	AvatarUrl  string
 	AvatarName string
 	Avatar     multipart.File
-	Sex        sql.NullString
 }
 
 type Collection struct {

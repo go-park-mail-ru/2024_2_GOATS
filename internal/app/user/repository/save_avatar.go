@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/rs/zerolog/log"
 )
 
 func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
@@ -24,7 +25,11 @@ func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string
 		}
 	}
 
-	defer outFile.Close()
+	defer func() {
+		if err := outFile.Close(); err != nil {
+			log.Ctx(ctx).Err(fmt.Errorf("failed to close outFile: %w", err))
+		}
+	}()
 
 	_, osErr = io.Copy(outFile, usrData.Avatar)
 	if osErr != nil {
