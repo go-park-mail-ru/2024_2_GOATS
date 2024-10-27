@@ -9,7 +9,6 @@ DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS movie_genres CASCADE;
 DROP TABLE IF EXISTS countries CASCADE;
 DROP TYPE IF EXISTS movie_type_enum;
-DROP TYPE IF EXISTS sex_enum;
 
 CREATE TABLE public.genres(
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -28,14 +27,12 @@ CREATE TABLE public.directors(
 
 CREATE INDEX idx_directors_name_pattern ON public.directors (first_name text_pattern_ops, second_name text_pattern_ops);
 
-CREATE TYPE public.sex_enum AS ENUM ('male', 'female', 'other', 'secret');
 CREATE TABLE public.users(
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   username text UNIQUE,
   email text NOT NULL UNIQUE,
   avatar_url text DEFAULT '/static/avatars/default.png',
   password_hash text NOT NULL,
-  sex SEX_ENUM DEFAULT 'secret',
   birthdate date,
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -68,7 +65,6 @@ CREATE TABLE public.movies(
   release_date date NOT NULL,
   rating decimal(10,2) DEFAULT '0.0',
   movie_type MOVIE_TYPE_ENUM NOT NULL,
-  video_url text DEFAULT '/static/movies/cassette_video.mp4',
   country_id bigint REFERENCES public.countries(id),
   director_id bigint REFERENCES public.directors(id),
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -136,3 +132,29 @@ CREATE TABLE public.movie_collections(
 
 CREATE INDEX idx_movie_collections_movie_id ON public.movie_collections(movie_id);
 CREATE INDEX idx_movie_collections_collection_id ON public.movie_collections(collection_id);
+
+CREATE TABLE public.ratings (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id bigint NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    movie_id bigint NOT NULL REFERENCES public.movies(id) ON DELETE CASCADE,
+    episode_id bigint REFERENCES public.episodes(id) ON DELETE CASCADE,
+    rating decimal(10, 2),
+    created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (user_id, movie_id, episode_id)
+);
+
+CREATE TABLE episodes (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    movie_id bigint NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
+    season_number int NOT NULL,
+    episode_number int NOT NULL,
+    title text NOT NULL,
+    description text NOT NULL,
+    release_date date NOT NULL,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (movie_id, season_number, episode_number)
+);
