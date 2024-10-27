@@ -44,8 +44,6 @@ func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationIn
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()
 	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
 	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
-
-	router.HandleFunc("/ws", hub.HandleConnections).Methods(http.MethodGet)
 }
 
 func ActivateMiddlewares(mx *mux.Router) {
