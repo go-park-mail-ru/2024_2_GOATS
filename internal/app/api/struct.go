@@ -18,8 +18,6 @@ type UpdateProfileRequest struct {
 	UserId     int    `json:"user_id"`
 	Email      string `json:"email"`
 	Username   string `json:"username"`
-	Birthdate  string `json:"birthdate"`
-	Sex        string `json:"sex"`
 	Avatar     multipart.File
 	AvatarName string
 }
@@ -69,7 +67,5 @@ type User struct {
 	Id        int    `json:"id"`
 	Email     string `json:"email"`
 	Username  string `json:"username"`
-	Birthdate string `json:"birthdate"`
-	Sex       string `json:"sex"`
 	AvatarUrl string `json:"avatar_url"`
 }

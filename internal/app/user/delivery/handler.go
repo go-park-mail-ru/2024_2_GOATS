@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -88,7 +89,14 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profileReq := u.parseProfileRequest(r, usrId)
+	profileReq, err := u.parseProfileRequest(r, usrId)
+	if err != nil {
+		errMsg := fmt.Errorf("cannot read file from request: %w", err)
+		u.logger.Err(errMsg)
+		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
+
+		return
+	}
 
 	if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
 		errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
@@ -110,13 +118,24 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	api.Response(w, usrResp.StatusCode, usrResp)
 }
 
-func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) *api.UpdateProfileRequest {
+func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.UpdateProfileRequest, error) {
 	formData := r.MultipartForm.Value
-	file, handler, _ := r.FormFile("avatar")
+	file, handler, err := r.FormFile("avatar")
+
+	if errors.Is(err, http.ErrMissingFile) {
+		u.logger.Info().Msg("file was not given")
+	} else {
+		errMsg := fmt.Errorf("cannot read file from request: %w", err)
+		u.logger.Err(errMsg)
+
+		return nil, err
+	}
 
 	defer func() {
-		if err := file.Close(); err != nil {
-			u.logger.Err(fmt.Errorf("cannot close uploaded file: %w", err))
+		if file != nil {
+			if err := file.Close(); err != nil {
+				u.logger.Err(fmt.Errorf("cannot close file: %w", err))
+			}
 		}
 	}()
 
@@ -124,12 +143,11 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) *api.Updat
 		UserId:     usrId,
 		Email:      getFormValue(formData, "email"),
 		Username:   getFormValue(formData, "username"),
-		Birthdate:  getFormValue(formData, "birthdate"),
-		Sex:        getFormValue(formData, "sex"),
 		Avatar:     file,
 		AvatarName: handler.Filename,
 	}
-	return profileReq
+
+	return profileReq, nil
 }
 
 func getFormValue(formData map[string][]string, key string) string {
