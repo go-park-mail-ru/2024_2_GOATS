@@ -127,13 +127,16 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 	formData := r.MultipartForm.Value
 	file, handler, err := r.FormFile("avatar")
 
-	if errors.Is(err, http.ErrMissingFile) {
-		u.logger.Info().Msg("file was not given")
-	} else {
-		errMsg := fmt.Errorf("cannot read file from request: %w", err)
-		u.logger.Err(errMsg)
+	if err != nil {
+		if errors.Is(err, http.ErrMissingFile) {
+			u.logger.Info().Msg("file was not given")
+		} else {
+			fmt.Println(err)
+			errMsg := fmt.Errorf("cannot read file from request: %w", err)
+			u.logger.Err(errMsg)
 
-		return nil, err
+			return nil, err
+		}
 	}
 
 	defer func() {
@@ -156,6 +159,8 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 		Avatar:     file,
 		AvatarName: filename,
 	}
+
+	// fmt.Println(profileReq)
 
 	return profileReq, nil
 }
