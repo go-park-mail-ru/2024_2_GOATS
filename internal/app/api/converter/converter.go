@@ -122,22 +122,7 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 
 	colls := []api.Collection{}
 	for _, coll := range cl.Collections {
-		tempCol := api.Collection{Id: coll.Id, Title: coll.Title, Movies: &[]api.CollectionMovie{}}
-		for _, movie := range coll.Movies {
-			tempMv := api.CollectionMovie{
-				Id:          movie.Id,
-				Title:       movie.Title,
-				CardUrl:     movie.CardUrl,
-				AlbumUrl:    movie.AlbumUrl,
-				Rating:      movie.Rating,
-				ReleaseDate: movie.ReleaseDate,
-				MovieType:   movie.MovieType,
-				Country:     movie.Country,
-			}
-
-			*tempCol.Movies = append(*tempCol.Movies, tempMv)
-		}
-
+		tempCol := api.Collection{Id: coll.Id, Title: coll.Title, Movies: coll.Movies}
 		colls = append(colls, tempCol)
 	}
 

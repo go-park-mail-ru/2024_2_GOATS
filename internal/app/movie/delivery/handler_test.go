@@ -36,18 +36,17 @@ func TestDelivery_GetCollection(t *testing.T) {
 					{
 						Id:    1,
 						Title: "Test collection",
-						Movies: []*models.MovieInfo{
+						Movies: []*models.MovieShortInfo{
 							{
-								Id:              1,
-								Title:           "test movie",
-								FullDescription: "some interesting movie",
+								Id:    1,
+								Title: "test movie",
 							},
 						},
 					},
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"","album_url":"","rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
+			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"","rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -170,7 +169,7 @@ func TestDelivery_GetActor(t *testing.T) {
 					Surname: "Testov",
 				},
 			},
-			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":""}}`,
+			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":"", "movies":null}}`,
 			statusCode: http.StatusOK,
 		},
 		{

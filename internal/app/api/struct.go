@@ -61,20 +61,9 @@ type CollectionsResponse struct {
 }
 
 type Collection struct {
-	Id     int                `json:"id"`
-	Title  string             `json:"title"`
-	Movies *[]CollectionMovie `json:"movies"`
-}
-
-type CollectionMovie struct {
-	Id          int       `json:"id"`
-	Title       string    `json:"title"`
-	CardUrl     string    `json:"card_url"`
-	AlbumUrl    string    `json:"album_url"`
-	Rating      float32   `json:"rating"`
-	ReleaseDate time.Time `json:"release_date"`
-	MovieType   string    `json:"movie_type"`
-	Country     string    `json:"country"`
+	Id     int                      `json:"id"`
+	Title  string                   `json:"title"`
+	Movies []*models.MovieShortInfo `json:"movies"`
 }
 
 type MovieResponse struct {

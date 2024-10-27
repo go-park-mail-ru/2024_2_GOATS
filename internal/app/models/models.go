@@ -60,9 +60,9 @@ type User struct {
 }
 
 type Collection struct {
-	Id     int          `json:"id"`
-	Title  string       `json:"title"`
-	Movies []*MovieInfo `json:"movies"`
+	Id     int               `json:"id"`
+	Title  string            `json:"title"`
+	Movies []*MovieShortInfo `json:"movies"`
 }
 
 type MovieInfo struct {
@@ -88,6 +88,8 @@ type MovieShortInfo struct {
 	CardUrl     string    `json:"card_url"`
 	Rating      float32   `json:"rating"`
 	ReleaseDate time.Time `json:"release_date"`
+	MovieType   string    `json:"movie_type"`
+	Country     string    `json:"country"`
 }
 
 type ActorInfo struct {
