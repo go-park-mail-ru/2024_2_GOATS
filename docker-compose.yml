@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     volumes:
-      - /home/ubuntu/images/user_avatars:/home/ubuntu/images/user_avatars
+      - /home/ubuntu/images:/home/ubuntu/images
     ports:
       - 8080:8080
     networks:

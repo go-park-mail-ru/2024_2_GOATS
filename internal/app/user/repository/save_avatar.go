@@ -11,8 +11,10 @@ import (
 )
 
 func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
-	path := fmt.Sprintf("/home/ubuntu/images/user_avatars/%s", usrData.AvatarName)
-	outFile, osErr := os.Create(path)
+	fullPath := fmt.Sprintf("/home/ubuntu/images/user_avatars/%s", usrData.AvatarName)
+	relativePath := fmt.Sprintf("/images/user_avatars/%s", usrData.AvatarName)
+
+	outFile, osErr := os.Create(fullPath)
 	if osErr != nil {
 		return "", &errVals.ErrorObj{
 			Code:  "file_upload_err",
@@ -30,5 +32,5 @@ func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string
 		}
 	}
 
-	return path, nil
+	return relativePath, nil
 }
