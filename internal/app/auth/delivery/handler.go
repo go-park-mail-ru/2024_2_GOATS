@@ -20,6 +20,11 @@ import (
 
 var _ handlers.AuthImplementationInterface = (*AuthHandler)(nil)
 
+const (
+	rParseErr = "auth_request_parse_error"
+	vlErr     = "auth_validation_error"
+)
+
 type AuthHandler struct {
 	authService AuthServiceInterface
 	userService userDel.UserServiceInterface
@@ -42,18 +47,16 @@ func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv us
 func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ck, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		errMsg := fmt.Errorf("Logout action: No cookie err - %w", err)
-		a.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusForbidden, api.PreparedDefaultError(errVals.ErrNoCookieCode, errMsg))
+		errMsg := fmt.Errorf("logout action: No cookie err - %w", err)
+		api.RequestError(w, a.logger, rParseErr, errMsg)
 
 		return
 	}
 
 	validErr := validation.ValidateCookie(ck.Value)
 	if validErr != nil {
-		errMsg := fmt.Errorf("Logout action: Invalid cookie err - %w", validErr.Err)
-		a.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("cookie_validation_error", errMsg))
+		errMsg := fmt.Errorf("logout action: Invalid cookie err - %w", validErr.Err)
+		api.RequestError(w, a.logger, vlErr, errMsg)
 
 		return
 	}
@@ -149,9 +152,8 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	ck, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		errMsg := fmt.Errorf("Session action: No cookie err - %w", err)
-		a.logger.Error().Msg(errMsg.Error())
-		api.Response(w, http.StatusForbidden, api.PreparedDefaultError(errVals.ErrNoCookieCode, errMsg))
+		errMsg := fmt.Errorf("session action: No cookie err - %w", err)
+		api.RequestError(w, a.logger, rParseErr, errMsg)
 
 		return
 	}

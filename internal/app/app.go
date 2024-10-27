@@ -101,7 +101,11 @@ func (a *App) Run() {
 	a.logger.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
 
 	// Not ready yet
-	defer a.GracefulShutdown()
+	defer func() {
+		if err := a.GracefulShutdown(); err != nil {
+			a.logger.Fatal().Msg(fmt.Sprintf("error while graceful shutdown: %v", err))
+		}
+	}()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -117,6 +121,11 @@ func (a *App) GracefulShutdown() error {
 		return fmt.Errorf("failed to close database: %w", err)
 	}
 	a.logger.Info().Msg("Postgres shut down")
+
+	if err := a.Redis.Close(); err != nil {
+		return fmt.Errorf("failed to close redis: %w", err)
+	}
+	a.logger.Info().Msg("Redis shut down")
 
 	shutdownCtx, cancel := context.WithTimeout(a.Context, 10*time.Second)
 	defer cancel()
