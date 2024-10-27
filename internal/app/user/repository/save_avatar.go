@@ -6,13 +6,15 @@ import (
 	"io"
 	"os"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
 func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
-	fullPath := fmt.Sprintf("/home/ubuntu/images/user_avatars/%s", usrData.AvatarName)
-	relativePath := fmt.Sprintf("/images/user_avatars/%s", usrData.AvatarName)
+	locS := config.FromContext(ctx).Databases.LocalStorage
+	fullPath := locS.UserAvatarsFullUrl + usrData.AvatarName
+	relativePath := locS.UserAvatarsRelativeUrl + usrData.AvatarName
 
 	outFile, osErr := os.Create(fullPath)
 	if osErr != nil {
