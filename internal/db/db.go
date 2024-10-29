@@ -8,6 +8,10 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/database/postgres" // Импортируем драйвер Postgres для работы с базой данных
+	_ "github.com/golang-migrate/migrate/source/file"       // Добавляем импорт файлового источника
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -63,36 +67,40 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 
 	log.Printf("Database pinged successfully")
 
-	if err = migrate(DB); err != nil {
+	if err = migDB(DB); err != nil {
 		return nil, fmt.Errorf("error while migrating DB: %w", err)
 	}
 
 	if err = seed(DB); err != nil {
-		return nil, fmt.Errorf("error while seeding DB: %w", err)
+		fmt.Errorf("error while seeding DB: %w", err)
 	}
 
 	return DB, nil
 }
 
-func migrate(db *sql.DB) error {
-	sqlFile, err := os.ReadFile(viper.GetString("SCHEMA_PATH"))
+func migDB(db *sql.DB) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		errMsg := fmt.Errorf("migration: error read sql script - %w", err)
+		errMsg := fmt.Errorf("migDB: error get sql driver - %w", err)
 		log.Error().Msg(errMsg.Error())
 
 		return errMsg
 	}
 
-	_, err = db.Exec(string(sqlFile))
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://internal/db/migrations/",
+		"postgres",
+		driver,
+	)
+
 	if err != nil {
-		errMsg := fmt.Errorf("migration: error while exec sqlFile: %w", err)
+		errMsg := fmt.Errorf("migDB: cannot create migrator - %w", err)
 		log.Error().Msg(errMsg.Error())
 
 		return errMsg
 	}
 
-	log.Info().Msg("database successfully migrated")
-	return nil
+	return m.Up()
 }
 
 func seed(db *sql.DB) error {
