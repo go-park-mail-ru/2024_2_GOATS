@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
@@ -29,7 +28,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(loginData.Password))
 	if cryptErr != nil {
-		logger.Err(cryptErr).Msg(fmt.Sprintf("BCrypt: password missmatch. Given: %s", loginData.Password))
+		logger.Err(cryptErr).Msg("BCrypt: password missmatch.")
 
 		return nil, &models.ErrorRespData{
 			StatusCode: http.StatusConflict,

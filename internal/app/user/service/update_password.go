@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -23,7 +22,7 @@ func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.P
 
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(passwordData.OldPassword))
 	if cryptErr != nil {
-		logger.Err(cryptErr).Msg(fmt.Sprintf("BCrypt: password missmatch. Given: %s", passwordData.OldPassword))
+		logger.Err(cryptErr).Msg("BCrypt: password missmatch.")
 
 		return nil, &models.ErrorRespData{
 			StatusCode: http.StatusConflict,

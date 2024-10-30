@@ -26,7 +26,7 @@ func (r *Repo) SetCookie(ctx context.Context, token *models.Token) (*models.Cook
 		), http.StatusInternalServerError
 	}
 
-	logger.Info().Msg(fmt.Sprintf("redis: successfully set cookie - %s", token.TokenID))
+	logger.Info().Msg("redis: successfully set cookie")
 
 	return &models.CookieData{
 		Name:  cookieCfg.Name,

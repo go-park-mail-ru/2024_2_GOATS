@@ -92,6 +92,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 		mockErr    *models.ErrorRespData
 		statusCode int
 		resp       string
+		badReq     bool
 	}{
 		{
 			name: "Success",
@@ -119,6 +120,12 @@ func TestDelivery_GetMovie(t *testing.T) {
 			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
+		{
+			name:       "Bad Request",
+			resp:       `{"success":false,"errors":[{"Code":"bad_request","Error":"getMovie action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			statusCode: http.StatusBadRequest,
+			badReq:     true,
+		},
 	}
 
 	for _, test := range tests {
@@ -130,16 +137,16 @@ func TestDelivery_GetMovie(t *testing.T) {
 			srv := srvMock.NewMockMovieServiceInterface(ctrl)
 			handler := NewMovieHandler(testContext(), srv)
 
-			srv.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
-
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.GetMovie)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest("GET", path, nil)
 
-			vars := map[string]string{
-				"movie_id": "1",
+			vars := map[string]string{}
+			if !test.badReq {
+				srv.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				vars["movie_id"] = "1"
 			}
 
 			req = mux.SetURLVars(req, vars)
@@ -159,6 +166,7 @@ func TestDelivery_GetActor(t *testing.T) {
 		mockErr    *models.ErrorRespData
 		statusCode int
 		resp       string
+		badReq     bool
 	}{
 		{
 			name: "Success",
@@ -181,6 +189,12 @@ func TestDelivery_GetActor(t *testing.T) {
 			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
+		{
+			name:       "Bad Request",
+			resp:       `{"success":false,"errors":[{"Code":"bad_request","Error":"getActor action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			statusCode: http.StatusBadRequest,
+			badReq:     true,
+		},
 	}
 
 	for _, test := range tests {
@@ -192,16 +206,16 @@ func TestDelivery_GetActor(t *testing.T) {
 			srv := srvMock.NewMockMovieServiceInterface(ctrl)
 			handler := NewMovieHandler(testContext(), srv)
 
-			srv.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
-
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.GetActor)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest("GET", path, nil)
 
-			vars := map[string]string{
-				"actor_id": "1",
+			vars := map[string]string{}
+			if !test.badReq {
+				srv.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				vars["actor_id"] = "1"
 			}
 
 			req = mux.SetURLVars(req, vars)

@@ -38,7 +38,7 @@ func Create(ctx context.Context, registerData models.RegisterData, db *sql.DB) (
 		return nil, errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: successfully create user with Email - %s", usr.Email))
+	logger.Info().Msg("postgres: successfully create user")
 
 	return &usr, nil
 }
@@ -58,7 +58,7 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*models.User, e
 		return nil, errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: user with email %s found", email))
+	logger.Info().Msg("postgres: user found by email")
 
 	return &usr, nil
 }
@@ -78,7 +78,7 @@ func FindById(ctx context.Context, userId int, db *sql.DB) (*models.User, error)
 		return nil, errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: user wuth id %d found", usr.Id))
+	logger.Info().Msg(fmt.Sprintf("postgres: user with id %d found", usr.Id))
 
 	return &usr, nil
 }

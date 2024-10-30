@@ -24,6 +24,6 @@ func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVa
 		), http.StatusForbidden
 	}
 
-	logger.Info().Msg(fmt.Sprintf("redis: successfully get info from cookie - %s", cookie))
+	logger.Info().Msg("redis: successfully get info from cookie")
 	return userID, nil, http.StatusOK
 }

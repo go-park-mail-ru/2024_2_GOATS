@@ -2,5 +2,7 @@ github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/struct.go

@@ -131,7 +131,6 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 		if errors.Is(err, http.ErrMissingFile) {
 			u.logger.Info().Msg("file was not given")
 		} else {
-			fmt.Println(err)
 			errMsg := fmt.Errorf("cannot read file from request: %w", err)
 			u.logger.Err(errMsg)
 
@@ -159,8 +158,6 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 		Avatar:     file,
 		AvatarName: filename,
 	}
-
-	// fmt.Println(profileReq)
 
 	return profileReq, nil
 }
