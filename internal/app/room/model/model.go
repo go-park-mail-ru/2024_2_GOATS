@@ -43,20 +43,20 @@ type Action struct {
 }
 
 type User struct {
-	Id         int    `json:"id"`
-	Email      string `json:"email"`
-	Username   string `json:"username"`
-	Password   string
-	Birthdate  sql.NullTime
-	AvatarUrl  string `json:"avatar"`
-	AvatarName string
-	Avatar     multipart.File
-	Sex        sql.NullString
+	Id         int            `json:"id"`
+	Email      string         `json:"email"`
+	Username   string         `json:"username"`
+	Password   string         `json:"password"`
+	Birthdate  sql.NullTime   `json:"birthdate"`
+	AvatarUrl  string         `json:"avatar_url"`
+	AvatarName string         `json:"avatar_name"`
+	Avatar     multipart.File `json:"avatar"`
+	Sex        sql.NullString `json:"sex"`
 }
 
 type SessionRespData struct {
-	UserData   User
-	StatusCode int
+	UserData   User `json:"user_data"`
+	StatusCode int  `json:"status_code"`
 }
 
 type ErrorRespData struct {

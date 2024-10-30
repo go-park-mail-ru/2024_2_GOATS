@@ -168,7 +168,6 @@ func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn) {
 	log.Println("broadcastUserList:", userList)
 
 	for conn := range h.roomHub.Clients {
-
 		if conn == excludeConn {
 			continue
 		}
