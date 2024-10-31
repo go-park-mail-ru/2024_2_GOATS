@@ -119,8 +119,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	h.roomHub.Register <- conn
 	h.roomHub.Users[conn] = user
 
-	h.broadcastUserList(conn)
-
 	// Получение состояния комнаты
 	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
 	log.Println("roomStateroomStateroomStateroomState:", roomState)
@@ -134,7 +132,8 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	log.Println("6789876")
+
+	h.broadcastUserList(conn)
 
 	for {
 		var action models.Action
@@ -157,7 +156,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 			log.Println("Error handling action:", err)
 		}
 	}
-
 }
 
 func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn) {
@@ -168,9 +166,9 @@ func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn) {
 	log.Println("broadcastUserList:", userList)
 
 	for conn := range h.roomHub.Clients {
-		if conn == excludeConn {
-			continue
-		}
+		//if conn == excludeConn {
+		//	continue
+		//}
 		if err := conn.WriteJSON(userList); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)
