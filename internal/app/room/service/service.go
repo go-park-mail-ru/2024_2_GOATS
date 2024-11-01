@@ -4,25 +4,34 @@ import (
 	"context"
 	"fmt"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
-	//model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	movie "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
+
 	"log"
 )
 
-//type MovieServiceInterface interface {
-//	GetCollection(ctx context.Context) (*model.CollectionsRespData, *models.ErrorRespData)
-//	GetMovie(ctx context.Context, mvId int) (*model.MovieInfo, *models.ErrorRespData)
-//	GetActor(ctx context.Context, actorId int) (*model.StaffInfo, *models.ErrorRespData)
-//}
+//go:generate mockgen -source=service.go -destination=service_mock.go -package=service
 
-type RoomService struct {
-	roomRepository repository.RoomRepositoryInterface
-	movieService   movie.MovieServiceInterface
+type MovieServiceInterface interface {
+	GetCollection(ctx context.Context) (*model.CollectionsRespData, *model.ErrorRespData)
+	GetMovie(ctx context.Context, mvId int) (*model.MovieInfo, *model.ErrorRespData)
+	GetActor(ctx context.Context, actorId int) (*model.StaffInfo, *model.ErrorRespData)
 }
 
-func NewService(repo repository.RoomRepositoryInterface, movieService movie.MovieServiceInterface) *RoomService {
+type RoomRepositoryInterface interface {
+	CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error)
+	UpdateRoomState(ctx context.Context, roomID string, state *models.RoomState) error
+	GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error)
+	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int)
+	UserById(ctx context.Context, userId string) (*models.User, *errVals.ErrorObj, int)
+}
+
+type RoomService struct {
+	roomRepository RoomRepositoryInterface
+	movieService   MovieServiceInterface
+}
+
+func NewService(repo RoomRepositoryInterface, movieService MovieServiceInterface) *RoomService {
 	return &RoomService{
 		roomRepository: repo,
 		movieService:   movieService,
@@ -70,7 +79,7 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.
 
 	movie, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.Id)
 	if errMovie != nil {
-		return nil, fmt.Errorf("errMovie", errMovie)
+		return nil, fmt.Errorf("errMovie = %+v", errMovie)
 	}
 	roomState.Movie = models.Movie{
 		Id:         movie.Id,
@@ -82,15 +91,6 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.
 }
 
 func (s *RoomService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
-	//userId, err, code := s.roomRepository.GetFromCookie(ctx, cookie)
-	//log.Println("userId =", userId)
-	//if err != nil || userId == "" {
-	//	return nil, &models.ErrorRespData{
-	//		Errors:     []errVals.ErrorObj{*err},
-	//		StatusCode: code,
-	//	}
-	//}
-	//log.Println("userId =", userId)
 
 	user, sesErr, code := s.roomRepository.UserById(ctx, cookie)
 	if sesErr != nil {
@@ -102,8 +102,6 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*models.Sessi
 			StatusCode: code,
 		}
 	}
-
-	//log.Println("1qaz =", userId)
 
 	return &models.SessionRespData{
 		StatusCode: code,

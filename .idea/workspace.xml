@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/service/service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,40 +45,49 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
-    &quot;Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.go test 2024_2_GOATS.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.go test internal.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.go test service.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.login_test.go.executor&quot;: &quot;Coverage&quot;,
-    &quot;Makefile Target.generate.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;joint__viewing&quot;,
-    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
-    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.goide.configuration.GoLibrariesConfigurableProvider&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
+    "Go Test.TestNewExampleService in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_GetRoomState in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_GetRoomState/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Debug",
+    "Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.go test 2024_2_GOATS.executor": "Coverage",
+    "Go Test.go test internal.executor": "Coverage",
+    "Go Test.go test service (1).executor": "Coverage",
+    "Go Test.go test service.executor": "Coverage",
+    "Go Test.login_test.go.executor": "Coverage",
+    "Makefile Target.generate.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "joint__viewing",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.goide.configuration.GoLibrariesConfigurableProvider"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/internal/app/room/service" />
@@ -91,71 +102,73 @@
       <recent name="$PROJECT_DIR$/internal/app/room" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service">
-    <configuration name="TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service">
+    <configuration name="TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestService_Login1\E$/^\Qerror\E$" />
+      <pattern value="^\QTestRoomService_HandleAction\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestService_Login1\E$/^\Qok\E$" />
+      <pattern value="^\QTestRoomService_HandleAction\E$/^\Qошибка\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="PACKAGE" />
-      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
-      <pattern value="^\QTestService_Login\E$/^\Qlogin_success\E$" />
+      <pattern value="^\QTestRoomService_HandleAction\E$/^\Qошибка2\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="go test service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/service" />
+      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestRoomService_HandleAction\E$/^\Qcase_pause\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go test service (1)" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="DIRECTORY" />
-      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
-      <directory value="$PROJECT_DIR$/internal/app/service" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
+      <directory value="$PROJECT_DIR$/internal/app/room/service" />
       <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <method v="2" />
-    </configuration>
-    <configuration name="login_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/service" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$/internal/app/service/login_test.go" />
       <framework value="gotest" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
-        <item itemvalue="Go Test.go test service" />
-        <item itemvalue="Go Test.login_test.go" />
-        <item itemvalue="Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
-        <item itemvalue="Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service" />
+        <item itemvalue="Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
+        <item itemvalue="Go Test.go test service (1)" />
+        <item itemvalue="Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
+        <item itemvalue="Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
+        <item itemvalue="Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       </list>
     </recent_temporary>
   </component>
@@ -210,6 +223,16 @@
           <line>11</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/internal/app/room/service/service.go</url>
+          <line>79</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/internal/app/room/service/service.go</url>
+          <line>57</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -218,5 +241,6 @@
     <SUITE FILE_PATH="coverage/2024_2_GOATS$login_test_go.out" NAME="login_test.go Coverage Results" MODIFIED="1727858163729" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_internal.out" NAME="go test internal Coverage Results" MODIFIED="1727639649579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_2024_2_GOATS.out" NAME="go test 2024_2_GOATS Coverage Results" MODIFIED="1727639479629" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_service__1_.out" NAME="go test service (1) Coverage Results" MODIFIED="1730469349973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>
