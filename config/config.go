@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
+	Logger    zerolog.Logger
 }
 
 type Databases struct {
@@ -43,8 +45,8 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
-func New() (*Config, error) {
-	err := setupViper()
+func New(logger zerolog.Logger, isTest bool) (*Config, error) {
+	err := setupViper(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("config creation error: %w", err)
 	}
@@ -55,10 +57,12 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal the config file: %w", err)
 	}
 
+	cfg.Logger = logger
+
 	return cfg, nil
 }
 
-func setupViper() error {
+func setupViper(isTest bool) error {
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
@@ -68,7 +72,14 @@ func setupViper() error {
 		return fmt.Errorf("failed to read .env file: %v", err)
 	}
 
-	viper.SetConfigName("config")
+	var cfgName string
+	if isTest {
+		cfgName = "config_test"
+	} else {
+		cfgName = "config"
+	}
+
+	viper.SetConfigName(cfgName)
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(viper.GetString("VIPER_CFG_PATH"))
 

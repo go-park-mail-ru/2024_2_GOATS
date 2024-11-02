@@ -1,33 +1,41 @@
 package router
 
 import (
-	"context"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/handlers"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
 )
 
-func Setup(ctx context.Context, api *api.Implementation) *mux.Router {
-	router := mux.NewRouter()
+func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
-
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
-	authHandler := handlers.NewAuthHandler(api)
-	authRouter.Handle("/login", authHandler.Login(router)).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.Handle("/logout", authHandler.Logout(router)).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.Handle("/signup", authHandler.Register(router)).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.Handle("/session", authHandler.Session(router)).Methods(http.MethodGet, http.MethodOptions)
 
+	authRouter.HandleFunc("/login", delLayer.Login).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.HandleFunc("/signup", delLayer.Register).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
+}
+
+func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
-	movieHandler := handlers.NewMovieHandler(api)
-	movieCollectionsRouter.Handle("/", movieHandler.GetCollections(router)).Methods(http.MethodGet, http.MethodOptions)
 
-	apiMux.Use(middleware.CorsMiddleware)
+	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
+}
 
-	http.Handle("/", router)
+func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
-	return router
+	userRouter.HandleFunc("/{id:[0-9]+}/update_profile", delLayer.UpdateProfile).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
+}
+
+func ActivateMiddlewares(mx *mux.Router, logger *zerolog.Logger) {
+	mx.Use(middleware.AccessLogMiddleware(logger))
+	mx.Use(middleware.PanicMiddleware(logger))
+	mx.Use(middleware.CorsMiddleware(logger))
 }

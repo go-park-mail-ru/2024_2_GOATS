@@ -3,58 +3,82 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
+	"github.com/rs/zerolog"
+
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/repository"
+	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
+	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
+	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
+	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service"
+	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
+	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
+	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 )
 
 type App struct {
 	Database          *sql.DB
+	Redis             *redis.Client
 	Context           context.Context
 	Server            *http.Server
 	Mux               *mux.Router
+	logger            *zerolog.Logger
 	AcceptConnections bool
 }
 
-func New() (*App, error) {
-	cfg, err := config.New()
+func New(isTest bool) (*App, error) {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	logger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
+
+	cfg, err := config.New(logger, isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
 
-	ctx, err := config.WrapContext(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error wrap app context: %w", err)
-	}
-
+	ctx := config.WrapContext(context.Background(), cfg)
 	ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	database, err := db.SetupDatabase(ctxDBTimeout, cancel)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize database: %w", err)
 	}
 
-	repoLayer := repository.NewRepository(database)
-	srvLayer := service.NewService(repoLayer)
-	apiLayer := api.NewImplementation(ctx, srvLayer)
-	appMx := router.Setup(ctx, apiLayer)
+	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
+	rdb := redis.NewClient(&redis.Options{Addr: addr})
+
+	repoUser := userRepo.NewRepository(database)
+	srvUser := userServ.NewUserService(repoUser)
+	delUser := userApi.NewUserHandler(ctx, srvUser)
+
+	repoAuth := authRepo.NewRepository(database, rdb)
+	srvAuth := authServ.NewService(repoAuth, repoUser)
+	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
+
+	repoMov := movieRepo.NewRepository(database, rdb)
+	srvMov := movieServ.NewService(repoMov)
+	delMov := movieApi.NewMovieHandler(ctx, srvMov)
+
+	mx := mux.NewRouter()
+	router.ActivateMiddlewares(mx, &logger)
+	router.SetupAuth(delAuth, mx)
+	router.SetupMovie(delMov, mx)
+	router.SetupUser(delUser, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
-		Handler:      appMx,
+		Handler:      mx,
 		ReadTimeout:  cfg.Listener.Timeout,
 		WriteTimeout: cfg.Listener.Timeout,
 		IdleTimeout:  cfg.Listener.IdleTimeout,
@@ -62,9 +86,11 @@ func New() (*App, error) {
 
 	return &App{
 		Database: database,
+		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
-		Mux:      appMx,
+		logger:   &logger,
+		Mux:      mx,
 	}, nil
 }
 
@@ -72,38 +98,34 @@ func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
 	a.Mux.Use(a.AppReadyMiddleware)
 
-	log.Printf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
+	a.logger.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		for {
-			sig := <-c
-			log.Println("Received shutdown signal:", sig)
-
-			if err := a.GracefulShutdown(); err != nil {
-				log.Fatalf("Failed to shut down gracefully: %v", err)
-			}
-
-			return
+	// Not ready yet
+	defer func() {
+		if err := a.GracefulShutdown(); err != nil {
+			a.logger.Fatal().Msg(fmt.Sprintf("failed to graceful shutdown: %v", err))
 		}
 	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("server stopped: %v", err)
+	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		a.logger.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
 	}
 }
 
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
-	log.Println("Starting graceful shutdown")
+	a.logger.Info().Msg("Starting graceful shutdown")
 
 	if err := a.Database.Close(); err != nil {
 		return fmt.Errorf("failed to close database: %w", err)
 	}
-	log.Println("Postgres shut down")
+	a.logger.Info().Msg("Postgres shut down")
+
+	if err := a.Redis.Close(); err != nil {
+		return fmt.Errorf("failed to close redis: %w", err)
+	}
+	a.logger.Info().Msg("Redis shut down")
 
 	shutdownCtx, cancel := context.WithTimeout(a.Context, 10*time.Second)
 	defer cancel()
@@ -111,17 +133,15 @@ func (a *App) GracefulShutdown() error {
 	if err := a.Server.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("failed to shut down HTTP server: %w", err)
 	}
-	log.Println("HTTP server shut down")
+	a.logger.Info().Msg("HTTP server shut down")
 
 	select {
 	case <-shutdownCtx.Done():
-		log.Println("Graceful shutdown complete")
+		a.logger.Info().Msg("Graceful shutdown complete")
 	default:
-		log.Println("Waiting for all goroutines to finish...")
+		a.logger.Info().Msg("Waiting for all goroutines to finish...")
 		time.Sleep(500 * time.Millisecond)
 	}
-
-	os.Exit(0)
 
 	return nil
 }

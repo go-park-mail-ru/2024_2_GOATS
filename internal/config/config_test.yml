@@ -1,0 +1,20 @@
+listener:
+  address: localhost
+  port: 8085
+  timeout: 4s
+  idleTimeout: 60s
+
+databases:
+  postgres:
+    host: localhost
+    port: 5433
+    user: test_user
+    password: test_password
+    name: test_db
+
+  redis:
+    host: localhost
+    port: 6379
+    cookie:
+      maxAge: 84400s
+      name: session_id
