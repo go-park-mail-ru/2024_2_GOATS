@@ -1,37 +1,41 @@
 package router
 
 import (
-	"context"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/handlers"
-	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
 )
 
-func SetupAuth(ctx context.Context, delLayer *authApi.Implementation, router *mux.Router) {
+func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 
-	authHandler := handlers.NewAuthHandler(delLayer, config.FromContext(ctx))
-	authRouter.Handle("/login", authHandler.Login(router)).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.Handle("/logout", authHandler.Logout(router)).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.Handle("/signup", authHandler.Register(router)).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.Handle("/session", authHandler.Session(router)).Methods(http.MethodGet, http.MethodOptions)
+	authRouter.HandleFunc("/login", delLayer.Login).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.HandleFunc("/signup", delLayer.Register).Methods(http.MethodPost, http.MethodOptions)
+	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupMovie(ctx context.Context, delLayer *movieApi.Implementation, router *mux.Router) {
+func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 
-	movieHandler := handlers.NewMovieHandler(delLayer, config.FromContext(ctx))
-	movieCollectionsRouter.Handle("/", movieHandler.GetCollections(router)).Methods(http.MethodGet, http.MethodOptions)
+	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func ActivateMiddlewares(mx *mux.Router) {
-	mx.Use(middleware.CorsMiddleware)
-	mx.Use(middleware.PanicMiddleware)
+func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	userRouter := apiMux.PathPrefix("/users").Subrouter()
+
+	userRouter.HandleFunc("/{id:[0-9]+}/update_profile", delLayer.UpdateProfile).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
+}
+
+func ActivateMiddlewares(mx *mux.Router, logger *zerolog.Logger) {
+	mx.Use(middleware.AccessLogMiddleware(logger))
+	mx.Use(middleware.PanicMiddleware(logger))
+	mx.Use(middleware.CorsMiddleware(logger))
 }

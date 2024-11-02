@@ -5,26 +5,22 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
 )
 
-func (s *AuthService) Logout(ctx context.Context, cookie string) (*auth.AuthResponse, *models.ErrorResponse) {
+func (s *AuthService) Logout(ctx context.Context, cookie string) (*models.AuthRespData, *models.ErrorRespData) {
 	err, code := s.authRepository.DestroySession(ctx, cookie)
 
 	if err != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *err
+		errs := make([]errVals.ErrorObj, 1)
+		errs[0] = *err
 
-		return nil, &models.ErrorResponse{
-			Success:    false,
-			Errors:     errors,
+		return nil, &models.ErrorRespData{
+			Errors:     errs,
 			StatusCode: code,
 		}
 	}
 
-	return &authModels.AuthResponse{
-		Success:    true,
+	return &models.AuthRespData{
 		StatusCode: code,
 	}, nil
 }

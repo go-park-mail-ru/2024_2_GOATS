@@ -2,36 +2,46 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	authModels "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/auth"
+	"github.com/rs/zerolog/log"
 )
 
-func (s *AuthService) Session(ctx context.Context, cookie string) (*authModels.SessionResponse, *models.ErrorResponse) {
-	userId, err, code := s.authRepository.GetFromCookie(ctx, cookie)
-	if err != nil || userId == "" {
-		return nil, &models.ErrorResponse{
-			Success:    false,
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrUnauthorizedCode, errVals.CustomError{Err: err})},
+func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
+	strUserId, err, code := s.authRepository.GetFromCookie(ctx, cookie)
+	if err != nil || strUserId == "" {
+		return nil, &models.ErrorRespData{
+			Errors:     []errVals.ErrorObj{*err},
 			StatusCode: code,
 		}
 	}
 
-	user, sesErr, code := s.authRepository.UserById(ctx, userId)
+	usrId, convErr := strconv.Atoi(strUserId)
+	if convErr != nil {
+		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
+		log.Ctx(ctx).Error().Msg(errMsg.Error())
+
+		return nil, &models.ErrorRespData{
+			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj("convertion_error", errVals.CustomError{Err: errMsg})},
+			StatusCode: code,
+		}
+	}
+
+	user, sesErr, code := s.userRepository.UserById(ctx, usrId)
 	if sesErr != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *sesErr
+		errs := make([]errVals.ErrorObj, 1)
+		errs[0] = *sesErr
 
-		return nil, &models.ErrorResponse{
-			Success:    false,
-			Errors:     errors,
+		return nil, &models.ErrorRespData{
+			Errors:     errs,
 			StatusCode: code,
 		}
 	}
 
-	return &authModels.SessionResponse{
-		Success:    true,
+	return &models.SessionRespData{
 		StatusCode: code,
 		UserData:   *user,
 	}, nil
