@@ -1,6 +1,7 @@
 package models
 
 import (
+	"mime/multipart"
 	"time"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -29,6 +30,10 @@ type AuthRespData struct {
 	StatusCode int
 }
 
+type UpdateUserRespData struct {
+	StatusCode int
+}
+
 type CollectionsRespData struct {
 	Collections []Collection
 	StatusCode  int
@@ -40,28 +45,31 @@ type ErrorRespData struct {
 }
 
 type User struct {
-	Id       int
-	Email    string
-	Username string
-	Password string
+	Id         int
+	Email      string
+	Username   string
+	Password   string
+	AvatarUrl  string
+	AvatarName string
+	Avatar     multipart.File
 }
 
 type Collection struct {
-	Id     int
-	Title  string
-	Movies []*Movie
+	Id     int      `json:"id"`
+	Title  string   `json:"title"`
+	Movies []*Movie `json:"movies"`
 }
 
 type Movie struct {
-	Id          int
-	Title       string
-	Description string
-	CardUrl     string
-	AlbumUrl    string
-	Rating      float32
-	ReleaseDate time.Time
-	MovieType   string
-	Country     string
+	Id          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CardUrl     string    `json:"card_url"`
+	AlbumUrl    string    `json:"album_url"`
+	Rating      float32   `json:"rating"`
+	ReleaseDate time.Time `json:"release_date"`
+	MovieType   string    `json:"movie_type"`
+	Country     string    `json:"country"`
 }
 
 type CookieData struct {
@@ -73,4 +81,11 @@ type Token struct {
 	UserID  int
 	TokenID string
 	Expiry  time.Time
+}
+
+type PasswordData struct {
+	UserId               int
+	OldPassword          string
+	Password             string
+	PasswordConfirmation string
 }

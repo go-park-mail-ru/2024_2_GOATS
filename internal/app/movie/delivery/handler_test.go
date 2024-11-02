@@ -2,8 +2,9 @@ package delivery
 
 import (
 	"bytes"
+	"context"
 	"errors"
-	"log"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,6 +16,8 @@ import (
 	srvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,7 +47,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"collections":[{"Id":1,"Title":"Test collection","Movies":[{"Id":1,"Title":"test movie","Description":"some interesting movie","CardUrl":"","AlbumUrl":"","Rating":0,"ReleaseDate":"0001-01-01T00:00:00Z","MovieType":"","Country":""}]}]}`,
+			resp:       `{"success":true,"collections":[{"Id":1,"title":"Test collection","movies":[{"Id":1,"Title":"test movie","description":"some interesting movie","card_url":"","album_url":"","rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -65,7 +68,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 
 			path := "/api/movie/movie_collections"
 			srv := srvMock.NewMockMovieServiceInterface(ctrl)
-			handler := NewMovieHandler(srv, GetCfg())
+			handler := NewMovieHandler(testContext(), srv)
 
 			srv.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr)
 
@@ -83,16 +86,18 @@ func TestDelivery_GetCollection(t *testing.T) {
 	}
 }
 
-func GetCfg() *config.Config {
+func testContext() context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
-		log.Fatalf("failed to change directory: %v", err)
+		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
 	}
 
-	cfg, err := config.New(false)
+	cfg, err := config.New(zerolog.Logger{}, false)
 	if err != nil {
-		log.Fatalf("failed to read config from Register test: %v", err)
+		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
 	}
 
-	return cfg
+	ctx := config.WrapContext(context.Background(), cfg)
+
+	return ctx
 }

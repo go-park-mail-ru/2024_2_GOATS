@@ -9,24 +9,18 @@ import (
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	servMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/mocks"
+	servAuthMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	servUserMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestService_Register(t *testing.T) {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	cfg, err := config.New(false)
-	if err != nil {
-		t.Fatalf("failed to read config from Register test: %v", err)
-	}
-	ctx := config.WrapContext(context.Background(), cfg)
+	ctx := testContext()
 
 	tests := []struct {
 		name string
@@ -129,14 +123,14 @@ func TestService_Register(t *testing.T) {
 			},
 			mockCookieErr: errVals.NewErrorObj(
 				errVals.ErrCreateUserCode,
-				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)},
+				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")},
 			),
 			expectedResponse: nil,
 			expectedError: &models.ErrorRespData{
 				StatusCode: 500,
 				Errors: []errVals.ErrorObj{*errVals.NewErrorObj(
 					errVals.ErrCreateUserCode,
-					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)},
+					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")},
 				)},
 			},
 			statusCode: 500,
@@ -149,13 +143,14 @@ func TestService_Register(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockAuthRepositoryInterface(ctrl)
-			s := NewService(repo)
+			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewService(authRepo, usrRepo)
 
-			repo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
+			usrRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
 
 			if test.WithCookie {
-				repo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr, test.statusCode)
+				authRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr, test.statusCode)
 			}
 
 			t.Parallel()
@@ -270,12 +265,13 @@ func TestService_Session(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockAuthRepositoryInterface(ctrl)
-			s := NewService(repo)
+			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewService(authRepo, usrRepo)
 
-			repo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
+			authRepo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
 			if test.WithGetUser {
-				repo.EXPECT().UserById(gomock.Any(), gomock.Any()).Return(test.mockGetUser, test.mockGetUserErr, test.statusCode)
+				usrRepo.EXPECT().UserById(gomock.Any(), gomock.Any()).Return(test.mockGetUser, test.mockGetUserErr, test.statusCode)
 			}
 
 			t.Parallel()
@@ -299,16 +295,7 @@ func TestService_Login(t *testing.T) {
 		loginData *models.LoginData
 	}
 
-	err := os.Chdir("../../../..")
-	if err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	cfg, err := config.New(false)
-	if err != nil {
-		t.Fatalf("failed to read config from Register test: %v", err)
-	}
-	ctx := config.WrapContext(context.Background(), cfg)
+	ctx := testContext()
 
 	tests := []struct {
 		name                  string
@@ -380,11 +367,11 @@ func TestService_Login(t *testing.T) {
 				Username: "test",
 			},
 			mockUserErr:           nil,
-			mockDestroySessionErr: errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: err}),
+			mockDestroySessionErr: errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some err")}),
 			expectedResponse:      nil,
 			expectedError: &models.ErrorRespData{
 				StatusCode: 500,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: err})},
+				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some err")})},
 			},
 			statusCode:            500,
 			withCookieDestruction: true,
@@ -408,13 +395,13 @@ func TestService_Login(t *testing.T) {
 			mockUserErr: nil,
 			mockSetCookieErr: errVals.NewErrorObj(
 				errVals.ErrCreateUserCode,
-				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)}),
+				errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")}),
 			expectedResponse: nil,
 			expectedError: &models.ErrorRespData{
 				StatusCode: 500,
 				Errors: []errVals.ErrorObj{*errVals.NewErrorObj(
 					errVals.ErrCreateUserCode,
-					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis: %w", err)})},
+					errVals.CustomError{Err: fmt.Errorf("cannot set cookie into redis")})},
 			},
 			statusCode:            500,
 			withCookieDestruction: true,
@@ -469,18 +456,19 @@ func TestService_Login(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockAuthRepositoryInterface(ctrl)
-			s := NewService(repo)
+			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewService(authRepo, usrRepo)
 
 			t.Parallel()
 
-			repo.EXPECT().UserByEmail(gomock.Any(), gomock.Any()).Return(test.mockUser, test.mockUserErr, test.statusCode)
+			usrRepo.EXPECT().UserByEmail(gomock.Any(), gomock.Any()).Return(test.mockUser, test.mockUserErr, test.statusCode)
 			if test.withCookieDestruction {
-				repo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
+				authRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
 			}
 
 			if test.withCookieSetting {
-				repo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockSetCookieErr, test.statusCode)
+				authRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockSetCookieErr, test.statusCode)
 			}
 
 			response, err := s.Login(test.args.ctx, test.args.loginData)
@@ -502,16 +490,7 @@ func TestService_Logout(t *testing.T) {
 		cookie string
 	}
 
-	err := os.Chdir("../../../..")
-	if err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	cfg, err := config.New(false)
-	if err != nil {
-		t.Fatalf("failed to read config from Register test: %v", err)
-	}
-	ctx := config.WrapContext(context.Background(), cfg)
+	ctx := testContext()
 
 	tests := []struct {
 		name                  string
@@ -552,10 +531,11 @@ func TestService_Logout(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockAuthRepositoryInterface(ctrl)
-			s := NewService(repo)
+			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewService(authRepo, usrRepo)
 
-			repo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
+			authRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
 
 			response, err := s.Logout(test.args.ctx, test.args.cookie)
 
@@ -568,4 +548,18 @@ func TestService_Logout(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testContext() context.Context {
+	err := os.Chdir("../../../..")
+	if err != nil {
+		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
+	}
+
+	cfg, err := config.New(zerolog.Logger{}, false)
+	if err != nil {
+		log.Fatal().Msg(fmt.Sprintf("failed to read config from Register test: %v", err))
+	}
+
+	return config.WrapContext(context.Background(), cfg)
 }
