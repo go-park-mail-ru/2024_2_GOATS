@@ -48,12 +48,9 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		return err
 	}
 
-	log.Println("roomState === ", roomState.Status)
-	log.Println("action === ", action.Name)
-	log.Println("action === ", action.TimeCode)
-	log.Println("action === ", action.Name)
-	log.Println("action === ", action.TimeCode)
-	log.Println("action === ", action.Name)
+	log.Println("roomState.Status === ", roomState.Status)
+	log.Println("action.Name === ", action.Name)
+	log.Println("action.TimeCode === ", action.TimeCode)
 
 	switch action.Name {
 	case "pause":
@@ -73,7 +70,6 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 }
 
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error) {
-	log.Println("qqqwwqq111")
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", roomState)
 

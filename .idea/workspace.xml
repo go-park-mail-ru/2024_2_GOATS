@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/room/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/service/service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,6 +61,7 @@
     "Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
     "Go Test.go test 2024_2_GOATS.executor": "Coverage",
     "Go Test.go test internal.executor": "Coverage",
+    "Go Test.go test room.executor": "Coverage",
     "Go Test.go test service (1).executor": "Coverage",
     "Go Test.go test service.executor": "Coverage",
     "Go Test.login_test.go.executor": "Coverage",
@@ -102,19 +100,7 @@
       <recent name="$PROJECT_DIR$/internal/app/room" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service">
-    <configuration name="TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestRoomService_HandleAction\E$" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Go Test.go test room">
     <configuration name="TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
       <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
@@ -151,6 +137,16 @@
       <pattern value="^\QTestRoomService_HandleAction\E$/^\Qcase_pause\E$" />
       <method v="2" />
     </configuration>
+    <configuration name="go test room" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/room" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$/internal/app/room" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
     <configuration name="go test service (1)" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
       <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
@@ -164,11 +160,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
+        <item itemvalue="Go Test.go test room" />
         <item itemvalue="Go Test.go test service (1)" />
+        <item itemvalue="Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
         <item itemvalue="Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
         <item itemvalue="Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
-        <item itemvalue="Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       </list>
     </recent_temporary>
   </component>
@@ -240,7 +236,8 @@
     <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_service.out" NAME="go test service Coverage Results" MODIFIED="1727869557386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/2024_2_GOATS$login_test_go.out" NAME="login_test.go Coverage Results" MODIFIED="1727858163729" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_internal.out" NAME="go test internal Coverage Results" MODIFIED="1727639649579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_room.out" NAME="go test room Coverage Results" MODIFIED="1730567522452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_2024_2_GOATS.out" NAME="go test 2024_2_GOATS Coverage Results" MODIFIED="1727639479629" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_service__1_.out" NAME="go test service (1) Coverage Results" MODIFIED="1730469349973" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/2024_2_GOATS$go_test_service__1_.out" NAME="go test service (1) Coverage Results" MODIFIED="1730493081409" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>

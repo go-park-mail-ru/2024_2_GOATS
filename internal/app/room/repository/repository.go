@@ -67,11 +67,9 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomSta
 		return nil, err
 	}
 
-	log.Println("GetRoomStatedatadatadatadatadatadata", data)
-
 	var state models.RoomState
 	err = json.Unmarshal([]byte(data), &state)
-	log.Println("statestatestatestatestatestatestatestatestate", state)
+	log.Println("state =", state)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +78,6 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomSta
 
 func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
 	var userID string
-	log.Println("cookie =", cookie)
-	log.Println("userID1 =", userID)
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)
 	log.Println("err =", err)
 	if err != nil {

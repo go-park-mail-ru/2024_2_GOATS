@@ -18,7 +18,6 @@ type BroadcastMessage struct {
 	ExcludeConn *websocket.Conn `json:"exclude"`
 }
 
-// NewRoomHub создает новый RoomHub
 func NewRoomHub() *RoomHub {
 	return &RoomHub{
 		Clients:    make(map[*websocket.Conn]bool),

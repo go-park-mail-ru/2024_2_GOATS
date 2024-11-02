@@ -65,25 +65,12 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing user_id", http.StatusBadRequest)
 		return
 	}
-	/////////////////
-	//log.Println("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	//ck, err := r.Cookie("session_id")
-	//log.Println("ckckckck", ck)
-	//if errors.Is(err, http.ErrNoCookie) {
-	//	log.Println("Session action: No cookie err", err)
-	//	return
-	//}
-	//log.Println("qwerrrewq")
-	/////////////////////////////
+
 	cfg, err := config.New(zerolog.Logger{}, false, nil)
-	log.Println("qwer222rrewq")
 	ctx := config.WrapContext(r.Context(), cfg)
-	//log.Println("ck.Valueck.Value", ck.Value)
 
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
-	log.Println("asdfdsaasdf1", sessionSrvResp)
 	sessionResp, errResp := converter.ToApiSessionResponseForRoom(sessionSrvResp), converter.ToApiErrorResponseForRoom(errSrvResp)
-	log.Println("asdfdsaasdf2")
 
 	if errResp != nil {
 		log.Println("errResp", errResp)
@@ -97,14 +84,12 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		Username:  sessionResp.UserData.Email,
 		Email:     sessionResp.UserData.Username,
 	}
-	log.Println("xzxcvvcxzcvx")
 
 	roomID := r.URL.Query().Get("room_id")
 	if roomID == "" {
 		http.Error(w, "Missing room_id", http.StatusBadRequest)
 		return
 	}
-	log.Println("gfdfghfgd")
 
 	// Обновление соединения до WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -113,7 +98,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-	log.Println("jghfhjghhyjy")
 
 	// Регистрация клиента в Hub
 	h.roomHub.Register <- conn
@@ -166,9 +150,6 @@ func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn) {
 	log.Println("broadcastUserList:", userList)
 
 	for conn := range h.roomHub.Clients {
-		//if conn == excludeConn {
-		//	continue
-		//}
 		if err := conn.WriteJSON(userList); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)
