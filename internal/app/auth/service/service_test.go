@@ -556,7 +556,7 @@ func testContext(isRedis bool) context.Context {
 		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
 	}
 
-	cfg, err := config.New(zerolog.Logger{}, false, nil)
+	cfg, err := config.New(zerolog.Logger{}, false)
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("failed to read config from Register test: %v", err))
 	}

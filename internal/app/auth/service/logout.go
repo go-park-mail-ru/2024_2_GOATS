@@ -11,11 +11,11 @@ func (s *AuthService) Logout(ctx context.Context, cookie string) (*models.AuthRe
 	err, code := s.authRepository.DestroySession(ctx, cookie)
 
 	if err != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *err
+		errs := make([]errVals.ErrorObj, 1)
+		errs[0] = *err
 
 		return nil, &models.ErrorRespData{
-			Errors:     errors,
+			Errors:     errs,
 			StatusCode: code,
 		}
 	}
