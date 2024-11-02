@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog"
 )
 
 func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
@@ -33,8 +34,8 @@ func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router
 	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
 }
 
-func ActivateMiddlewares(mx *mux.Router) {
-	mx.Use(middleware.AccessLogMiddleware)
-	mx.Use(middleware.PanicMiddleware)
-	mx.Use(middleware.CorsMiddleware)
+func ActivateMiddlewares(mx *mux.Router, logger *zerolog.Logger) {
+	mx.Use(middleware.AccessLogMiddleware(logger))
+	mx.Use(middleware.PanicMiddleware(logger))
+	mx.Use(middleware.CorsMiddleware(logger))
 }

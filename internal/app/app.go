@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -39,11 +39,11 @@ type App struct {
 	AcceptConnections bool
 }
 
-func New(isTest bool, port *nat.Port) (*App, error) {
+func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
 
-	cfg, err := config.New(logger, isTest, port)
+	cfg, err := config.New(logger, isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -71,7 +71,7 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	delMov := movieApi.NewMovieHandler(ctx, srvMov)
 
 	mx := mux.NewRouter()
-	router.ActivateMiddlewares(mx)
+	router.ActivateMiddlewares(mx, &logger)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
 	router.SetupUser(delUser, mx)
@@ -103,12 +103,12 @@ func (a *App) Run() {
 	// Not ready yet
 	defer func() {
 		if err := a.GracefulShutdown(); err != nil {
-			a.logger.Fatal().Msg(fmt.Sprintf("error while graceful shutdown: %v", err))
+			a.logger.Fatal().Msg(fmt.Sprintf("failed to graceful shutdown: %v", err))
 		}
 	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		a.logger.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
 	}
 }
