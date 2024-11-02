@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,7 +59,7 @@ func testContext() context.Context {
 		log.Fatalf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(true)
+	cfg, err := config.New(zerolog.Logger{}, true)
 	if err != nil {
 		log.Fatalf("failed to read config from Register test: %v", err)
 	}
