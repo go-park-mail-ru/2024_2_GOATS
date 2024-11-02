@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -37,7 +39,23 @@ func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 	if err != nil {
 		log.Err(fmt.Errorf("cannot parse request: %w", err))
 		Response(w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
-		
+
 		return
 	}
+}
+
+func PreparedDefaultError(code string, err error) *ErrorResponse {
+	return &ErrorResponse{
+		StatusCode: http.StatusForbidden,
+		Errors: []errVals.ErrorObj{{
+			Code:  code,
+			Error: errVals.CustomError{Err: err},
+		}},
+	}
+}
+
+func RequestError(w http.ResponseWriter, logger *zerolog.Logger, code string, err error) {
+	errMsg := fmt.Errorf("request error: %w", err)
+	logger.Error().Msg(errMsg.Error())
+	Response(w, http.StatusBadRequest, PreparedDefaultError(code, errMsg))
 }

@@ -14,9 +14,10 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-	srvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
+	authSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	usrSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -99,11 +100,12 @@ func TestDelivery_Register(t *testing.T) {
 			defer ctrl.Finish()
 
 			path := "/api/auth/signup"
-			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, testContext())
+			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
 
 			if !test.isValidation {
-				srv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				authSrv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			r := mux.NewRouter()
@@ -163,10 +165,11 @@ func TestDelivery_Login(t *testing.T) {
 			defer ctrl.Finish()
 
 			path := "/api/auth/login"
-			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, testContext())
+			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
 
-			srv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			authSrv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.Login)
@@ -236,8 +239,9 @@ func TestDelivery_Logout(t *testing.T) {
 			defer ctrl.Finish()
 
 			path := "/api/auth/logout"
-			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, testContext())
+			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.Logout)
@@ -247,7 +251,7 @@ func TestDelivery_Logout(t *testing.T) {
 
 			if !test.isValidation {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				srv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				authSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			} else if test.emptyCookie {
 				req.Header.Set("Cookie", "session_id=")
 			}
@@ -279,7 +283,7 @@ func TestDelivery_Session(t *testing.T) {
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester"}}`,
+			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -308,8 +312,9 @@ func TestDelivery_Session(t *testing.T) {
 			defer ctrl.Finish()
 
 			path := "/api/auth/session"
-			srv := srvMock.NewMockAuthServiceInterface(ctrl)
-			handler := NewAuthHandler(srv, testContext())
+			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.Session)
@@ -319,7 +324,7 @@ func TestDelivery_Session(t *testing.T) {
 
 			if !test.noCookie {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				srv.EXPECT().Session(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				authSrv.EXPECT().Session(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			r.ServeHTTP(w, req)

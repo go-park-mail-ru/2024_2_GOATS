@@ -30,6 +30,25 @@ func ToServRegisterData(rg *api.RegisterRequest) *models.RegisterData {
 	}
 }
 
+func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
+	return &models.PasswordData{
+		UserId:               rp.UserId,
+		OldPassword:          rp.OldPassword,
+		Password:             rp.Password,
+		PasswordConfirmation: rp.PasswordConfirmation,
+	}
+}
+
+func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
+	return &models.User{
+		Id:         pr.UserId,
+		Email:      pr.Email,
+		Username:   pr.Username,
+		AvatarName: pr.AvatarName,
+		Avatar:     pr.Avatar,
+	}
+}
+
 func ToApiAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
 	if ld == nil {
 		return nil
@@ -42,20 +61,34 @@ func ToApiAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
 	}
 }
 
+func ToApiUpdateUserResponse(ud *models.UpdateUserRespData) *api.UpdateUserResponse {
+	if ud == nil {
+		return nil
+	}
+
+	return &api.UpdateUserResponse{
+		Success:    true,
+		StatusCode: ud.StatusCode,
+	}
+}
+
 func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 	if sr == nil {
 		return nil
 	}
 
-	return &api.SessionResponse{
+	resp := &api.SessionResponse{
 		Success: true,
 		UserData: api.User{
-			Id:       sr.UserData.Id,
-			Email:    sr.UserData.Email,
-			Username: sr.UserData.Username,
+			Id:        sr.UserData.Id,
+			Email:     sr.UserData.Email,
+			Username:  sr.UserData.Username,
+			AvatarUrl: sr.UserData.AvatarUrl,
 		},
 		StatusCode: sr.StatusCode,
 	}
+
+	return resp
 }
 
 func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsResponse {

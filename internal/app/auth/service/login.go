@@ -14,7 +14,7 @@ import (
 
 func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *models.ErrorRespData) {
 	logger := log.Ctx(ctx)
-	usr, err, code := s.authRepository.UserByEmail(ctx, loginData.Email)
+	usr, err, code := s.userRepository.UserByEmail(ctx, loginData.Email)
 
 	if err != nil {
 		errs := make([]errVals.ErrorObj, 1)

@@ -23,6 +23,9 @@ import (
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
+	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
+	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
+	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 )
 
@@ -55,18 +58,23 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
+	repoUser := userRepo.NewRepository(database)
+	srvUser := userServ.NewUserService(repoUser)
+	delUser := userApi.NewUserHandler(ctx, srvUser)
+
 	repoAuth := authRepo.NewRepository(database, rdb)
-	srvAuth := authServ.NewService(repoAuth)
-	delAuth := authApi.NewAuthHandler(srvAuth, ctx)
+	srvAuth := authServ.NewService(repoAuth, repoUser)
+	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
 	repoMov := movieRepo.NewRepository(database, rdb)
 	srvMov := movieServ.NewService(repoMov)
-	delMov := movieApi.NewMovieHandler(srvMov, ctx)
+	delMov := movieApi.NewMovieHandler(ctx, srvMov)
 
 	mx := mux.NewRouter()
 	router.ActivateMiddlewares(mx, &logger)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
+	router.SetupUser(delUser, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
@@ -107,13 +115,17 @@ func (a *App) Run() {
 
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
-	fmt.Println("Here")
 	a.logger.Info().Msg("Starting graceful shutdown")
 
 	if err := a.Database.Close(); err != nil {
 		return fmt.Errorf("failed to close database: %w", err)
 	}
 	a.logger.Info().Msg("Postgres shut down")
+
+	if err := a.Redis.Close(); err != nil {
+		return fmt.Errorf("failed to close redis: %w", err)
+	}
+	a.logger.Info().Msg("Redis shut down")
 
 	shutdownCtx, cancel := context.WithTimeout(a.Context, 10*time.Second)
 	defer cancel()
