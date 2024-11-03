@@ -40,6 +40,7 @@ func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.Sessio
 
 func ActivateMiddlewares(mx *mux.Router) {
 	mx.Use(middleware.AccessLogMiddleware)
+	mx.Use(middleware.WithLogger)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
 }

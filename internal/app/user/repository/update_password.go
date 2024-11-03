@@ -11,7 +11,7 @@ import (
 )
 
 func (u *UserRepo) UpdatePassword(ctx context.Context, usrId int, pass string) (*errVals.ErrorObj, int) {
-	hashPass, err := password.HashAndSalt(pass)
+	hashPass, err := password.HashAndSalt(ctx, pass)
 	if err != nil {
 		return &errVals.ErrorObj{
 			Code: errVals.ErrServerCode,

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -19,7 +20,6 @@ import (
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
@@ -37,15 +37,15 @@ type App struct {
 	Context           context.Context
 	Server            *http.Server
 	Mux               *mux.Router
-	lg                *logger.BaseLogger
+	lg                *zerolog.Logger
 	AcceptConnections bool
 }
 
 func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	lg := logger.NewLogger()
+	lg := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
-	cfg, err := config.New(lg, isTest)
+	cfg, err := config.New(&lg, isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -77,7 +77,7 @@ func New(isTest bool) (*App, error) {
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
 
-	authMW := middleware.NewSessionMiddleware(srvAuth, lg)
+	authMW := middleware.NewSessionMiddleware(srvAuth, &lg)
 	router.SetupUser(delUser, authMW, mx)
 
 	srv := &http.Server{
@@ -93,7 +93,7 @@ func New(isTest bool) (*App, error) {
 		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
-		lg:       lg,
+		lg:       &lg,
 		Mux:      mx,
 	}, nil
 }
@@ -102,18 +102,18 @@ func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
 	a.Mux.Use(a.AppReadyMiddleware)
 
-	a.lg.Log(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port), "")
+	a.lg.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
 
 	// Not ready yet
 	defer func() {
 		if err := a.GracefulShutdown(); err != nil {
-			a.lg.LogFatal(fmt.Sprintf("failed to graceful shutdown: %v", err))
+			a.lg.Fatal().Msg(fmt.Sprintf("failed to graceful shutdown: %v", err))
 		}
 	}()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.lg.LogFatal(fmt.Sprintf("server stopped: %v", err))
+		a.lg.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
 	}
 }
 

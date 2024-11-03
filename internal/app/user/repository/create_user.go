@@ -12,7 +12,7 @@ import (
 )
 
 func (u *UserRepo) CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errVals.ErrorObj, int) {
-	hashPass, err := password.HashAndSalt(registerData.Password)
+	hashPass, err := password.HashAndSalt(ctx, registerData.Password)
 	if err != nil {
 		return nil, &errVals.ErrorObj{
 			Code: errVals.ErrServerCode,

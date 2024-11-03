@@ -1,12 +1,11 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -14,12 +13,16 @@ import (
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		requestId := uuid.New().String()
-		w.Header().Set("request-id", requestId)
+		reqID := r.Header.Get("X-Req-ID")
+		if reqID == "" {
+			reqID = generateRequestID()
+		}
 
-		logRequest(r, start, "accessLogMiddleware: END", requestId)
+		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
+		w.Header().Set("X-Req-ID", reqID)
+		logRequest(r, start, "accessLogMiddleware", reqID)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -48,7 +51,8 @@ func PanicMiddleware(next http.Handler) http.Handler {
 
 		defer func() {
 			if err := recover(); err != nil {
-				log.Error().Str("request-id", api.GetRequestId(w)).Msg(fmt.Sprintf("panicMiddleware: Panic happend: %v", err))
+				lg := log.Ctx(r.Context())
+				lg.Error().Msg(fmt.Sprintf("panicMiddleware: Panic happend: %v", err))
 				http.Error(w, "Internal server error", 500)
 			}
 		}()

@@ -11,10 +11,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	servAuthMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	servUserMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -556,7 +556,7 @@ func testContext(isRedis bool) context.Context {
 		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
 	}
 
-	cfg, err := config.New(logger.NewLogger(), false)
+	cfg, err := config.New(&zerolog.Logger{}, false)
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("failed to read config from Register test: %v", err))
 	}

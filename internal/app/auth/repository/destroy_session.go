@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/rs/zerolog/log"
 )
 
 func (r *AuthRepo) DestroySession(ctx context.Context, cookie string) (*errVals.ErrorObj, int) {
-	logger, requestId := config.FromBaseContext(ctx)
+	logger := log.Ctx(ctx)
 	_, err := r.Redis.Del(ctx, cookie).Result()
 
 	if err != nil {
 		errMsg := fmt.Errorf("redis: failed to destroy session. Error - %w", err)
-		logger.LogError(errMsg.Error(), errMsg, requestId)
+		logger.Error().Msg(errMsg.Error())
 		return errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errMsg}), http.StatusInternalServerError
 	}
 
-	logger.Log("redis: successfully destroy session", requestId)
+	logger.Info().Msg("redis: successfully destroy session")
 	return nil, http.StatusOK
 }
