@@ -12,10 +12,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	userDel "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
-	"github.com/rs/zerolog"
 )
 
 var _ handlers.AuthImplementationInterface = (*AuthHandler)(nil)
@@ -29,7 +29,7 @@ type AuthHandler struct {
 	authService AuthServiceInterface
 	userService userDel.UserServiceInterface
 	redisCfg    *config.Redis
-	logger      *zerolog.Logger
+	lg          *logger.BaseLogger
 }
 
 func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) *AuthHandler {
@@ -40,15 +40,17 @@ func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv us
 		authService: authSrv,
 		userService: usrSrv,
 		redisCfg:    &redisCfg,
-		logger:      &logger,
+		lg:          logger,
 	}
 }
 
 func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	ctx := api.BaseContext(w, r, a.lg)
+
 	ck, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
 		errMsg := fmt.Errorf("logout action: No cookie err - %w", err)
-		api.RequestError(w, a.logger, rParseErr, http.StatusBadRequest, errMsg)
+		api.RequestError(w, a.lg, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -56,12 +58,11 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	validErr := validation.ValidateCookie(ck.Value)
 	if validErr != nil {
 		errMsg := fmt.Errorf("logout action: Invalid cookie err - %w", validErr.Err)
-		api.RequestError(w, a.logger, vlErr, http.StatusBadRequest, errMsg)
+		api.RequestError(w, a.lg, vlErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
 
-	ctx := a.logger.WithContext(r.Context())
 	logoutSrvResp, errSrvResp := a.authService.Logout(ctx, ck.Value)
 
 	logoutResp, errResp := converter.ToApiAuthResponse(logoutSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -80,8 +81,9 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	api.DecodeBody(w, r, loginRequest)
 
 	loginServData := converter.ToServLoginData(loginRequest)
-	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
-	ctx = a.logger.WithContext(ctx)
+	ctx := api.BaseContext(w, r, a.lg)
+	ctx = config.WrapRedisContext(ctx, a.redisCfg)
+
 	authSrvResp, errSrvResp := a.authService.Login(ctx, loginServData)
 
 	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -92,16 +94,16 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	oldCookie, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
-		a.logger.Info().Msg("user dont have old cookie")
+		a.lg.Log("user dont have old cookie", api.GetRequestId(w))
 	}
 
 	if oldCookie != nil && authResp.NewCookie.Token.TokenID != oldCookie.Value {
-		a.logger.Info().Msg("successfully expire cookie")
+		a.lg.Log("successfully expire cookie", api.GetRequestId(w))
 		http.SetCookie(w, preparedExpiredCookie())
 	}
 
 	http.SetCookie(w, preparedCookie(authResp.NewCookie))
-	a.logger.Info().Msg("successfully set new cookie")
+	a.lg.Log("successfully set new cookie", api.GetRequestId(w))
 
 	api.Response(w, authResp.StatusCode, authResp)
 }
@@ -113,12 +115,12 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	errs := make([]errVals.ErrorObj, 0)
 
 	if err := validation.ValidatePassword(registerReq.Password, registerReq.PasswordConfirmation); err != nil {
-		a.logger.Error().Msg(err.Err.Error())
+		a.lg.LogError(err.Err.Error(), err.Err, api.GetRequestId(w))
 		addError(errVals.ErrInvalidPasswordCode, *err, &errs)
 	}
 
 	if err := validation.ValidateEmail(registerReq.Email); err != nil {
-		a.logger.Error().Msg(err.Err.Error())
+		a.lg.LogError(err.Err.Error(), err.Err, api.GetRequestId(w))
 		addError(errVals.ErrInvalidEmailCode, *err, &errs)
 	}
 
@@ -132,8 +134,8 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
-	ctx = a.logger.WithContext(ctx)
+	ctx := api.BaseContext(w, r, a.lg)
+	ctx = config.WrapRedisContext(ctx, a.redisCfg)
 
 	registerServData := converter.ToServRegisterData(registerReq)
 	authSrvResp, errSrvResp := a.authService.Register(ctx, registerServData)
@@ -153,12 +155,12 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	ck, err := r.Cookie("session_id")
 	if errors.Is(err, http.ErrNoCookie) {
 		errMsg := fmt.Errorf("session action: No cookie err - %w", err)
-		api.RequestError(w, a.logger, rParseErr, http.StatusForbidden, errMsg)
+		api.RequestError(w, a.lg, rParseErr, http.StatusForbidden, errMsg)
 
 		return
 	}
 
-	ctx := a.logger.WithContext(r.Context())
+	ctx := api.BaseContext(w, r, a.lg)
 	sessionSrvResp, errSrvResp := a.authService.Session(ctx, ck.Value)
 
 	sessionResp, errResp := converter.ToApiSessionResponse(sessionSrvResp), converter.ToApiErrorResponse(errSrvResp)

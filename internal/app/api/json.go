@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/rs/zerolog"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/rs/zerolog/log"
 )
 
@@ -54,8 +54,8 @@ func PreparedDefaultError(code string, err error) *ErrorResponse {
 	}
 }
 
-func RequestError(w http.ResponseWriter, logger *zerolog.Logger, code string, status int, err error) {
+func RequestError(w http.ResponseWriter, lg *logger.BaseLogger, code string, status int, err error) {
 	errMsg := fmt.Errorf("request error: %w", err)
-	logger.Error().Msg(errMsg.Error())
+	lg.LogError(errMsg.Error(), errMsg, w.Header().Get("request-id"))
 	Response(w, status, PreparedDefaultError(code, errMsg))
 }

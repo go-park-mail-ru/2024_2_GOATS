@@ -10,12 +10,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	usrSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks"
 	"github.com/golang/mock/gomock"
@@ -341,7 +341,7 @@ func testContext() context.Context {
 		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
 	}
 
-	cfg, err := config.New(zerolog.Logger{}, false)
+	cfg, err := config.New(logger.NewLogger(), false)
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
 	}

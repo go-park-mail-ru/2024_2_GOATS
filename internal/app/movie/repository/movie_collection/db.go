@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/rs/zerolog/log"
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 )
 
 func Obtain(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
-	logger := log.Ctx(ctx)
+	logger, requestId := config.FromBaseContext(ctx)
 
 	sqlStatement := `
 	SELECT collections.id, collections.title, movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM collections
@@ -21,12 +21,12 @@ func Obtain(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	rows, err := db.QueryContext(ctx, sqlStatement)
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while selecting movie_collections: %w", err)
-		logger.Err(errMsg)
+		logger.LogError(errMsg.Error(), errMsg, requestId)
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg("postgres: successfully select movie_collections")
+	logger.Log("postgres: successfully select movie_collections", requestId)
 
 	return rows, nil
 }

@@ -11,7 +11,7 @@ func HashAndSalt(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to hash password: %w", err)
-		log.With().Caller().Timestamp().Err(errMsg)
+		log.With().Timestamp().Err(errMsg)
 
 		return "", errMsg
 	}

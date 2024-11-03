@@ -10,6 +10,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
 )
@@ -47,7 +49,7 @@ func TestCreateUser_Success(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
 			AddRow(usrId, usrEmail))
 
-	usr, errObj, statusCode := r.CreateUser(context.Background(), regData)
+	usr, errObj, statusCode := r.CreateUser(testContext(), regData)
 
 	assert.Nil(t, errObj)
 	assert.Equal(t, http.StatusOK, statusCode)
@@ -78,7 +80,7 @@ func TestCreateUser_DbError(t *testing.T) {
 	mock.ExpectQuery(`INSERT INTO users \(email, username, password_hash\) VALUES \(\$1, \$2, \$3\) RETURNING id, email`).
 		WithArgs(usrEmail, usrUsername, sqlmock.AnyArg()).WillReturnError(fmt.Errorf("some_error"))
 
-	usr, errObj, statusCode := r.CreateUser(context.Background(), regData)
+	usr, errObj, statusCode := r.CreateUser(testContext(), regData)
 
 	assert.NotNil(t, errObj)
 	assert.Nil(t, usr)
@@ -100,7 +102,7 @@ func TestUpdatePassword_Success(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), usrId).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	errObj, statusCode := r.UpdatePassword(context.Background(), usrId, pass)
+	errObj, statusCode := r.UpdatePassword(testContext(), usrId, pass)
 
 	assert.Nil(t, errObj)
 	assert.Equal(t, http.StatusOK, statusCode)
@@ -121,7 +123,7 @@ func TestUpdatePassword_DbError(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), usrId).
 		WillReturnError(fmt.Errorf("some_error"))
 
-	errObj, statusCode := r.UpdatePassword(context.Background(), usrId, pass)
+	errObj, statusCode := r.UpdatePassword(testContext(), usrId, pass)
 
 	assert.NotNil(t, errObj)
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
@@ -145,7 +147,7 @@ func TestUserByEmail_Success(t *testing.T) {
 		WithArgs(usrEmail).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "username", "password_hash"}).
 		AddRow(usrId, usrEmail, usrUsername, passHash))
 
-	usr, errObj, statusCode := r.UserByEmail(context.Background(), usrEmail)
+	usr, errObj, statusCode := r.UserByEmail(testContext(), usrEmail)
 
 	assert.NotNil(t, usr)
 	assert.Nil(t, errObj)
@@ -168,14 +170,13 @@ func TestUserByEmail_NotFound(t *testing.T) {
 	mock.ExpectQuery(`SELECT id, email, username, password_hash FROM USERS WHERE email = \$1`).
 		WithArgs(usrEmail).WillReturnError(sql.ErrNoRows)
 
-	usr, errObj, statusCode := r.UserByEmail(context.Background(), usrEmail)
+	usr, errObj, statusCode := r.UserByEmail(testContext(), usrEmail)
 
 	assert.Nil(t, usr)
 	assert.NotNil(t, errObj)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
-
 
 func TestUserById_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -194,7 +195,7 @@ func TestUserById_Success(t *testing.T) {
 		WithArgs(usrId).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "username", "password_hash", "avatar_url"}).
 		AddRow(usrId, usrEmail, usrUsername, passHash, "test.png"))
 
-	usr, errObj, statusCode := r.UserById(context.Background(), usrId)
+	usr, errObj, statusCode := r.UserById(testContext(), usrId)
 
 	assert.NotNil(t, usr)
 	assert.Nil(t, errObj)
@@ -217,7 +218,7 @@ func TestUserById_NotFound(t *testing.T) {
 	mock.ExpectQuery(`SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = \$1`).
 		WithArgs(usrId).WillReturnError(sql.ErrNoRows)
 
-	usr, errObj, statusCode := r.UserById(context.Background(), usrId)
+	usr, errObj, statusCode := r.UserById(testContext(), usrId)
 
 	assert.Nil(t, usr)
 	assert.NotNil(t, errObj)
@@ -231,7 +232,6 @@ func TestUpdateProfileData_Success(t *testing.T) {
 	defer db.Close()
 
 	r := NewRepository(db)
-	ctx := context.Background()
 	profileData := &models.User{
 		Id:        1,
 		Email:     "test@mail.ru",
@@ -243,7 +243,7 @@ func TestUpdateProfileData_Success(t *testing.T) {
 		WithArgs(profileData.Email, profileData.Username, profileData.AvatarUrl, sqlmock.AnyArg(), profileData.Id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	errObj, status := r.UpdateProfileData(ctx, profileData)
+	errObj, status := r.UpdateProfileData(testContext(), profileData)
 
 	assert.Nil(t, errObj)
 	assert.Equal(t, http.StatusOK, status)
@@ -256,7 +256,6 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 	defer db.Close()
 
 	r := NewRepository(db)
-	ctx := context.Background()
 	profileData := &models.User{
 		Id:        1,
 		Email:     "test@mail.ru",
@@ -268,10 +267,15 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 		WithArgs(profileData.Email, profileData.Username, profileData.AvatarUrl, sqlmock.AnyArg(), profileData.Id).
 		WillReturnError(fmt.Errorf("some database error"))
 
-	errObj, status := r.UpdateProfileData(ctx, profileData)
+	errObj, status := r.UpdateProfileData(testContext(), profileData)
 
 	assert.NotNil(t, errObj)
 	assert.Equal(t, "update_profile_error", errObj.Code)
 	assert.Equal(t, http.StatusInternalServerError, status)
 	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func testContext() context.Context {
+	ctx := context.WithValue(context.Background(), "request-id", "some-request-id")
+	return config.WrapLoggerContext(ctx, logger.NewLogger())
 }

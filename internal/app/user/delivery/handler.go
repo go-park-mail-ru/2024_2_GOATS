@@ -12,9 +12,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
 	"github.com/gorilla/mux"
-	"github.com/rs/zerolog"
 )
 
 var _ handlers.UserImplementationInterface = (*UserHandler)(nil)
@@ -27,7 +27,7 @@ const (
 
 type UserHandler struct {
 	userService UserServiceInterface
-	logger      *zerolog.Logger
+	lg          *logger.BaseLogger
 	locS        *config.LocalStorage
 }
 
@@ -36,7 +36,7 @@ func NewUserHandler(ctx context.Context, srv UserServiceInterface) *UserHandler 
 
 	return &UserHandler{
 		userService: srv,
-		logger:      &config.FromContext(ctx).Logger,
+		lg:          config.FromContext(ctx).Logger,
 		locS:        &locS,
 	}
 }
@@ -49,7 +49,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	usrId, err := getUserId(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
-		api.RequestError(w, u.logger, rParseErr, http.StatusBadRequest, errMsg)
+		api.RequestError(w, u.lg, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -58,12 +58,12 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	if err := validation.ValidatePassword(passwordReq.Password, passwordReq.PasswordConfirmation); err != nil {
 		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err.Err)
-		api.RequestError(w, u.logger, vlErr, http.StatusBadRequest, errMsg)
+		api.RequestError(w, u.lg, vlErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
 
-	ctx := u.logger.WithContext(r.Context())
+	ctx := api.BaseContext(w, r, u.lg)
 	passwordServData := converter.ToServPasswordData(passwordReq)
 	usrSrvResp, errSrvResp := u.userService.UpdatePassword(ctx, passwordServData)
 	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -81,7 +81,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	usrId, err := getUserId(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
-		api.RequestError(w, u.logger, rParseErr, http.StatusBadRequest, errMsg)
+		api.RequestError(w, u.lg, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -89,15 +89,15 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	err = r.ParseMultipartForm(uploadFileSize)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Error parsing multipartForm - %w", err)
-		api.RequestError(w, u.logger, rParseErr, http.StatusBadRequest, errMsg)
+		api.RequestError(w, u.lg, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
 
-	profileReq, err := u.parseProfileRequest(r, usrId)
+	profileReq, err := u.parseProfileRequest(w, r, usrId)
 	if err != nil {
 		errMsg := fmt.Errorf("cannot read file from request: %w", err)
-		u.logger.Err(errMsg)
+		u.lg.LogError(errMsg.Error(), errMsg, api.GetRequestId(w))
 		api.Response(w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
 
 		return
@@ -128,8 +128,8 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := config.WrapLocalStorageContext(r.Context(), u.locS)
-	ctx = u.logger.WithContext(ctx)
+	ctx := api.BaseContext(w, r, u.lg)
+	ctx = config.WrapLocalStorageContext(ctx, u.locS)
 	profileServData := converter.ToServUserData(profileReq)
 	usrSrvResp, errSrvResp := u.userService.UpdateProfile(ctx, profileServData)
 	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)
@@ -142,16 +142,16 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	api.Response(w, usrResp.StatusCode, usrResp)
 }
 
-func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.UpdateProfileRequest, error) {
+func (u *UserHandler) parseProfileRequest(w http.ResponseWriter, r *http.Request, usrId int) (*api.UpdateProfileRequest, error) {
 	formData := r.MultipartForm.Value
 	file, handler, err := r.FormFile("avatar")
 
 	if err != nil {
 		if errors.Is(err, http.ErrMissingFile) {
-			u.logger.Info().Msg("file was not given")
+			u.lg.Log("file was not given", api.GetRequestId(w))
 		} else {
 			errMsg := fmt.Errorf("cannot read file from request: %w", err)
-			u.logger.Err(errMsg)
+			u.lg.LogError(errMsg.Error(), errMsg, api.GetRequestId(w))
 
 			return nil, err
 		}
@@ -160,7 +160,7 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 	defer func() {
 		if file != nil {
 			if err := file.Close(); err != nil {
-				u.logger.Err(fmt.Errorf("cannot close file: %w", err))
+				u.lg.LogError("file_close_error", fmt.Errorf("cannot close file: %w", err), api.GetRequestId(w))
 			}
 		}
 	}()

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -20,6 +19,7 @@ import (
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
@@ -36,13 +36,13 @@ type App struct {
 	Context           context.Context
 	Server            *http.Server
 	Mux               *mux.Router
-	logger            *zerolog.Logger
+	lg                *logger.BaseLogger
 	AcceptConnections bool
 }
 
 func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	logger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
+	logger := logger.NewLogger()
 
 	cfg, err := config.New(logger, isTest)
 	if err != nil {
@@ -90,7 +90,7 @@ func New(isTest bool) (*App, error) {
 		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
-		logger:   &logger,
+		lg:       logger,
 		Mux:      mx,
 	}, nil
 }
@@ -99,18 +99,18 @@ func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
 	a.Mux.Use(a.AppReadyMiddleware)
 
-	a.logger.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
+	a.lg.Log(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port), "")
 
 	// Not ready yet
 	defer func() {
 		if err := a.GracefulShutdown(); err != nil {
-			a.logger.Fatal().Msg(fmt.Sprintf("failed to graceful shutdown: %v", err))
+			a.lg.LogFatal(fmt.Sprintf("failed to graceful shutdown: %v", err))
 		}
 	}()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.logger.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
+		a.lg.LogFatal(fmt.Sprintf("server stopped: %v", err))
 	}
 }
 
@@ -123,7 +123,7 @@ func (a *App) GracefulShutdown() error {
 	}
 	log.Info().Msg("Postgres shut down")
 
-  if err := a.Redis.Close(); err != nil {
+	if err := a.Redis.Close(); err != nil {
 		return fmt.Errorf("failed to close redis: %w", err)
 	}
 	log.Info().Msg("Redis shut down")

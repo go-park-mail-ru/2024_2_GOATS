@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rs/zerolog"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
-	Logger    zerolog.Logger
+	Logger    *logger.BaseLogger
 }
 
 type Databases struct {
@@ -51,7 +51,7 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
-func New(logger zerolog.Logger, isTest bool) (*Config, error) {
+func New(lg *logger.BaseLogger, isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("config creation error: %w", err)
@@ -63,7 +63,7 @@ func New(logger zerolog.Logger, isTest bool) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal the config file: %w", err)
 	}
 
-	cfg.Logger = logger
+	cfg.Logger = lg
 
 	return cfg, nil
 }

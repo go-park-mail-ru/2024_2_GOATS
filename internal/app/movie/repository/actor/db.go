@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/rs/zerolog/log"
 )
 
 func FindById(ctx context.Context, actorId int, db *sql.DB) (*models.ActorInfo, error) {
-	logger := log.Ctx(ctx)
+	logger, requestId := config.FromBaseContext(ctx)
 	actorInfo := &models.ActorInfo{}
 
 	actorSqlStatement := `
@@ -29,7 +29,7 @@ func FindById(ctx context.Context, actorId int, db *sql.DB) (*models.ActorInfo, 
 
 	row := db.QueryRowContext(ctx, actorSqlStatement, actorId)
 
-	logger.Info().Msg("postgres: successfully select actor info")
+	logger.Log("postgres: successfully select actor info", requestId)
 
 	err := row.Scan(
 		&actorInfo.Id,
@@ -43,12 +43,12 @@ func FindById(ctx context.Context, actorId int, db *sql.DB) (*models.ActorInfo, 
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
-		logger.Err(errMsg)
+		logger.LogError(errMsg.Error(), errMsg, requestId)
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg("postgres: successfully select actor info")
+	logger.Log("postgres: successfully select actor info", requestId)
 
 	return actorInfo, nil
 }

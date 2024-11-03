@@ -5,11 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/rs/zerolog/log"
 )
 
 func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
-	logger := log.Ctx(ctx)
+	logger, requestId := config.FromBaseContext(ctx)
 
 	mvSqlStatement := `
 		SELECT
@@ -37,18 +38,18 @@ func FindById(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while selecting movie info: %w", err)
-		logger.Err(errMsg)
+		logger.LogError(errMsg.Error(), errMsg, requestId)
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg("postgres: successfully select movie info")
+	logger.Log("postgres: successfully select movie info", requestId)
 
 	return rows, nil
 }
 
 func GetMovieActors(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error) {
-	logger := log.Ctx(ctx)
+	logger, requestId := config.FromBaseContext(ctx)
 
 	actorsStatement := `
 		SELECT
@@ -67,12 +68,12 @@ func GetMovieActors(ctx context.Context, mvId int, db *sql.DB) (*sql.Rows, error
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while selecting movie actors info: %w", err)
-		logger.Err(errMsg)
+		logger.LogError(errMsg.Error(), errMsg, requestId)
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg("postgres: successfully select movie actors info")
+	logger.Log("postgres: successfully select movie actors info", requestId)
 
 	return rows, nil
 }

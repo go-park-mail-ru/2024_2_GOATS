@@ -11,7 +11,9 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
@@ -57,7 +59,7 @@ func TestGetActor_Success(t *testing.T) {
 		{Id: 2, Title: "Movie 2", CardUrl: "https://example.com/movie2.jpg", Rating: 7.9, ReleaseDate: time.Date(2019, time.June, 15, 0, 0, 0, 0, time.UTC), Country: "USA"},
 	}
 
-	actor, errObj, statusCode := r.GetActor(context.Background(), actorID)
+	actor, errObj, statusCode := r.GetActor(testContext(), actorID)
 
 	assert.Nil(t, errObj)
 	assert.Equal(t, http.StatusOK, statusCode)
@@ -78,7 +80,7 @@ func TestGetActor_FindByIdError(t *testing.T) {
 		WithArgs(actorID).
 		WillReturnError(fmt.Errorf("some_error"))
 
-	actor, errObj, statusCode := r.GetActor(context.Background(), actorID)
+	actor, errObj, statusCode := r.GetActor(testContext(), actorID)
 
 	assert.Nil(t, actor)
 	assert.NotNil(t, errObj)
@@ -104,7 +106,7 @@ func TestGetActor_FindByActorIdError(t *testing.T) {
 		WithArgs(actorID).
 		WillReturnError(fmt.Errorf("some_error"))
 
-	actor, errObj, statusCode := r.GetActor(context.Background(), actorID)
+	actor, errObj, statusCode := r.GetActor(testContext(), actorID)
 
 	assert.Nil(t, actor)
 	assert.NotNil(t, errObj)
@@ -144,7 +146,7 @@ func TestGetCollection_Success(t *testing.T) {
 		JOIN countries ON countries.id = movies.country_id`).RowsWillBeClosed().WillReturnRows(sqlmock.NewRows([]string{"id", "title", "movie_id", "movie_title", "card_url", "album_url", "rating", "release_date", "movie_type", "country_title"}).
 		AddRow(1, "Test collection", 1, "test movie", "some_card_url", "some_album_url", 7.6, time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC), "film", "Russia"))
 
-	colls, errObj, statusCode := r.GetCollection(context.Background())
+	colls, errObj, statusCode := r.GetCollection(testContext())
 	assert.NotNil(t, colls)
 	assert.Nil(t, errObj)
 	assert.Equal(t, http.StatusOK, statusCode)
@@ -164,7 +166,7 @@ func TestGetCollection_ObtainError(t *testing.T) {
 
 	r := &Repo{Database: db}
 
-	colls, errObj, statusCode := r.GetCollection(context.Background())
+	colls, errObj, statusCode := r.GetCollection(testContext())
 	assert.Nil(t, colls)
 	assert.NotNil(t, errObj)
 	assert.Equal(t, http.StatusUnprocessableEntity, statusCode)
@@ -233,7 +235,7 @@ func TestGetMovie_Success(t *testing.T) {
 
 	r := &Repo{Database: db}
 
-	movie, errObj, statusCode := r.GetMovie(context.Background(), movieId)
+	movie, errObj, statusCode := r.GetMovie(testContext(), movieId)
 	expectedMovie.Director = movie.Director
 
 	assert.NotNil(t, movie)
@@ -274,7 +276,7 @@ func TestGetMovie_FindByIdError(t *testing.T) {
 
 	r := &Repo{Database: db}
 
-	movie, errObj, statusCode := r.GetMovie(context.Background(), movieId)
+	movie, errObj, statusCode := r.GetMovie(testContext(), movieId)
 
 	assert.Nil(t, movie)
 	assert.NotNil(t, errObj)
@@ -321,7 +323,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 
 	r := &Repo{Database: db}
 
-	actors, errObj, statusCode := r.GetMovieActors(context.Background(), movieId)
+	actors, errObj, statusCode := r.GetMovieActors(testContext(), movieId)
 
 	assert.NotNil(t, actors)
 	assert.Nil(t, errObj)
@@ -352,11 +354,16 @@ func TestGetMovieActors_DbError(t *testing.T) {
 
 	r := &Repo{Database: db}
 
-	actors, errObj, statusCode := r.GetMovieActors(context.Background(), movieId)
+	actors, errObj, statusCode := r.GetMovieActors(testContext(), movieId)
 
 	assert.Nil(t, actors)
 	assert.NotNil(t, errObj)
 	assert.Equal(t, http.StatusUnprocessableEntity, statusCode)
 	assert.Equal(t, errors.ErrServerCode, errObj.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func testContext() context.Context {
+	ctx := context.WithValue(context.Background(), "request-id", "some-request-id")
+	return config.WrapLoggerContext(ctx, logger.NewLogger())
 }
