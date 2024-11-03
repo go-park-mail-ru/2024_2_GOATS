@@ -3,7 +3,7 @@ COVERAGE_FILE = coverage.out
 EXCLUDE_FILE = exclude_from_coverage.txt
 COVERAGE_HTML = coverage.html
 
-all: test coverage report html
+all: test coverage report
 
 test:
 	go test -coverprofile=$(COVERAGE_FILE) ./...

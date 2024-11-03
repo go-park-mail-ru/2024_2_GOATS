@@ -18,7 +18,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
 )
 
-var _ handlers.AuthImplementationInterface = (*AuthHandler)(nil)
+var _ handlers.AuthHandlerInterface = (*AuthHandler)(nil)
 
 const (
 	rParseErr = "auth_request_parse_error"
@@ -32,7 +32,7 @@ type AuthHandler struct {
 	lg          *logger.BaseLogger
 }
 
-func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) *AuthHandler {
+func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) handlers.AuthHandlerInterface {
 	redisCfg := config.FromContext(ctx).Databases.Redis
 	logger := config.FromContext(ctx).Logger
 

@@ -58,7 +58,7 @@ func TestService_GetCollection(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := servMock.NewMockMovieRepositoryInterface(ctrl)
-			s := NewService(repo)
+			s := NewMovieService(repo)
 
 			repo.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr, test.statusCode)
 
@@ -133,7 +133,7 @@ func TestService_GetActor(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := servMock.NewMockMovieRepositoryInterface(ctrl)
-			s := NewService(repo)
+			s := NewMovieService(repo)
 
 			repo.EXPECT().GetActor(gomock.Any(), test.actorId).Return(test.mockReturn, test.mockErr, test.statusCode)
 
@@ -230,7 +230,7 @@ func TestService_GetMovie(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := servMock.NewMockMovieRepositoryInterface(ctrl)
-			s := NewService(repo)
+			s := NewMovieService(repo)
 
 			repo.EXPECT().GetMovie(gomock.Any(), test.mvId).Return(test.mockMovieReturn, test.mockMovieErr, test.statusCode)
 

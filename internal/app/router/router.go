@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
+func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 
@@ -18,7 +18,7 @@ func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
+func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 	movieRouter := apiMux.PathPrefix("/movies").Subrouter()
@@ -29,7 +29,7 @@ func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Rout
 	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {
+func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
@@ -39,6 +39,6 @@ func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router
 
 func ActivateMiddlewares(mx *mux.Router) {
 	mx.Use(middleware.AccessLogMiddleware)
-	// mx.Use(middleware.PanicMiddleware)
+	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
 }

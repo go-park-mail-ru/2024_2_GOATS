@@ -14,14 +14,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var _ handlers.MovieImplementationInterface = (*MovieHandler)(nil)
+var _ handlers.MovieHandlerInterface = (*MovieHandler)(nil)
 
 type MovieHandler struct {
 	movieService MovieServiceInterface
 	lg           *logger.BaseLogger
 }
 
-func NewMovieHandler(ctx context.Context, srv MovieServiceInterface) *MovieHandler {
+func NewMovieHandler(ctx context.Context, srv MovieServiceInterface) handlers.MovieHandlerInterface {
 	return &MovieHandler{
 		movieService: srv,
 		lg:           config.FromContext(ctx).Logger,

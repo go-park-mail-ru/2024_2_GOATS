@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int) {
+func (r *MovieRepo) GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int) {
 	rows, err := movieCollection.Obtain(ctx, r.Database)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity

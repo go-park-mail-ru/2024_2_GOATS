@@ -22,7 +22,7 @@ type MovieService struct {
 	movieRepository MovieRepositoryInterface
 }
 
-func NewService(repo MovieRepositoryInterface) api.MovieServiceInterface {
+func NewMovieService(repo MovieRepositoryInterface) api.MovieServiceInterface {
 	return &MovieService{
 		movieRepository: repo,
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (r *Repo) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.ErrorObj, int) {
+func (r *AuthRepo) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.ErrorObj, int) {
 	logger, requestId := config.FromBaseContext(ctx)
 	cookieCfg := config.FromRedisContext(ctx).Cookie
 

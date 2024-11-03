@@ -7,16 +7,15 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var _ service.MovieRepositoryInterface = (*Repo)(nil)
+var _ service.MovieRepositoryInterface = (*MovieRepo)(nil)
 
-type Repo struct {
+type MovieRepo struct {
 	Database *sql.DB
 	Redis    *redis.Client
 }
 
-func NewRepository(db *sql.DB, rdb *redis.Client) service.MovieRepositoryInterface {
-	return &Repo{
+func NewMovieRepository(db *sql.DB) service.MovieRepositoryInterface {
+	return &MovieRepo{
 		Database: db,
-		Redis:    rdb,
 	}
 }

@@ -9,15 +9,15 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/logger"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
 	"github.com/gorilla/mux"
 )
 
-var _ handlers.UserImplementationInterface = (*UserHandler)(nil)
+var _ handlers.UserHandlerInterface = (*UserHandler)(nil)
 
 const (
 	rParseErr      = "user_request_parse_error"
@@ -31,7 +31,7 @@ type UserHandler struct {
 	locS        *config.LocalStorage
 }
 
-func NewUserHandler(ctx context.Context, srv UserServiceInterface) *UserHandler {
+func NewUserHandler(ctx context.Context, srv UserServiceInterface) handlers.UserHandlerInterface {
 	locS := config.FromContext(ctx).Databases.LocalStorage
 
 	return &UserHandler{

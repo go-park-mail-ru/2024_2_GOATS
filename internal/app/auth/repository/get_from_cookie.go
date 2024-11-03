@@ -9,7 +9,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
-func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
+func (r *AuthRepo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
 	var userID string
 	logger, requestId := config.FromBaseContext(ctx)
 

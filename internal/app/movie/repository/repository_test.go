@@ -22,7 +22,7 @@ func TestGetActor_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	actorID := 1
 	expectedActor := &models.ActorInfo{
@@ -73,7 +73,7 @@ func TestGetActor_FindByIdError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	actorID := 1
 	mock.ExpectQuery(`SELECT actors.id, actors.first_name, actors.second_name, actors.biography, actors.birthdate, actors.big_photo_url, countries.title FROM actors JOIN countries on countries.id = actors.country_id WHERE actors.id = \$1`).
@@ -94,7 +94,7 @@ func TestGetActor_FindByActorIdError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	actorID := 1
 	mock.ExpectQuery(`SELECT actors.id, actors.first_name, actors.second_name, actors.biography, actors.birthdate, actors.big_photo_url, countries.title FROM actors JOIN countries on countries.id = actors.country_id WHERE actors.id = \$1`).
@@ -138,7 +138,7 @@ func TestGetCollection_Success(t *testing.T) {
 		},
 	}}
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	mock.ExpectQuery(`SELECT collections.id, collections.title, movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM collections
 		JOIN movie_collections ON movie_collections.collection_id = collections.id
@@ -164,7 +164,7 @@ func TestGetCollection_ObtainError(t *testing.T) {
 	JOIN movies ON movies.id = movie_collections.movie_id
 	JOIN countries ON countries.id = movies.country_id`).WillReturnError(fmt.Errorf("some_error"))
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	colls, errObj, statusCode := r.GetCollection(testContext())
 	assert.Nil(t, colls)
@@ -233,7 +233,7 @@ func TestGetMovie_Success(t *testing.T) {
 			"country_title",
 		}).AddRow(1, "test movie", "short desc", "long desc", "card url", "album url", 7.6, time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC), "video url", "film", "title url", "Test", "Tester", "Russia"))
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	movie, errObj, statusCode := r.GetMovie(testContext(), movieId)
 	expectedMovie.Director = movie.Director
@@ -274,7 +274,7 @@ func TestGetMovie_FindByIdError(t *testing.T) {
 		WHERE movies.id = \$1
 	`).WithArgs(movieId).WillReturnError(fmt.Errorf("some error"))
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	movie, errObj, statusCode := r.GetMovie(testContext(), movieId)
 
@@ -321,7 +321,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 			"small_photo_url",
 		}).AddRow(1, "Test", "Tester", "some bio", "some_small_photo_link"))
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	actors, errObj, statusCode := r.GetMovieActors(testContext(), movieId)
 
@@ -352,7 +352,7 @@ func TestGetMovieActors_DbError(t *testing.T) {
 		WHERE movies.id = \$1
 	`).WithArgs(movieId).WillReturnError(fmt.Errorf("some error"))
 
-	r := &Repo{Database: db}
+	r := NewMovieRepository(db)
 
 	actors, errObj, statusCode := r.GetMovieActors(testContext(), movieId)
 

@@ -21,7 +21,7 @@ func TestCreateUser_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrId := 1
 	usrEmail := "test@mail.ru"
@@ -63,7 +63,7 @@ func TestCreateUser_DbError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrEmail := "test@mail.ru"
 	usrUsername := "mr tester"
@@ -93,7 +93,7 @@ func TestUpdatePassword_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrId := 1
 	pass := "test_password"
@@ -114,7 +114,7 @@ func TestUpdatePassword_DbError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrId := 1
 	pass := "test_password"
@@ -135,7 +135,7 @@ func TestUserByEmail_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrId := 1
 	usrEmail := "test@mail.ru"
@@ -163,7 +163,7 @@ func TestUserByEmail_NotFound(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrEmail := "test@mail.ru"
 
@@ -183,7 +183,7 @@ func TestUserById_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrId := 1
 	usrEmail := "test@mail.ru"
@@ -211,7 +211,7 @@ func TestUserById_NotFound(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 
 	usrId := 1
 
@@ -231,7 +231,7 @@ func TestUpdateProfileData_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 	profileData := &models.User{
 		Id:        1,
 		Email:     "test@mail.ru",
@@ -255,7 +255,7 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewRepository(db)
+	r := NewUserRepository(db)
 	profileData := &models.User{
 		Id:        1,
 		Email:     "test@mail.ru",

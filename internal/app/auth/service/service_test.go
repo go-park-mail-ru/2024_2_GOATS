@@ -145,7 +145,7 @@ func TestService_Register(t *testing.T) {
 
 			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
 			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewService(authRepo, usrRepo)
+			s := NewAuthService(authRepo, usrRepo)
 
 			usrRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
 
@@ -267,7 +267,7 @@ func TestService_Session(t *testing.T) {
 
 			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
 			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewService(authRepo, usrRepo)
+			s := NewAuthService(authRepo, usrRepo)
 
 			authRepo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
 			if test.WithGetUser {
@@ -458,7 +458,7 @@ func TestService_Login(t *testing.T) {
 
 			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
 			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewService(authRepo, usrRepo)
+			s := NewAuthService(authRepo, usrRepo)
 
 			t.Parallel()
 
@@ -533,7 +533,7 @@ func TestService_Logout(t *testing.T) {
 
 			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
 			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewService(authRepo, usrRepo)
+			s := NewAuthService(authRepo, usrRepo)
 
 			authRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
 

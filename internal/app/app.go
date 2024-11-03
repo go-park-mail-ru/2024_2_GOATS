@@ -59,16 +59,16 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
-	repoUser := userRepo.NewRepository(database)
+	repoUser := userRepo.NewUserRepository(database)
 	srvUser := userServ.NewUserService(repoUser)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
 
-	repoAuth := authRepo.NewRepository(database, rdb)
-	srvAuth := authServ.NewService(repoAuth, repoUser)
+	repoAuth := authRepo.NewAuthRepository(database, rdb)
+	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	repoMov := movieRepo.NewRepository(database, rdb)
-	srvMov := movieServ.NewService(repoMov)
+	repoMov := movieRepo.NewMovieRepository(database)
+	srvMov := movieServ.NewMovieService(repoMov)
 	delMov := movieApi.NewMovieHandler(ctx, srvMov)
 
 	mx := mux.NewRouter()
