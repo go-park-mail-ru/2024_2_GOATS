@@ -20,7 +20,7 @@ func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string
 	outFile, osErr := os.Create(fullPath)
 	if osErr != nil {
 		return "", &errVals.ErrorObj{
-			Code:  "file_upload_err",
+			Code:  errVals.ErrFileUploadCode,
 			Error: errVals.CustomError{Err: fmt.Errorf("cannot find or create nginx static folder: %w", osErr)},
 		}
 	}
@@ -34,7 +34,7 @@ func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string
 	_, osErr = io.Copy(outFile, usrData.Avatar)
 	if osErr != nil {
 		return "", &errVals.ErrorObj{
-			Code:  "file_upload_err",
+			Code:  errVals.ErrFileUploadCode,
 			Error: errVals.CustomError{Err: fmt.Errorf("cannot save file into nginx static folder: %w", osErr)},
 		}
 	}

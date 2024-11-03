@@ -94,6 +94,7 @@ func ScanActorMoviesConnections(rows *sql.Rows) ([]*models.MovieShortInfo, error
 			&mvShortInfo.CardUrl,
 			&mvShortInfo.Rating,
 			&mvShortInfo.ReleaseDate,
+			&mvShortInfo.Country,
 		)
 
 		if err != nil {

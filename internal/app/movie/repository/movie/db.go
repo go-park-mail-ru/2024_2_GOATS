@@ -86,10 +86,12 @@ func FindByActorId(ctx context.Context, actorId int, db *sql.DB) (*sql.Rows, err
 			movies.title,
 			movies.card_url,
 			movies.rating,
-			movies.release_date
+			movies.release_date,
+			countries.title
 		FROM movies
 		JOIN movie_actors ON movie_actors.movie_id = movies.id
 		JOIN actors ON movie_actors.actor_id = actors.id
+		JOIN countries ON movies.country_id = countries.id
 		WHERE actors.id = $1
 	`
 

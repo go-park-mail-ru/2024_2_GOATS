@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
+	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/validation"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
@@ -102,10 +103,28 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
-		errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
-		api.RequestError(w, u.logger, vlErr, http.StatusBadRequest, errMsg)
+	var errs []errVals.ErrorObj
+	if profileReq.Username != "" {
+		if valErr := validation.ValidateUsername(profileReq.Username); valErr != nil {
+			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr.Err)
+			errs = append(errs, errVals.ErrorObj{Code: vlErr, Error: errVals.CustomError{Err: errMsg}})
+		}
+	}
 
+	if profileReq.Email != "" {
+		if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
+			errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
+			errs = append(errs, errVals.ErrorObj{Code: vlErr, Error: errVals.CustomError{Err: errMsg}})
+		}
+	}
+
+	if len(errs) > 0 {
+		errResp := &api.ErrorResponse{
+			Errors:     errs,
+			StatusCode: http.StatusBadRequest,
+		}
+
+		api.Response(w, errResp.StatusCode, errResp)
 		return
 	}
 

@@ -138,6 +138,114 @@ func TestUserService_UpdatePassword(t *testing.T) {
 	}
 }
 
+func TestUserService_UpdateProfile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserRepo := mockRep.NewMockUserRepositoryInterface(ctrl)
+	userService := NewUserService(mockUserRepo)
+
+	tests := []struct {
+		name           string
+		usrData        *models.User
+		mockAvatarErr  *errVals.ErrorObj
+		mockUpdateErr  *errVals.ErrorObj
+		expectedStatus int
+		expectedError  *models.ErrorRespData
+	}{
+		{
+			name: "Success with avatar",
+			usrData: &models.User{
+				Id:         1,
+				AvatarName: "avatar.png",
+				Email:      "test@mail.ru",
+				Username:   "hello world",
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Success without avatar",
+			usrData: &models.User{
+				Id:         1,
+				AvatarName: "",
+				Email:      "test@mail.ru",
+				Username:   "hello world",
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Error saving avatar",
+			usrData: &models.User{
+				Id:         1,
+				AvatarName: "avatar.png",
+				Email:      "test@mail.ru",
+				Username:   "hello world",
+			},
+			mockAvatarErr: &errVals.ErrorObj{
+				Code:  "avatar_save_failed",
+				Error: errVals.CustomError{Err: errors.New("failed to save avatar")},
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedError: &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors: []errVals.ErrorObj{
+					{Code: "avatar_save_failed", Error: errVals.CustomError{Err: errors.New("failed to save avatar")}},
+				},
+			},
+		},
+		{
+			name: "Error updating profile",
+			usrData: &models.User{
+				Id:         1,
+				AvatarName: "avatar.png",
+				Email:      "test@mail.ru",
+				Username:   "hello world",
+			},
+			mockUpdateErr: &errVals.ErrorObj{
+				Code:  "update_failed",
+				Error: errVals.CustomError{Err: errors.New("failed to update profile")},
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedError: &models.ErrorRespData{
+				StatusCode: http.StatusInternalServerError,
+				Errors: []errVals.ErrorObj{
+					{Code: "update_failed", Error: errVals.CustomError{Err: errors.New("failed to update profile")}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			if tt.mockAvatarErr != nil {
+				mockUserRepo.EXPECT().SaveAvatar(ctx, tt.usrData).Return("", tt.mockAvatarErr)
+			} else {
+				if tt.usrData.AvatarName != "" {
+					mockUserRepo.EXPECT().SaveAvatar(ctx, tt.usrData).Return("http://example.com/avatar.png", nil)
+				}
+			}
+
+			if tt.mockUpdateErr != nil {
+				mockUserRepo.EXPECT().UpdateProfileData(ctx, tt.usrData).Return(tt.mockUpdateErr, http.StatusInternalServerError)
+			} else if tt.mockAvatarErr == nil {
+				mockUserRepo.EXPECT().UpdateProfileData(ctx, tt.usrData).Return(nil, http.StatusOK)
+			}
+
+			respData, errData := userService.UpdateProfile(ctx, tt.usrData)
+
+			if tt.expectedError != nil {
+				assert.Nil(t, respData)
+				assert.Equal(t, tt.expectedError, errData)
+			} else {
+				assert.Nil(t, errData)
+				assert.Equal(t, tt.expectedStatus, respData.StatusCode)
+			}
+		})
+	}
+}
+
 // Вспомогательная функция для хеширования пароля
 func hashPassword(password string) string {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

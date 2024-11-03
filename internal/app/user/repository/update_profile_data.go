@@ -13,7 +13,7 @@ func (u *UserRepo) UpdateProfileData(ctx context.Context, profileData *models.Us
 	err := user.UpdateProfile(ctx, profileData, u.Database)
 	if err != nil {
 		return &errVals.ErrorObj{
-			Code: "update_profile_error",
+			Code: errVals.ErrUpdateProfileCode,
 			Error: errVals.CustomError{
 				Err: err,
 			},

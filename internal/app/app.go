@@ -116,14 +116,19 @@ func (a *App) Run() {
 
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
-	a.logger.Info().Msg("Starting graceful shutdown")
+	log.Info().Msg("Starting graceful shutdown")
 
 	if err := a.Database.Close(); err != nil {
 		return fmt.Errorf("failed to close database: %w", err)
 	}
-	a.logger.Info().Msg("Postgres shut down")
+	log.Info().Msg("Postgres shut down")
 
-	shutdownCtx, cancel := context.WithTimeout(a.Context, 10*time.Second)
+  if err := a.Redis.Close(); err != nil {
+		return fmt.Errorf("failed to close redis: %w", err)
+	}
+	log.Info().Msg("Redis shut down")
+
+	shutdownCtx, cancel := context.WithTimeout(a.Context, 5*time.Second)
 	defer cancel()
 
 	if err := a.Server.Shutdown(shutdownCtx); err != nil {

@@ -8,16 +8,11 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
 	"github.com/rs/zerolog/log"
 )
 
 func Create(ctx context.Context, registerData models.RegisterData, db *sql.DB) (*models.User, error) {
 	logger := log.Ctx(ctx)
-	hashPass, err := password.HashAndSalt(registerData.Password)
-	if err != nil {
-		return nil, fmt.Errorf("error hashing password: %w", err)
-	}
 
 	sqlStatement := `
 		INSERT INTO users (email, username, password_hash)
@@ -25,10 +20,10 @@ func Create(ctx context.Context, registerData models.RegisterData, db *sql.DB) (
 		RETURNING id, email`
 
 	usr := models.User{}
-	err = db.QueryRowContext(
+	err := db.QueryRowContext(
 		ctx,
 		sqlStatement,
-		registerData.Email, registerData.Username, hashPass,
+		registerData.Email, registerData.Username, registerData.Password,
 	).Scan(&usr.Id, &usr.Email)
 
 	if err != nil {
@@ -85,14 +80,10 @@ func FindById(ctx context.Context, userId int, db *sql.DB) (*models.User, error)
 
 func UpdatePassword(ctx context.Context, userId int, pass string, db *sql.DB) error {
 	logger := log.Ctx(ctx)
-	hashPass, err := password.HashAndSalt(pass)
-	if err != nil {
-		return fmt.Errorf("error hashing password: %w", err)
-	}
 
 	sqlStatement := "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
 
-	_, err = db.ExecContext(ctx, sqlStatement, hashPass, time.Now(), userId)
+	_, err := db.ExecContext(ctx, sqlStatement, pass, time.Now(), userId)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)

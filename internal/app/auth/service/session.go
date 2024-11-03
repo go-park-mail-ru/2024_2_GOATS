@@ -25,7 +25,7 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*models.Sessi
 		log.Ctx(ctx).Error().Msg(errMsg.Error())
 
 		return nil, &models.ErrorRespData{
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj("convertion_error", errVals.CustomError{Err: errMsg})},
+			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrConvertionCode, errVals.CustomError{Err: errMsg})},
 			StatusCode: code,
 		}
 	}

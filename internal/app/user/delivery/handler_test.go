@@ -132,7 +132,7 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 				"email":    "invalid-email",
 				"username": "testuser",
 			},
-			resp:       `{"success":false,"errors":[{"Code":"user_validation_error","Error":"request error: updateProfile action: Email err - email is incorrect"}]}`,
+			resp:       `{"success":false,"errors":[{"Code":"user_validation_error","Error":"updateProfile action: Email err - email is incorrect"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
 		{

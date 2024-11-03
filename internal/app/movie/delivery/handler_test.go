@@ -46,7 +46,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 				},
 				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"","rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
+			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"", "album_url":"", "rating":0,"release_date":"0001-01-01T00:00:00Z","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{

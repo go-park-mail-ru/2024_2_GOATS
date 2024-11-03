@@ -19,7 +19,7 @@ func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVa
 		logger.Error().Msg(errMsg.Error())
 
 		return "", errVals.NewErrorObj(
-			"no_cookie_matches",
+			errVals.ErrCookieMissmatchCode,
 			errVals.CustomError{Err: errMsg},
 		), http.StatusForbidden
 	}

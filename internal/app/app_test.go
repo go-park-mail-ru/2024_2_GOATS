@@ -18,14 +18,24 @@ import (
 
 func TestAppIntegration(t *testing.T) {
 	ctx := testContext()
+
 	pool, err := dockertest.NewPool("")
 	require.NoError(t, err, "cannot create new pool")
 
-	resource, err := initPostgres(ctx, pool)
+	pg, err := initPostgres(ctx, pool)
 	require.NoError(t, err, "cannot init postgres")
 
 	defer func() {
-		if err := pool.Purge(resource); err != nil {
+		if err := pool.Purge(pg); err != nil {
+			t.Fatalf("failed to stop container: %v", err)
+		}
+	}()
+
+	rdb, err := initRedis(ctx, pool)
+	require.NoError(t, err, "cannot init redis")
+
+	defer func() {
+		if err := pool.Purge(rdb); err != nil {
 			t.Fatalf("failed to stop container: %v", err)
 		}
 	}()
@@ -43,11 +53,15 @@ func TestAppIntegration(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 	if err := app.Database.Ping(); err != nil {
-		require.NoError(t, err, "failed to ping database from test")
+		require.NoError(t, err, "failed to ping postgres from test")
 	}
 
-	if err := app.GracefulShutdown(); err != nil {
-		t.Fatalf("failed to perform gracefulShutdown: %v", err)
+	if err := app.Redis.Ping(ctx).Err(); err != nil {
+		require.NoError(t, err, "failed to ping redis from test")
+	}
+
+	if err := app.Server.Shutdown(ctx); err != nil {
+		t.Fatalf("failed to shut down server: %v", err)
 	}
 
 	<-done
@@ -88,6 +102,32 @@ func initPostgres(ctx context.Context, pool *dockertest.Pool) (*dockertest.Resou
 	resource, err := pool.RunWithOptions(&opts)
 	if err != nil {
 		return nil, fmt.Errorf("error while initing postgres: %w", err)
+	}
+
+	err = resource.Expire(30)
+	if err != nil {
+		return nil, fmt.Errorf("auto expiration err: %w", err)
+	}
+
+	return resource, nil
+}
+
+func initRedis(ctx context.Context, pool *dockertest.Pool) (*dockertest.Resource, error) {
+	redisCfg := config.FromContext(ctx).Databases.Redis
+	opts := dockertest.RunOptions{
+		Repository:   "redis",
+		Tag:          "latest",
+		ExposedPorts: []string{"6379/tcp"},
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"6379/tcp": {
+				{HostIP: "0.0.0.0", HostPort: fmt.Sprintf("%d/tcp", redisCfg.Port)},
+			},
+		},
+	}
+
+	resource, err := pool.RunWithOptions(&opts)
+	if err != nil {
+		return nil, fmt.Errorf("error while initing redis: %w", err)
 	}
 
 	err = resource.Expire(30)

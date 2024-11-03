@@ -84,6 +84,7 @@ type MovieShortInfo struct {
 	Id          int       `json:"id"`
 	Title       string    `json:"title"`
 	CardUrl     string    `json:"card_url"`
+	AlbumUrl    string    `json:"album_url"`
 	Rating      float32   `json:"rating"`
 	ReleaseDate time.Time `json:"release_date"`
 	MovieType   string    `json:"movie_type"`

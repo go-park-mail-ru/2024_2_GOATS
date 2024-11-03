@@ -12,7 +12,7 @@ func Obtain(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	logger := log.Ctx(ctx)
 
 	sqlStatement := `
-	SELECT collections.id, collections.title, movies.id, movies.title, movies.card_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM collections
+	SELECT collections.id, collections.title, movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM collections
 	JOIN movie_collections ON movie_collections.collection_id = collections.id
 	JOIN movies ON movies.id = movie_collections.movie_id
 	JOIN countries ON countries.id = movies.country_id
