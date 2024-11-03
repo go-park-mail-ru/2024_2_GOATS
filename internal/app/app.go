@@ -28,6 +28,7 @@ import (
 	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 )
 
 type App struct {
@@ -42,9 +43,9 @@ type App struct {
 
 func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	logger := logger.NewLogger()
+	lg := logger.NewLogger()
 
-	cfg, err := config.New(logger, isTest)
+	cfg, err := config.New(lg, isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -75,7 +76,9 @@ func New(isTest bool) (*App, error) {
 	router.ActivateMiddlewares(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
-	router.SetupUser(delUser, mx)
+
+	authMW := middleware.NewSessionMiddleware(srvAuth, lg)
+	router.SetupUser(delUser, authMW, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
@@ -90,7 +93,7 @@ func New(isTest bool) (*App, error) {
 		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
-		lg:       logger,
+		lg:       lg,
 		Mux:      mx,
 	}, nil
 }

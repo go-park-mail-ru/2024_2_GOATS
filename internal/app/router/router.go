@@ -29,12 +29,13 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
+func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.SessionMiddleware, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
 	userRouter.HandleFunc("/{id:[0-9]+}/update_profile", delLayer.UpdateProfile).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.Use(authMW.AuthMiddleware)
 }
 
 func ActivateMiddlewares(mx *mux.Router) {
