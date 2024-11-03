@@ -172,6 +172,7 @@ func preparedCookie(ck *models.CookieData) *http.Cookie {
 		Expires:  ck.Token.Expiry,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
+		Path:     "/api",
 		Secure:   false,
 	}
 }
@@ -183,6 +184,7 @@ func preparedExpiredCookie() *http.Cookie {
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
+		Path:     "/api",
 		Secure:   false,
 	}
 }

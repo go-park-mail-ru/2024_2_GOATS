@@ -73,11 +73,11 @@ func New(isTest bool) (*App, error) {
 	delMov := movieApi.NewMovieHandler(ctx, srvMov)
 
 	mx := mux.NewRouter()
-	router.ActivateMiddlewares(mx)
+	router.ActivateCommonMiddlewares(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
 
-	authMW := middleware.NewSessionMiddleware(srvAuth, &lg)
+	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)
 
 	srv := &http.Server{

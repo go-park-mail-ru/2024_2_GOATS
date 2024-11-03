@@ -3,11 +3,11 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -15,7 +15,7 @@ type SessionMiddleware struct {
 	authServ delivery.AuthServiceInterface
 }
 
-func NewSessionMiddleware(authServ delivery.AuthServiceInterface, lg *zerolog.Logger) *SessionMiddleware {
+func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddleware {
 	return &SessionMiddleware{
 		authServ: authServ,
 	}
@@ -23,6 +23,11 @@ func NewSessionMiddleware(authServ delivery.AuthServiceInterface, lg *zerolog.Lo
 
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/api/users") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		lg := log.Ctx(r.Context())
 		ck, err := r.Cookie("session_id")
 
