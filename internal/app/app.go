@@ -71,6 +71,7 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	delMov := movieApi.NewMovieHandler(ctx, srvMov)
 
 	mx := mux.NewRouter()
+	router.SetupCsrf(mx)
 	router.ActivateMiddlewares(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
