@@ -123,10 +123,8 @@ func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error 
 	}
 
 	if len(sets) == 0 {
-		errMsg := fmt.Errorf("no data to update")
-		logger.Error().Err(errMsg).Msg("empty_update_data")
-
-		return errMsg
+		logger.Info().Msg("empty_update_data")
+		return nil
 	}
 
 	sets = append(sets, fmt.Sprintf("updated_at = $%d", argCount))
