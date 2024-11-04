@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
+	csrf_handle "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
 )
@@ -44,4 +45,11 @@ func UseCommonMiddlewares(mx *mux.Router) {
 	mx.Use(middleware.WithLogger)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
+	mx.Use(middleware.CsrfMiddleware)
+	mx.Use(middleware.XssMiddleware)
+}
+
+func SetupCsrf(router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	apiMux.HandleFunc("/csrf-token", csrf_handle.GenerateCSRFTokenHandler).Methods(http.MethodGet)
 }

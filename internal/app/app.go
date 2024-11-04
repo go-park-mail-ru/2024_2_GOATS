@@ -76,6 +76,7 @@ func New(isTest bool) (*App, error) {
 
 	mx := mux.NewRouter()
 	router.UseCommonMiddlewares(mx)
+	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
 
