@@ -3,6 +3,9 @@ package delivery
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
@@ -10,8 +13,6 @@ import (
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
-	"log"
-	"net/http"
 )
 
 type RoomServiceInterface interface {

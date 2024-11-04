@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
+
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
-
-	"log"
 )
 
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=service

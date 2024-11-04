@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// GenerateCSRFTokenHandler создает CSRF-токен и отправляет его клиенту
+// Создаем CSRF-токен и отправляет его клиенту
 func GenerateCSRFTokenHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := token_gen.GenerateToken()
 	if err != nil {

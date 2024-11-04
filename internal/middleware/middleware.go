@@ -68,9 +68,8 @@ func logRequest(r *http.Request, start time.Time, msg string) {
 		Msg(msg)
 }
 
-var policy = bluemonday.UGCPolicy()
-
 func sanitizeInput(input string) string {
+	policy := bluemonday.UGCPolicy()
 	return policy.Sanitize(input)
 }
 
@@ -86,7 +85,7 @@ func XssMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// CsrfMiddleware проверяет CSRF-токен для защищенных маршрутов
+// Проверяем CSRF-токен для защищенных маршрутов
 func CsrfMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

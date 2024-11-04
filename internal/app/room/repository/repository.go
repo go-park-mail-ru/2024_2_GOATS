@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/user"
 	"log"
 	"net/http"
 	"strconv"
 
+	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/user"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )

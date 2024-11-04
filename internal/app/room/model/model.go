@@ -9,7 +9,7 @@ import (
 type Room struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
-	Movie   string `json:"movie"` // ID фильма или URL
+	Movie   string `json:"movie"`
 	AdminID string `json:"admin_id"`
 }
 
