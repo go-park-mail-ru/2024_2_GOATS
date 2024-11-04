@@ -1,4 +1,4 @@
-package actor
+package actordb
 
 import (
 	"context"
@@ -9,11 +9,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func FindById(ctx context.Context, actorId int, db *sql.DB) (*models.ActorInfo, error) {
-	logger := log.Ctx(ctx)
-	actorInfo := &models.ActorInfo{}
-
-	actorSqlStatement := `
+const (
+	actorFindByIDSQL = `
 		SELECT
 			actors.id,
 			actors.first_name,
@@ -26,13 +23,17 @@ func FindById(ctx context.Context, actorId int, db *sql.DB) (*models.ActorInfo, 
 		JOIN countries on countries.id = actors.country_id
 		WHERE actors.id = $1
 	`
+)
 
-	row := db.QueryRowContext(ctx, actorSqlStatement, actorId)
+func FindByID(ctx context.Context, actorID int, db *sql.DB) (*models.ActorInfo, error) {
+	logger := log.Ctx(ctx)
+	actorInfo := &models.ActorInfo{}
 
+	row := db.QueryRowContext(ctx, actorFindByIDSQL, actorID)
 	logger.Info().Msg("postgres: successfully select actor info")
 
 	err := row.Scan(
-		&actorInfo.Id,
+		&actorInfo.ID,
 		&actorInfo.Name,
 		&actorInfo.Surname,
 		&actorInfo.Biography,
@@ -43,7 +44,7 @@ func FindById(ctx context.Context, actorId int, db *sql.DB) (*models.ActorInfo, 
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}

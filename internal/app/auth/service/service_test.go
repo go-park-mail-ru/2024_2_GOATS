@@ -14,7 +14,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	servUserMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 	"github.com/golang/mock/gomock"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -52,7 +51,7 @@ func TestService_Register(t *testing.T) {
 				},
 			},
 			mockCreateUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Username: "tester",
 			},
@@ -117,7 +116,7 @@ func TestService_Register(t *testing.T) {
 				},
 			},
 			mockCreateUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Username: "tester",
 			},
@@ -139,21 +138,21 @@ func TestService_Register(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
-			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewAuthService(authRepo, usrRepo)
+			mAuthRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			mUsrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewAuthService(mAuthRepo, mUsrRepo)
 
-			usrRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
+			mUsrRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(test.mockCreateUser, test.mockUserErr, test.statusCode)
 
 			if test.WithCookie {
-				authRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr, test.statusCode)
+				mAuthRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr, test.statusCode)
 			}
-
-			t.Parallel()
 
 			response, err := s.Register(ctx, test.args.registerData)
 
@@ -196,7 +195,7 @@ func TestService_Session(t *testing.T) {
 			mockGetFromCookie:    "1",
 			mockGetFromCookieErr: nil,
 			mockGetUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Username: "TestUser",
 				Password: "secret_password",
@@ -205,7 +204,7 @@ func TestService_Session(t *testing.T) {
 			expectedResponse: &models.SessionRespData{
 				StatusCode: 200,
 				UserData: models.User{
-					Id:       1,
+					ID:       1,
 					Email:    "test@mail.ru",
 					Username: "TestUser",
 					Password: "secret_password",
@@ -261,20 +260,20 @@ func TestService_Session(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
-			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewAuthService(authRepo, usrRepo)
+			mAuthRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			mUsrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewAuthService(mAuthRepo, mUsrRepo)
 
-			authRepo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
+			mAuthRepo.EXPECT().GetFromCookie(gomock.Any(), gomock.Any()).Return(test.mockGetFromCookie, test.mockGetFromCookieErr, test.statusCode)
 			if test.WithGetUser {
-				usrRepo.EXPECT().UserById(gomock.Any(), gomock.Any()).Return(test.mockGetUser, test.mockGetUserErr, test.statusCode)
+				mUsrRepo.EXPECT().UserByID(gomock.Any(), gomock.Any()).Return(test.mockGetUser, test.mockGetUserErr, test.statusCode)
 			}
-
-			t.Parallel()
 
 			response, err := s.Session(test.args.ctx, test.args.cookie)
 
@@ -322,7 +321,7 @@ func TestService_Login(t *testing.T) {
 				},
 			},
 			mockUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Password: "$2a$10$wfvAfweY9mrak.zBcnvY1eneItl0nWftZiH0/HH5IK5l/6LgC/fpe",
 				Username: "test",
@@ -361,7 +360,7 @@ func TestService_Login(t *testing.T) {
 				},
 			},
 			mockUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Password: "$2a$10$wfvAfweY9mrak.zBcnvY1eneItl0nWftZiH0/HH5IK5l/6LgC/fpe",
 				Username: "test",
@@ -387,7 +386,7 @@ func TestService_Login(t *testing.T) {
 				},
 			},
 			mockUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Password: "$2a$10$wfvAfweY9mrak.zBcnvY1eneItl0nWftZiH0/HH5IK5l/6LgC/fpe",
 				Username: "test",
@@ -436,7 +435,7 @@ func TestService_Login(t *testing.T) {
 				},
 			},
 			mockUser: &models.User{
-				Id:       1,
+				ID:       1,
 				Email:    "test@mail.ru",
 				Password: "$2a$10$wfvAfweY9mrak.zBcnvY1eneItl0nWftZiH0/HH5IK5l/6LgC/fpe",
 				Username: "test",
@@ -452,23 +451,23 @@ func TestService_Login(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
-			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewAuthService(authRepo, usrRepo)
+			mAuthRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			mUsrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewAuthService(mAuthRepo, mUsrRepo)
 
-			t.Parallel()
-
-			usrRepo.EXPECT().UserByEmail(gomock.Any(), gomock.Any()).Return(test.mockUser, test.mockUserErr, test.statusCode)
+			mUsrRepo.EXPECT().UserByEmail(gomock.Any(), gomock.Any()).Return(test.mockUser, test.mockUserErr, test.statusCode)
 			if test.withCookieDestruction {
-				authRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
+				mAuthRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
 			}
 
 			if test.withCookieSetting {
-				authRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockSetCookieErr, test.statusCode)
+				mAuthRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockSetCookieErr, test.statusCode)
 			}
 
 			response, err := s.Login(test.args.ctx, test.args.loginData)
@@ -527,15 +526,17 @@ func TestService_Logout(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
-			usrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
-			s := NewAuthService(authRepo, usrRepo)
+			mAuthRepo := servAuthMock.NewMockAuthRepositoryInterface(ctrl)
+			mUsrRepo := servUserMock.NewMockUserRepositoryInterface(ctrl)
+			s := NewAuthService(mAuthRepo, mUsrRepo)
 
-			authRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
+			mAuthRepo.EXPECT().DestroySession(gomock.Any(), gomock.Any()).Return(test.mockDestroySessionErr, test.statusCode)
 
 			response, err := s.Logout(test.args.ctx, test.args.cookie)
 
@@ -553,12 +554,12 @@ func TestService_Logout(t *testing.T) {
 func testContext(isRedis bool) context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
+		log.Fatal().Msgf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(&zerolog.Logger{}, false)
+	cfg, err := config.New(false)
 	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to read config from Register test: %v", err))
+		log.Fatal().Msgf("failed to read config from Register test: %v", err)
 	}
 
 	if isRedis {

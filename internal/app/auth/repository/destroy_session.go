@@ -15,7 +15,7 @@ func (r *AuthRepo) DestroySession(ctx context.Context, cookie string) (*errVals.
 
 	if err != nil {
 		errMsg := fmt.Errorf("redis: failed to destroy session. Error - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("redis_destroy_error")
 		return errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errMsg}), http.StatusInternalServerError
 	}
 

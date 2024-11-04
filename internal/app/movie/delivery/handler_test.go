@@ -2,22 +2,16 @@ package delivery
 
 import (
 	"bytes"
-	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	srvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,11 +28,11 @@ func TestDelivery_GetCollection(t *testing.T) {
 			mockReturn: &models.CollectionsRespData{
 				Collections: []models.Collection{
 					{
-						Id:    1,
+						ID:    1,
 						Title: "Test collection",
 						Movies: []*models.MovieShortInfo{
 							{
-								Id:    1,
+								ID:    1,
 								Title: "test movie",
 							},
 						},
@@ -61,15 +55,18 @@ func TestDelivery_GetCollection(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			path := "/api/movie/movie_collections"
-			srv := srvMock.NewMockMovieServiceInterface(ctrl)
-			handler := NewMovieHandler(testContext(), srv)
+			ms := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(ms)
 
-			srv.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr)
+			ms.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr)
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.GetCollections)
@@ -97,7 +94,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 		{
 			name: "Success",
 			mockReturn: &models.MovieInfo{
-				Id:              1,
+				ID:              1,
 				Title:           "Test",
 				FullDescription: "Test desc",
 				CardUrl:         "card_link",
@@ -108,7 +105,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 				VideoUrl:        "video_link",
 				Director:        &models.DirectorInfo{},
 			},
-			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film", "director": "", "country":"Russia","video_url":"video_link","actors_info":[]}}`,
+			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"0001-01-01T00:00:00Z","movie_type":"film", "director": "", "country":"Russia","video_url":"video_link","actors_info":null}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -129,13 +126,16 @@ func TestDelivery_GetMovie(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			path := "/api/movies/1"
-			srv := srvMock.NewMockMovieServiceInterface(ctrl)
-			handler := NewMovieHandler(testContext(), srv)
+			ms := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(ms)
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.GetMovie)
@@ -145,7 +145,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 
 			vars := map[string]string{}
 			if !test.badReq {
-				srv.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				ms.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 				vars["movie_id"] = "1"
 			}
 
@@ -171,7 +171,7 @@ func TestDelivery_GetActor(t *testing.T) {
 		{
 			name: "Success",
 			mockReturn: &models.ActorInfo{
-				Id: 1,
+				ID: 1,
 				Person: models.Person{
 					Name:    "Tester",
 					Surname: "Testov",
@@ -198,13 +198,16 @@ func TestDelivery_GetActor(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			path := "/api/actors/1"
-			srv := srvMock.NewMockMovieServiceInterface(ctrl)
-			handler := NewMovieHandler(testContext(), srv)
+			ms := srvMock.NewMockMovieServiceInterface(ctrl)
+			handler := NewMovieHandler(ms)
 
 			r := mux.NewRouter()
 			r.HandleFunc(path, handler.GetActor)
@@ -214,7 +217,7 @@ func TestDelivery_GetActor(t *testing.T) {
 
 			vars := map[string]string{}
 			if !test.badReq {
-				srv.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				ms.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 				vars["actor_id"] = "1"
 			}
 
@@ -226,20 +229,4 @@ func TestDelivery_GetActor(t *testing.T) {
 			assert.JSONEq(t, test.resp, w.Body.String())
 		})
 	}
-}
-
-func testContext() context.Context {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
-	}
-
-	cfg, err := config.New(&zerolog.Logger{}, false)
-	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
-	}
-
-	ctx := config.WrapContext(context.Background(), cfg)
-
-	return ctx
 }

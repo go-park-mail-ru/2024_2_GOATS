@@ -1,4 +1,4 @@
-package movie
+package moviedb
 
 import (
 	"database/sql"
@@ -12,9 +12,16 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	mvInfo := &models.MovieInfo{}
 	directorInfo := &models.DirectorInfo{}
 
+	defer func() {
+		if err := rows.Close(); err != nil {
+			errMsg := fmt.Errorf("cannot close rows while taking movie info: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+		}
+	}()
+
 	for rows.Next() {
 		err := rows.Scan(
-			&mvInfo.Id,
+			&mvInfo.ID,
 			&mvInfo.Title,
 			&mvInfo.ShortDescription,
 			&mvInfo.FullDescription,
@@ -32,17 +39,11 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 
 		if err != nil {
 			errMsg := fmt.Errorf("error while scanning actors info: %w", err)
-			log.Err(errMsg)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
 
 			return nil, errMsg
 		}
 	}
-
-	defer func() {
-		if err := rows.Close(); err != nil {
-			log.Err(fmt.Errorf("cannot close rows while taking movie info: %w", err))
-		}
-	}()
 
 	mvInfo.Director = directorInfo
 
@@ -52,11 +53,18 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 func ScanActorsConnections(rows *sql.Rows) ([]*models.ActorInfo, error) {
 	actorInfos := []*models.ActorInfo{}
 
+	defer func() {
+		if err := rows.Close(); err != nil {
+			errMsg := fmt.Errorf("cannot close rows while taking movie info: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+		}
+	}()
+
 	for rows.Next() {
 		var actorInfo models.ActorInfo
 
 		err := rows.Scan(
-			&actorInfo.Id,
+			&actorInfo.ID,
 			&actorInfo.Name,
 			&actorInfo.Surname,
 			&actorInfo.Biography,
@@ -65,7 +73,7 @@ func ScanActorsConnections(rows *sql.Rows) ([]*models.ActorInfo, error) {
 
 		if err != nil {
 			errMsg := fmt.Errorf("error while scanning actors info: %w", err)
-			log.Err(errMsg)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
 
 			return nil, errMsg
 		}
@@ -73,23 +81,24 @@ func ScanActorsConnections(rows *sql.Rows) ([]*models.ActorInfo, error) {
 		actorInfos = append(actorInfos, &actorInfo)
 	}
 
-	defer func() {
-		if err := rows.Close(); err != nil {
-			log.Err(fmt.Errorf("cannot close rows while taking movie info: %w", err))
-		}
-	}()
-
 	return actorInfos, nil
 }
 
 func ScanActorMoviesConnections(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
 	actMvs := []*models.MovieShortInfo{}
 
+	defer func() {
+		if err := rows.Close(); err != nil {
+			errMsg := fmt.Errorf("cannot close rows while taking actor's movies short info: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+		}
+	}()
+
 	for rows.Next() {
 		var mvShortInfo models.MovieShortInfo
 
 		err := rows.Scan(
-			&mvShortInfo.Id,
+			&mvShortInfo.ID,
 			&mvShortInfo.Title,
 			&mvShortInfo.CardUrl,
 			&mvShortInfo.Rating,
@@ -99,19 +108,13 @@ func ScanActorMoviesConnections(rows *sql.Rows) ([]*models.MovieShortInfo, error
 
 		if err != nil {
 			errMsg := fmt.Errorf("error while scanning actor's movies short info: %w", err)
-			log.Err(errMsg)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
 
 			return nil, errMsg
 		}
 
 		actMvs = append(actMvs, &mvShortInfo)
 	}
-
-	defer func() {
-		if err := rows.Close(); err != nil {
-			log.Err(fmt.Errorf("cannot close rows while taking actor's movies short info: %w", err))
-		}
-	}()
 
 	return actMvs, nil
 }

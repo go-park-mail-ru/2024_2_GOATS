@@ -27,24 +27,25 @@ const (
 
 type UserHandler struct {
 	userService UserServiceInterface
-	locS        *config.LocalStorage
+	lclStrg     *config.LocalStorage
 }
 
 func NewUserHandler(ctx context.Context, srv UserServiceInterface) handlers.UserHandlerInterface {
-	locS := config.FromContext(ctx).Databases.LocalStorage
+	lclStrg := config.FromContext(ctx).Databases.LocalStorage
 
 	return &UserHandler{
 		userService: srv,
-		locS:        &locS,
+		lclStrg:     &lclStrg,
 	}
 }
 
 func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	lg := log.Ctx(r.Context())
 	passwordReq := &api.UpdatePasswordRequest{}
 	api.DecodeBody(w, r, passwordReq)
 
 	vars := mux.Vars(r)
-	usrId, err := getUserId(vars)
+	usrID, err := getUserID(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
 		api.RequestError(r.Context(), w, rParseErr, http.StatusBadRequest, errMsg)
@@ -52,7 +53,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordReq.UserId = usrId
+	passwordReq.UserID = usrID
 
 	if err := validation.ValidatePassword(passwordReq.Password, passwordReq.PasswordConfirmation); err != nil {
 		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err.Err)
@@ -66,18 +67,23 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)
 
 	if errResp != nil {
+		errMsg := errors.New("failed to update password")
+		lg.Error().Err(errMsg).Interface("updatePasswdResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+
 		return
 	}
+
+	lg.Info().Interface("updatePasswdResp", usrResp).Msg("updatePasswd success")
 
 	api.Response(r.Context(), w, usrResp.StatusCode, usrResp)
 }
 
 func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	lg := log.Ctx(r.Context())
-	ctx := config.WrapLocalStorageContext(r.Context(), u.locS)
+	ctx := config.WrapLocalStorageContext(r.Context(), u.lclStrg)
 	vars := mux.Vars(r)
-	usrId, err := getUserId(vars)
+	usrID, err := getUserID(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
 		api.RequestError(ctx, w, rParseErr, http.StatusBadRequest, errMsg)
@@ -93,16 +99,16 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profileReq, err := u.parseProfileRequest(r, usrId)
+	profileReq, err := u.parseProfileRequest(r, usrID)
 	if err != nil {
 		errMsg := fmt.Errorf("cannot read file from request: %w", err)
-		lg.Error().Msg(errMsg.Error())
+		lg.Error().Err(errMsg).Msg("read_file_error")
 		api.Response(ctx, w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
 
 		return
 	}
 
-	var errs []errVals.ErrorObj
+	var errs = make([]errVals.ErrorObj, 0)
 	if profileReq.Username != "" {
 		if valErr := validation.ValidateUsername(profileReq.Username); valErr != nil {
 			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr.Err)
@@ -132,36 +138,40 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)
 
 	if errResp != nil {
+		errMsg := errors.New("failed to update profile")
+		lg.Error().Err(errMsg).Interface("updateProfileResp", errResp).Msg("request_failed")
 		api.Response(ctx, w, errResp.StatusCode, errResp)
 		return
 	}
 
+	lg.Info().Interface("updateProfileResp", usrResp).Msg("updateProfile success")
+
 	api.Response(ctx, w, usrResp.StatusCode, usrResp)
 }
 
-func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.UpdateProfileRequest, error) {
+func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, error) {
 	lg := log.Ctx(r.Context())
 	formData := r.MultipartForm.Value
 	file, handler, err := r.FormFile("avatar")
+
+	defer func() {
+		if file != nil {
+			if err := file.Close(); err != nil {
+				lg.Error().Err(fmt.Errorf("cannot close file: %v", err)).Msg("close_file_error")
+			}
+		}
+	}()
 
 	if err != nil {
 		if errors.Is(err, http.ErrMissingFile) {
 			lg.Info().Msg("file was not given")
 		} else {
 			errMsg := fmt.Errorf("cannot read file from request: %w", err)
-			lg.Error().Msg(errMsg.Error())
+			lg.Error().Err(errMsg).Msg("read_file_error")
 
 			return nil, err
 		}
 	}
-
-	defer func() {
-		if file != nil {
-			if err := file.Close(); err != nil {
-				lg.Error().Msg(fmt.Sprintf("cannot close file: %v", err))
-			}
-		}
-	}()
 
 	var filename string
 	if handler != nil {
@@ -169,7 +179,7 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 	}
 
 	profileReq := &api.UpdateProfileRequest{
-		UserId:     usrId,
+		UserID:     usrID,
 		Email:      getFormValue(formData, "email"),
 		Username:   getFormValue(formData, "username"),
 		Avatar:     file,
@@ -180,16 +190,13 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrId int) (*api.Upda
 }
 
 func getFormValue(formData map[string][]string, key string) string {
-	if val, ok := formData[key]; ok && len(val) > 0 {
-		return val[0]
-	}
-	return ""
+	return formData[key][0]
 }
 
-func getUserId(vars map[string]string) (int, error) {
-	usrId, err := strconv.Atoi(vars["id"])
+func getUserID(vars map[string]string) (int, error) {
+	usrID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		return 0, err
 	}
-	return usrId, nil
+	return usrID, nil
 }

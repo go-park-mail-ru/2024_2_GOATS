@@ -1,7 +1,7 @@
 package delivery
 
 import (
-	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -19,7 +19,7 @@ type MovieHandler struct {
 	movieService MovieServiceInterface
 }
 
-func NewMovieHandler(ctx context.Context, srv MovieServiceInterface) handlers.MovieHandlerInterface {
+func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 	return &MovieHandler{
 		movieService: srv,
 	}
@@ -31,62 +31,68 @@ func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
 	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), converter.ToApiErrorResponse(errServResp)
 
 	if errResp != nil {
-		errMsg := fmt.Sprint("getCollections action: request failed - ", errResp.Errors)
-		lg.Error().Msg(errMsg)
+		errMsg := errors.New("failed to get collections")
+		lg.Error().Err(errMsg).Interface("getCollectionsResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.StatusCode, errResp)
 
 		return
 	}
+
+	lg.Info().Interface("getCollectionsResp", collectionsResp).Msg("getCollections success")
 
 	api.Response(r.Context(), w, collectionsResp.StatusCode, collectionsResp)
 }
 
 func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	lg := log.Ctx(r.Context())
-	mvId, err := strconv.Atoi(mux.Vars(r)["movie_id"])
+	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
 	if err != nil {
 		errMsg := fmt.Errorf("getMovie action: Bad request - %w", err)
-		lg.Error().Msg(errMsg.Error())
+		lg.Error().Err(errMsg).Msg("bad_request")
 		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
 
 		return
 	}
 
-	movieServResp, errServResp := m.movieService.GetMovie(r.Context(), mvId)
+	movieServResp, errServResp := m.movieService.GetMovie(r.Context(), mvID)
 	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), converter.ToApiErrorResponse(errServResp)
 
 	if errResp != nil {
-		errMsg := fmt.Sprint("getMovie action: request failed - ", errResp.Errors)
-		lg.Error().Msg(errMsg)
+		errMsg := errors.New("failed to get movie")
+		lg.Error().Err(errMsg).Interface("getMovieResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.StatusCode, errResp)
 
 		return
 	}
+
+	lg.Info().Interface("getMovieResp", movieResp).Msg("getMovie success")
 
 	api.Response(r.Context(), w, http.StatusOK, movieResp)
 }
 
 func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	lg := log.Ctx(r.Context())
-	actorId, err := strconv.Atoi(mux.Vars(r)["actor_id"])
+	actorID, err := strconv.Atoi(mux.Vars(r)["actor_id"])
 	if err != nil {
 		errMsg := fmt.Errorf("getActor action: Bad request - %w", err)
-		lg.Error().Msg(errMsg.Error())
+		lg.Error().Err(errMsg).Msg("bad_request")
 		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
 
 		return
 	}
 
-	actorServResp, errServResp := m.movieService.GetActor(r.Context(), actorId)
+	actorServResp, errServResp := m.movieService.GetActor(r.Context(), actorID)
 	actorResp, errResp := converter.ToApiGetActorResponse(actorServResp), converter.ToApiErrorResponse(errServResp)
 
 	if errResp != nil {
-		errMsg := fmt.Sprint("getActor action: request failed - ", errResp.Errors)
-		lg.Error().Msg(errMsg)
+		errMsg := errors.New("failed to getActor")
+		lg.Error().Err(errMsg).Interface("actorResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.StatusCode, errResp)
 
 		return
 	}
+
+	lg.Info().Interface("actorResp", actorResp).Msg("getActor success")
 
 	api.Response(r.Context(), w, http.StatusOK, actorResp)
 }

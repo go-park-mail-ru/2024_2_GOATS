@@ -1,4 +1,4 @@
-package user
+package userdb
 
 import (
 	"context"
@@ -11,28 +11,36 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Create(ctx context.Context, registerData models.RegisterData, db *sql.DB) (*models.User, error) {
-	logger := log.Ctx(ctx)
-	sqlStatement := `
+const (
+	usrCreateSQL = `
 		INSERT INTO users (email, username, password_hash)
 		VALUES ($1, $2, $3)
-		RETURNING id, email`
+		RETURNING id, email
+	`
+
+	usrFindByEmail       = "SELECT id, email, username, password_hash FROM USERS WHERE email = $1"
+	usrFindByID          = "SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = $1"
+	usrUpdatePasswordSQL = "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
+)
+
+func Create(ctx context.Context, registerData models.RegisterData, db *sql.DB) (*models.User, error) {
+	logger := log.Ctx(ctx)
 
 	usr := models.User{}
 	err := db.QueryRowContext(
 		ctx,
-		sqlStatement,
+		usrCreateSQL,
 		registerData.Email, registerData.Username, registerData.Password,
-	).Scan(&usr.Id, &usr.Email)
+	).Scan(&usr.ID, &usr.Email)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while creating user - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg("postgres: successfully create user")
+	logger.Info().Msg("postgres: user created successfully")
 
 	return &usr, nil
 }
@@ -41,14 +49,11 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*models.User, e
 	var usr models.User
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(
-		ctx,
-		"SELECT id, email, username, password_hash FROM USERS WHERE email = $1", email,
-	).Scan(&usr.Id, &usr.Email, &usr.Username, &usr.Password)
+	err := db.QueryRowContext(ctx, usrFindByEmail, email).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while scanning user by email - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
@@ -58,42 +63,37 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*models.User, e
 	return &usr, nil
 }
 
-func FindById(ctx context.Context, userId int, db *sql.DB) (*models.User, error) {
+func FindByID(ctx context.Context, userID int, db *sql.DB) (*models.User, error) {
 	var usr models.User
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(
-		ctx,
-		"SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = $1", userId,
-	).Scan(&usr.Id, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarUrl)
+	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarUrl)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: user with id %d found", usr.Id))
+	logger.Info().Msgf("postgres: user with id %d found", usr.ID)
 
 	return &usr, nil
 }
 
-func UpdatePassword(ctx context.Context, userId int, pass string, db *sql.DB) error {
+func UpdatePassword(ctx context.Context, userID int, pass string, db *sql.DB) error {
 	logger := log.Ctx(ctx)
 
-	sqlStatement := "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
-
-	_, err := db.ExecContext(ctx, sqlStatement, pass, time.Now(), userId)
+	_, err := db.ExecContext(ctx, usrUpdatePasswordSQL, pass, time.Now(), userID)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: successfully update password for user with id - %d", userId))
+	logger.Info().Msgf("postgres: successfully update password for user with id - %d", userID)
 
 	return nil
 }
@@ -124,7 +124,7 @@ func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error 
 
 	if len(sets) == 0 {
 		errMsg := fmt.Errorf("no data to update")
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("empty_update_data")
 
 		return errMsg
 	}
@@ -134,17 +134,17 @@ func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error 
 	argCount++
 
 	sqlStatement += strings.Join(sets, ", ") + fmt.Sprintf(" WHERE id = $%d", argCount)
-	args = append(args, usrData.Id)
+	args = append(args, usrData.ID)
 
 	_, err := db.ExecContext(ctx, sqlStatement, args...)
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while updating user profile - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return errMsg
 	}
 
-	logger.Info().Msg(fmt.Sprintf("postgres: successfully updated profile for user with id - %d", usrData.Id))
+	logger.Info().Msgf("postgres: successfully updated profile for user with id - %d", usrData.ID)
 
 	return nil
 }

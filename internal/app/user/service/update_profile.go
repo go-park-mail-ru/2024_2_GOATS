@@ -10,7 +10,7 @@ import (
 
 func (u *UserService) UpdateProfile(ctx context.Context, usrData *models.User) (*models.UpdateUserRespData, *models.ErrorRespData) {
 	if usrData.AvatarName != "" {
-		avatarUrl, err := u.userRepo.SaveAvatar(ctx, usrData)
+		avatarUrl, err := u.userRepo.SaveUserAvatar(ctx, usrData)
 		if err != nil {
 			return nil, &models.ErrorRespData{
 				StatusCode: http.StatusInternalServerError,

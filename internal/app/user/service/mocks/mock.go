@@ -52,34 +52,34 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) CreateUser(ctx, registerData 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CreateUser), ctx, registerData)
 }
 
-// SaveAvatar mocks base method.
-func (m *MockUserRepositoryInterface) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errors.ErrorObj) {
+// SaveUserAvatar mocks base method.
+func (m *MockUserRepositoryInterface) SaveUserAvatar(ctx context.Context, usrData *models.User) (string, *errors.ErrorObj) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveAvatar", ctx, usrData)
+	ret := m.ctrl.Call(m, "SaveUserAvatar", ctx, usrData)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	return ret0, ret1
 }
 
-// SaveAvatar indicates an expected call of SaveAvatar.
-func (mr *MockUserRepositoryInterfaceMockRecorder) SaveAvatar(ctx, usrData interface{}) *gomock.Call {
+// SaveUserAvatar indicates an expected call of SaveUserAvatar.
+func (mr *MockUserRepositoryInterfaceMockRecorder) SaveUserAvatar(ctx, usrData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAvatar", reflect.TypeOf((*MockUserRepositoryInterface)(nil).SaveAvatar), ctx, usrData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserAvatar", reflect.TypeOf((*MockUserRepositoryInterface)(nil).SaveUserAvatar), ctx, usrData)
 }
 
 // UpdatePassword mocks base method.
-func (m *MockUserRepositoryInterface) UpdatePassword(ctx context.Context, usrId int, pass string) (*errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) UpdatePassword(ctx context.Context, usrID int, pass string) (*errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePassword", ctx, usrId, pass)
+	ret := m.ctrl.Call(m, "UpdatePassword", ctx, usrID, pass)
 	ret0, _ := ret[0].(*errors.ErrorObj)
 	ret1, _ := ret[1].(int)
 	return ret0, ret1
 }
 
 // UpdatePassword indicates an expected call of UpdatePassword.
-func (mr *MockUserRepositoryInterfaceMockRecorder) UpdatePassword(ctx, usrId, pass interface{}) *gomock.Call {
+func (mr *MockUserRepositoryInterfaceMockRecorder) UpdatePassword(ctx, usrID, pass interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UpdatePassword), ctx, usrId, pass)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UpdatePassword), ctx, usrID, pass)
 }
 
 // UpdateProfileData mocks base method.
@@ -113,18 +113,18 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) UserByEmail(ctx, email interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserByEmail", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UserByEmail), ctx, email)
 }
 
-// UserById mocks base method.
-func (m *MockUserRepositoryInterface) UserById(ctx context.Context, userId int) (*models.User, *errors.ErrorObj, int) {
+// UserByID mocks base method.
+func (m *MockUserRepositoryInterface) UserByID(ctx context.Context, userID int) (*models.User, *errors.ErrorObj, int) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserById", ctx, userId)
+	ret := m.ctrl.Call(m, "UserByID", ctx, userID)
 	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(*errors.ErrorObj)
 	ret2, _ := ret[2].(int)
 	return ret0, ret1, ret2
 }
 
-// UserById indicates an expected call of UserById.
-func (mr *MockUserRepositoryInterfaceMockRecorder) UserById(ctx, userId interface{}) *gomock.Call {
+// UserByID indicates an expected call of UserByID.
+func (mr *MockUserRepositoryInterfaceMockRecorder) UserByID(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserById", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UserById), ctx, userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserByID", reflect.TypeOf((*MockUserRepositoryInterface)(nil).UserByID), ctx, userID)
 }

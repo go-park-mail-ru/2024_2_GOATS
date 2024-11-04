@@ -13,9 +13,9 @@ var _ api.MovieServiceInterface = (*MovieService)(nil)
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type MovieRepositoryInterface interface {
 	GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int)
-	GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errVals.ErrorObj, int)
-	GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *errVals.ErrorObj, int)
-	GetMovieActors(ctx context.Context, actorId int) ([]*models.ActorInfo, *errVals.ErrorObj, int)
+	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.ErrorObj, int)
+	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errVals.ErrorObj, int)
+	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, *errVals.ErrorObj, int)
 }
 
 type MovieService struct {

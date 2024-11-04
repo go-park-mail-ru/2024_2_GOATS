@@ -32,7 +32,7 @@ func ToServRegisterData(rg *api.RegisterRequest) *models.RegisterData {
 
 func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 	return &models.PasswordData{
-		UserId:               rp.UserId,
+		UserID:               rp.UserID,
 		OldPassword:          rp.OldPassword,
 		Password:             rp.Password,
 		PasswordConfirmation: rp.PasswordConfirmation,
@@ -41,7 +41,7 @@ func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 
 func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 	return &models.User{
-		Id:         pr.UserId,
+		ID:         pr.UserID,
 		Email:      pr.Email,
 		Username:   pr.Username,
 		AvatarName: pr.AvatarName,
@@ -80,7 +80,7 @@ func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 	resp := &api.SessionResponse{
 		Success: true,
 		UserData: api.User{
-			Id:        sr.UserData.Id,
+			ID:        sr.UserData.ID,
 			Email:     sr.UserData.Email,
 			Username:  sr.UserData.Username,
 			AvatarUrl: sr.UserData.AvatarUrl,
@@ -96,9 +96,9 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 		return nil
 	}
 
-	colls := []api.Collection{}
+	var colls []api.Collection
 	for _, coll := range cl.Collections {
-		tempCol := api.Collection{Id: coll.Id, Title: coll.Title, Movies: coll.Movies}
+		tempCol := api.Collection{ID: coll.ID, Title: coll.Title, Movies: coll.Movies}
 		colls = append(colls, tempCol)
 	}
 
@@ -115,7 +115,7 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 
 	mvInfo := &api.MovieInfo{
-		Id:               mv.Id,
+		ID:               mv.ID,
 		Title:            mv.Title,
 		FullDescription:  mv.FullDescription,
 		ShortDescription: mv.ShortDescription,
@@ -130,10 +130,10 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		Director:         mv.Director.FullName(),
 	}
 
-	actors := []*api.ActorInfo{}
+	var actors []*api.ActorInfo
 	for _, actor := range mv.Actors {
 		tempSt := &api.ActorInfo{
-			Id:       actor.Id,
+			ID:       actor.ID,
 			FullName: actor.FullName(),
 			PhotoUrl: actor.SmallPhotoUrl,
 			Country:  actor.Country,
@@ -156,7 +156,7 @@ func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 	}
 
 	actor := &api.Actor{
-		Id:        ac.Id,
+		ID:        ac.ID,
 		FullName:  ac.FullName(),
 		Biography: ac.Biography,
 		PhotoUrl:  ac.BigPhotoUrl,

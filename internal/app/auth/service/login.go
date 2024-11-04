@@ -16,18 +16,15 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 	usr, err, code := s.userRepository.UserByEmail(ctx, loginData.Email)
 
 	if err != nil {
-		errs := make([]errVals.ErrorObj, 1)
-		errs[0] = *err
-
 		return nil, &models.ErrorRespData{
 			StatusCode: code,
-			Errors:     errs,
+			Errors:     []errVals.ErrorObj{*err},
 		}
 	}
 
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(loginData.Password))
 	if cryptErr != nil {
-		logger.Err(cryptErr).Msg("BCrypt: password missmatch.")
+		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
 		return nil, &models.ErrorRespData{
 			StatusCode: http.StatusConflict,
@@ -35,7 +32,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 		}
 	}
 
-	token, tokenErr := cookie.GenerateToken(ctx, usr.Id)
+	token, tokenErr := cookie.GenerateToken(ctx, usr.ID)
 	if tokenErr != nil {
 		return nil, &models.ErrorRespData{
 			StatusCode: http.StatusInternalServerError,

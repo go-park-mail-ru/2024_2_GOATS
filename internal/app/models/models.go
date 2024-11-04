@@ -48,7 +48,7 @@ type ErrorRespData struct {
 }
 
 type User struct {
-	Id         int
+	ID         int
 	Email      string
 	Username   string
 	Password   string
@@ -58,13 +58,13 @@ type User struct {
 }
 
 type Collection struct {
-	Id     int               `json:"id"`
+	ID     int               `json:"id"`
 	Title  string            `json:"title"`
 	Movies []*MovieShortInfo `json:"movies"`
 }
 
 type MovieInfo struct {
-	Id               int           `json:"id"`
+	ID               int           `json:"id"`
 	Title            string        `json:"title"`
 	ShortDescription string        `json:"short_description"`
 	FullDescription  string        `json:"full_description"`
@@ -81,7 +81,7 @@ type MovieInfo struct {
 }
 
 type MovieShortInfo struct {
-	Id          int       `json:"id"`
+	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	CardUrl     string    `json:"card_url"`
 	AlbumUrl    string    `json:"album_url"`
@@ -93,7 +93,7 @@ type MovieShortInfo struct {
 
 type ActorInfo struct {
 	Person
-	Id            int               `json:"id"`
+	ID            int               `json:"id"`
 	Biography     string            `json:"biography"`
 	Post          string            `json:"post"`
 	Birthdate     sql.NullTime      `json:"birthdate"`
@@ -105,7 +105,7 @@ type ActorInfo struct {
 
 type DirectorInfo struct {
 	Person
-	Id int
+	ID int
 }
 
 type CookieData struct {
@@ -120,7 +120,7 @@ type Token struct {
 }
 
 type PasswordData struct {
-	UserId               int
+	UserID               int
 	OldPassword          string
 	Password             string
 	PasswordConfirmation string

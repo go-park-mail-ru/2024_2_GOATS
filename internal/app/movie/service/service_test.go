@@ -25,14 +25,14 @@ func TestService_GetCollection(t *testing.T) {
 		{
 			name: "Success",
 			mockReturn: []models.Collection{
-				{Id: 1, Title: "Collection 1", Movies: []*models.MovieShortInfo{}},
-				{Id: 2, Title: "Collection 2", Movies: []*models.MovieShortInfo{}},
+				{ID: 1, Title: "Collection 1", Movies: []*models.MovieShortInfo{}},
+				{ID: 2, Title: "Collection 2", Movies: []*models.MovieShortInfo{}},
 			},
 			mockErr: nil,
 			expectedResponse: &models.CollectionsRespData{
 				Collections: []models.Collection{
-					{Id: 1, Title: "Collection 1", Movies: []*models.MovieShortInfo{}},
-					{Id: 2, Title: "Collection 2", Movies: []*models.MovieShortInfo{}},
+					{ID: 1, Title: "Collection 1", Movies: []*models.MovieShortInfo{}},
+					{ID: 2, Title: "Collection 2", Movies: []*models.MovieShortInfo{}},
 				},
 				StatusCode: http.StatusOK,
 			},
@@ -53,16 +53,17 @@ func TestService_GetCollection(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockMovieRepositoryInterface(ctrl)
-			s := NewMovieService(repo)
+			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
+			s := NewMovieService(mr)
 
-			repo.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr, test.statusCode)
-
-			t.Parallel()
+			mr.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr, test.statusCode)
 
 			response, err := s.GetCollection(context.Background())
 
@@ -80,7 +81,7 @@ func TestService_GetCollection(t *testing.T) {
 func TestService_GetActor(t *testing.T) {
 	tests := []struct {
 		name             string
-		actorId          int
+		actorID          int
 		mockReturn       *models.ActorInfo
 		mockErr          *errVals.ErrorObj
 		expectedResponse *models.ActorInfo
@@ -89,9 +90,9 @@ func TestService_GetActor(t *testing.T) {
 	}{
 		{
 			name:    "Success",
-			actorId: 1,
+			actorID: 1,
 			mockReturn: &models.ActorInfo{
-				Id: 1,
+				ID: 1,
 				Person: models.Person{
 					Name:    "Test",
 					Surname: "Tester",
@@ -99,7 +100,7 @@ func TestService_GetActor(t *testing.T) {
 			},
 			mockErr: nil,
 			expectedResponse: &models.ActorInfo{
-				Id: 1,
+				ID: 1,
 				Person: models.Person{
 					Name:    "Test",
 					Surname: "Tester",
@@ -110,7 +111,7 @@ func TestService_GetActor(t *testing.T) {
 		},
 		{
 			name:       "Error",
-			actorId:    1,
+			actorID:    1,
 			mockReturn: nil,
 			mockErr: &errVals.ErrorObj{
 				Code:  "actor_not_found",
@@ -128,16 +129,19 @@ func TestService_GetActor(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockMovieRepositoryInterface(ctrl)
-			s := NewMovieService(repo)
+			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
+			s := NewMovieService(mr)
 
-			repo.EXPECT().GetActor(gomock.Any(), test.actorId).Return(test.mockReturn, test.mockErr, test.statusCode)
+			mr.EXPECT().GetActor(gomock.Any(), test.actorID).Return(test.mockReturn, test.mockErr, test.statusCode)
 
-			response, err := s.GetActor(context.Background(), test.actorId)
+			response, err := s.GetActor(context.Background(), test.actorID)
 
 			if test.expectedError != nil {
 				assert.Nil(t, response)
@@ -153,35 +157,36 @@ func TestService_GetActor(t *testing.T) {
 func TestService_GetMovie(t *testing.T) {
 	tests := []struct {
 		name             string
-		mvId             int
+		mvID             int
 		mockMovieReturn  *models.MovieInfo
 		mockMovieErr     *errVals.ErrorObj
 		mockActorsReturn []*models.ActorInfo
 		mockActorsErr    *errVals.ErrorObj
 		expectedResponse *models.MovieInfo
 		expectedError    *models.ErrorRespData
-		statusCode       int
+		mvStatusCode     int
+		acStatusCode     int
 	}{
 		{
 			name: "Success",
-			mvId: 1,
+			mvID: 1,
 			mockMovieReturn: &models.MovieInfo{
-				Id:    1,
+				ID:    1,
 				Title: "Test Movie",
 			},
 			mockMovieErr: nil,
 			mockActorsReturn: []*models.ActorInfo{{
-				Id: 1,
+				ID: 1,
 				Person: models.Person{
 					Name:    "Test",
 					Surname: "Tester",
 				}}},
 			mockActorsErr: nil,
 			expectedResponse: &models.MovieInfo{
-				Id:    1,
+				ID:    1,
 				Title: "Test Movie",
 				Actors: []*models.ActorInfo{{
-					Id: 1,
+					ID: 1,
 					Person: models.Person{
 						Name:    "Test",
 						Surname: "Tester",
@@ -189,11 +194,12 @@ func TestService_GetMovie(t *testing.T) {
 				}},
 			},
 			expectedError: nil,
-			statusCode:    http.StatusOK,
+			mvStatusCode: http.StatusOK,
+			acStatusCode: http.StatusOK,
 		},
 		{
 			name:             "Error_GetMovie",
-			mvId:             1,
+			mvID:             1,
 			mockMovieReturn:  nil,
 			mockMovieErr:     &errVals.ErrorObj{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie not found")}},
 			mockActorsReturn: nil,
@@ -203,13 +209,13 @@ func TestService_GetMovie(t *testing.T) {
 				StatusCode: http.StatusNotFound,
 				Errors:     []errVals.ErrorObj{{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie not found")}}},
 			},
-			statusCode: http.StatusNotFound,
+			mvStatusCode: http.StatusNotFound,
 		},
 		{
 			name: "Error_GetMovieActors",
-			mvId: 1,
+			mvID: 1,
 			mockMovieReturn: &models.MovieInfo{
-				Id:    1,
+				ID:    1,
 				Title: "Test Movie",
 			},
 			mockMovieErr:     nil,
@@ -220,25 +226,29 @@ func TestService_GetMovie(t *testing.T) {
 				StatusCode: http.StatusInternalServerError,
 				Errors:     []errVals.ErrorObj{{Code: "actors_fetch_error", Error: errVals.CustomError{Err: errors.New("failed to fetch actors")}}},
 			},
-			statusCode: http.StatusInternalServerError,
+			mvStatusCode: http.StatusOK,
+			acStatusCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			repo := servMock.NewMockMovieRepositoryInterface(ctrl)
-			s := NewMovieService(repo)
+			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
+			s := NewMovieService(mr)
 
-			repo.EXPECT().GetMovie(gomock.Any(), test.mvId).Return(test.mockMovieReturn, test.mockMovieErr, test.statusCode)
+			mr.EXPECT().GetMovie(gomock.Any(), test.mvID).Return(test.mockMovieReturn, test.mockMovieErr, test.mvStatusCode)
 
 			if test.mockMovieErr == nil {
-				repo.EXPECT().GetMovieActors(gomock.Any(), test.mvId).Return(test.mockActorsReturn, test.mockActorsErr, test.statusCode)
+				mr.EXPECT().GetMovieActors(gomock.Any(), test.mvID).Return(test.mockActorsReturn, test.mockActorsErr, test.acStatusCode)
 			}
 
-			response, err := s.GetMovie(context.Background(), test.mvId)
+			response, err := s.GetMovie(context.Background(), test.mvID)
 
 			if test.expectedError != nil {
 				assert.Nil(t, response)

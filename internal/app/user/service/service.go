@@ -14,10 +14,10 @@ var _ delivery.UserServiceInterface = (*UserService)(nil)
 type UserRepositoryInterface interface {
 	UserByEmail(ctx context.Context, email string) (*models.User, *errVals.ErrorObj, int)
 	CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errVals.ErrorObj, int)
-	UserById(ctx context.Context, userId int) (*models.User, *errVals.ErrorObj, int)
+	UserByID(ctx context.Context, userID int) (*models.User, *errVals.ErrorObj, int)
 	UpdateProfileData(ctx context.Context, usrData *models.User) (*errVals.ErrorObj, int)
-	UpdatePassword(ctx context.Context, usrId int, pass string) (*errVals.ErrorObj, int)
-	SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj)
+	UpdatePassword(ctx context.Context, usrID int, pass string) (*errVals.ErrorObj, int)
+	SaveUserAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj)
 }
 
 type UserService struct {

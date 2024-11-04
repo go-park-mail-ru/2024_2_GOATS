@@ -12,16 +12,13 @@ import (
 func (s *AuthService) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *models.ErrorRespData) {
 	usr, err, code := s.userRepository.CreateUser(ctx, registerData)
 	if err != nil {
-		errs := make([]errVals.ErrorObj, 1)
-		errs[0] = *err
-
 		return nil, &models.ErrorRespData{
-			Errors:     errs,
+			Errors:     []errVals.ErrorObj{*err},
 			StatusCode: code,
 		}
 	}
 
-	token, errVal := cookie.GenerateToken(ctx, usr.Id)
+	token, errVal := cookie.GenerateToken(ctx, usr.ID)
 	if errVal != nil {
 		return nil, &models.ErrorRespData{
 			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errVal})},

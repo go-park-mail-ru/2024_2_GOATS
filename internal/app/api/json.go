@@ -59,7 +59,7 @@ func PreparedDefaultError(code string, err error) *ErrorResponse {
 func RequestError(ctx context.Context, w http.ResponseWriter, code string, status int, err error) {
 	errMsg := fmt.Errorf("request error: %w", err)
 	lg := log.Ctx(ctx)
-	lg.Error().Msg(errMsg.Error())
+	lg.Error().Err(errMsg).Msg("request error")
 
 	Response(ctx, w, status, PreparedDefaultError(code, errMsg))
 }

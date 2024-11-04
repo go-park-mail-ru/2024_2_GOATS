@@ -16,7 +16,7 @@ type RegisterRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	UserId     int    `json:"user_id"`
+	UserID     int    `json:"user_id"`
 	Email      string `json:"email"`
 	Username   string `json:"username"`
 	Avatar     multipart.File
@@ -24,7 +24,7 @@ type UpdateProfileRequest struct {
 }
 
 type UpdatePasswordRequest struct {
-	UserId               int    `json:"user_id"`
+	UserID               int    `json:"user_id"`
 	OldPassword          string `json:"oldPassword"`
 	Password             string `json:"password"`
 	PasswordConfirmation string `json:"passwordConfirmation"`
@@ -59,7 +59,7 @@ type CollectionsResponse struct {
 }
 
 type Collection struct {
-	Id     int                      `json:"id"`
+	ID     int                      `json:"id"`
 	Title  string                   `json:"title"`
 	Movies []*models.MovieShortInfo `json:"movies"`
 }
@@ -70,7 +70,7 @@ type MovieResponse struct {
 }
 
 type MovieInfo struct {
-	Id               int          `json:"id"`
+	ID               int          `json:"id"`
 	Title            string       `json:"title"`
 	FullDescription  string       `json:"full_description"`
 	ShortDescription string       `json:"short_description"`
@@ -92,13 +92,13 @@ type ActorResponse struct {
 }
 
 type ActorInfo struct {
-	Id       int    `json:"id"`
+	ID       int    `json:"id"`
 	FullName string `json:"full_name"`
 	PhotoUrl string `json:"photo_url"`
 	Country  string `json:"country"`
 }
 type Actor struct {
-	Id        int                      `json:"id"`
+	ID        int                      `json:"id"`
 	FullName  string                   `json:"full_name"`
 	Biography string                   `json:"biography"`
 	Birthdate string                   `json:"birthdate"`
@@ -114,7 +114,7 @@ type ErrorResponse struct {
 }
 
 type User struct {
-	Id        int    `json:"id"`
+	ID        int    `json:"id"`
 	Email     string `json:"email"`
 	Username  string `json:"username"`
 	AvatarUrl string `json:"avatar_url"`

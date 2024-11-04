@@ -12,10 +12,7 @@ type ctxKey int
 
 const (
 	requestIDKey ctxKey = iota
-)
-
-var (
-	letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 )
 
 func WithLogger(next http.Handler) http.Handler {
@@ -36,14 +33,14 @@ func getRequestID(ctx context.Context) string {
 }
 
 func generateRequestID() string {
-	output := make([]byte, 8)
+	output := make([]byte, 16)
 	_, err := rand.Read(output)
 	if err != nil {
 		return ""
 	}
 
 	for pos := range output {
-		output[pos] = letters[uint8(output[pos])%uint8(len(letters))]
+		output[pos] = symbols[uint8(output[pos])%uint8(len(symbols))]
 	}
 
 	return string(output)

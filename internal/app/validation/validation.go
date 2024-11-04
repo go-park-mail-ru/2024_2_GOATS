@@ -7,8 +7,10 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
-const PasswordLength = 6
-const UsernameLength = 8
+const (
+	passwordLength = 6
+	usernameLength = 8
+)
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
@@ -17,7 +19,7 @@ func ValidatePassword(pass, passConf string) *errors.CustomError {
 		return &errVals.ErrInvalidPasswordsMatchText
 	}
 
-	if len(pass) < PasswordLength {
+	if len(pass) < passwordLength {
 		return &errVals.ErrInvalidPasswordText
 	}
 
@@ -33,7 +35,7 @@ func ValidateEmail(email string) *errors.CustomError {
 }
 
 func ValidateUsername(username string) *errors.CustomError {
-	if len(username) < UsernameLength {
+	if len(username) < usernameLength {
 		return &errVals.ErrInvalidUsernameText
 	}
 

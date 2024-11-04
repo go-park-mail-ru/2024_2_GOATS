@@ -18,7 +18,7 @@ func (r *AuthRepo) SetCookie(ctx context.Context, token *models.Token) (*models.
 	err := r.Redis.Set(ctx, token.TokenID, fmt.Sprint(token.UserID), cookieCfg.MaxAge)
 	if err.Err() != nil {
 		errMsg := fmt.Errorf("redis: cannot set cookie into redis - %w", err.Err())
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("redis_set_error")
 
 		return nil, errVals.NewErrorObj(
 			errVals.ErrCreateUserCode,

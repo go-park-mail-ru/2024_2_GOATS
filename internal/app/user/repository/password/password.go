@@ -13,7 +13,7 @@ func HashAndSalt(ctx context.Context, password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to hash password: %w", err)
-		lg.Error().Msg(errMsg.Error())
+		lg.Error().Err(errMsg).Msg("hash_and_salt_error")
 
 		return "", errMsg
 	}

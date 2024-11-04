@@ -45,7 +45,7 @@ func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	lg := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
-	cfg, err := config.New(&lg, isTest)
+	cfg, err := config.New(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
@@ -70,10 +70,10 @@ func New(isTest bool) (*App, error) {
 
 	repoMov := movieRepo.NewMovieRepository(database)
 	srvMov := movieServ.NewMovieService(repoMov)
-	delMov := movieApi.NewMovieHandler(ctx, srvMov)
+	delMov := movieApi.NewMovieHandler(srvMov)
 
 	mx := mux.NewRouter()
-	router.ActivateCommonMiddlewares(mx)
+	router.UseCommonMiddlewares(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
 
@@ -102,18 +102,18 @@ func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
 	a.Mux.Use(a.AppReadyMiddleware)
 
-	a.lg.Info().Msg(fmt.Sprintf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port))
+	a.lg.Info().Msgf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
 
 	// Not ready yet
 	defer func() {
 		if err := a.GracefulShutdown(); err != nil {
-			a.lg.Fatal().Msg(fmt.Sprintf("failed to graceful shutdown: %v", err))
+			a.lg.Fatal().Msgf("failed to graceful shutdown: %v", err)
 		}
 	}()
 
 	a.AcceptConnections = true
 	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.lg.Fatal().Msg(fmt.Sprintf("server stopped: %v", err))
+		a.lg.Fatal().Msgf("server stopped: %v", err)
 	}
 }
 

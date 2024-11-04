@@ -5,7 +5,6 @@ import (
 )
 
 type ContextConfigKey struct{}
-type ContextLoggerKey struct{}
 
 func WrapContext(ctx context.Context, cfg *Config) context.Context {
 	return context.WithValue(ctx, ContextConfigKey{}, cfg)

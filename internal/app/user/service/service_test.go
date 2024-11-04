@@ -8,18 +8,20 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
 	mockRep "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestUserService_UpdatePassword(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUserRepo := mockRep.NewMockUserRepositoryInterface(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mUsrRep := mockRep.NewMockUserRepositoryInterface(ctrl)
+	userService := NewUserService(mUsrRep)
+	hashedPasswd, err := password.HashAndSalt(context.Background(), "oldpassword")
+	assert.NoError(t, err)
 
 	tests := []struct {
 		name           string
@@ -34,14 +36,14 @@ func TestUserService_UpdatePassword(t *testing.T) {
 		{
 			name: "Success",
 			passwordData: &models.PasswordData{
-				UserId:               1,
+				UserID:               1,
 				OldPassword:          "oldpassword",
 				Password:             "newpassword",
 				PasswordConfirmation: "newpassword",
 			},
 			mockUser: &models.User{
-				Id:       1,
-				Password: hashPassword("oldpassword"),
+				ID:       1,
+				Password: hashedPasswd,
 			},
 			expectedStatus: http.StatusOK,
 			tryUpdate:      true,
@@ -49,7 +51,7 @@ func TestUserService_UpdatePassword(t *testing.T) {
 		{
 			name: "User not found",
 			passwordData: &models.PasswordData{
-				UserId:               2,
+				UserID:               2,
 				OldPassword:          "somepassword",
 				Password:             "newpassword",
 				PasswordConfirmation: "newpassword",
@@ -67,14 +69,14 @@ func TestUserService_UpdatePassword(t *testing.T) {
 		{
 			name: "Invalid old password",
 			passwordData: &models.PasswordData{
-				UserId:               1,
+				UserID:               1,
 				OldPassword:          "wrongpassword",
 				Password:             "newpassword",
 				PasswordConfirmation: "newpassword",
 			},
 			mockUser: &models.User{
-				Id:       1,
-				Password: hashPassword("oldpassword"),
+				ID:       1,
+				Password: hashedPasswd,
 			},
 			expectedStatus: http.StatusConflict,
 			expectedError: &models.ErrorRespData{
@@ -87,14 +89,14 @@ func TestUserService_UpdatePassword(t *testing.T) {
 		{
 			name: "Repository update error",
 			passwordData: &models.PasswordData{
-				UserId:               1,
+				UserID:               1,
 				OldPassword:          "oldpassword",
 				Password:             "newpassword",
 				PasswordConfirmation: "newpassword",
 			},
 			mockUser: &models.User{
-				Id:       1,
-				Password: hashPassword("oldpassword"),
+				ID:       1,
+				Password: hashedPasswd,
 			},
 			mockUpdateErr: &errVals.ErrorObj{
 				Code:  "update_failed",
@@ -111,18 +113,17 @@ func TestUserService_UpdatePassword(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-
 			if tt.mockUserErr != nil {
-				mockUserRepo.EXPECT().UserById(ctx, tt.passwordData.UserId).Return(nil, tt.mockUserErr, tt.expectedStatus)
+				mUsrRep.EXPECT().UserByID(ctx, tt.passwordData.UserID).Return(nil, tt.mockUserErr, tt.expectedStatus)
 			} else {
-				mockUserRepo.EXPECT().UserById(ctx, tt.passwordData.UserId).Return(tt.mockUser, nil, http.StatusOK)
+				mUsrRep.EXPECT().UserByID(ctx, tt.passwordData.UserID).Return(tt.mockUser, nil, http.StatusOK)
 			}
 
 			if tt.mockUserErr == nil && tt.tryUpdate {
-				mockUserRepo.EXPECT().UpdatePassword(ctx, tt.passwordData.UserId, gomock.Any()).Return(tt.mockUpdateErr, tt.expectedStatus)
+				mUsrRep.EXPECT().UpdatePassword(ctx, tt.passwordData.UserID, gomock.Any()).Return(tt.mockUpdateErr, tt.expectedStatus)
 			}
 
 			respData, errData := userService.UpdatePassword(ctx, tt.passwordData)
@@ -142,8 +143,8 @@ func TestUserService_UpdateProfile(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUserRepo := mockRep.NewMockUserRepositoryInterface(ctrl)
-	userService := NewUserService(mockUserRepo)
+	mUsrRep := mockRep.NewMockUserRepositoryInterface(ctrl)
+	userService := NewUserService(mUsrRep)
 
 	tests := []struct {
 		name           string
@@ -156,7 +157,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		{
 			name: "Success with avatar",
 			usrData: &models.User{
-				Id:         1,
+				ID:         1,
 				AvatarName: "avatar.png",
 				Email:      "test@mail.ru",
 				Username:   "hello world",
@@ -166,7 +167,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		{
 			name: "Success without avatar",
 			usrData: &models.User{
-				Id:         1,
+				ID:         1,
 				AvatarName: "",
 				Email:      "test@mail.ru",
 				Username:   "hello world",
@@ -176,7 +177,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		{
 			name: "Error saving avatar",
 			usrData: &models.User{
-				Id:         1,
+				ID:         1,
 				AvatarName: "avatar.png",
 				Email:      "test@mail.ru",
 				Username:   "hello world",
@@ -196,7 +197,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		{
 			name: "Error updating profile",
 			usrData: &models.User{
-				Id:         1,
+				ID:         1,
 				AvatarName: "avatar.png",
 				Email:      "test@mail.ru",
 				Username:   "hello world",
@@ -215,22 +216,21 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-
 			if tt.mockAvatarErr != nil {
-				mockUserRepo.EXPECT().SaveAvatar(ctx, tt.usrData).Return("", tt.mockAvatarErr)
+				mUsrRep.EXPECT().SaveUserAvatar(ctx, tt.usrData).Return("", tt.mockAvatarErr)
 			} else {
 				if tt.usrData.AvatarName != "" {
-					mockUserRepo.EXPECT().SaveAvatar(ctx, tt.usrData).Return("http://example.com/avatar.png", nil)
+					mUsrRep.EXPECT().SaveUserAvatar(ctx, tt.usrData).Return("http://example.com/avatar.png", nil)
 				}
 			}
 
 			if tt.mockUpdateErr != nil {
-				mockUserRepo.EXPECT().UpdateProfileData(ctx, tt.usrData).Return(tt.mockUpdateErr, http.StatusInternalServerError)
+				mUsrRep.EXPECT().UpdateProfileData(ctx, tt.usrData).Return(tt.mockUpdateErr, http.StatusInternalServerError)
 			} else if tt.mockAvatarErr == nil {
-				mockUserRepo.EXPECT().UpdateProfileData(ctx, tt.usrData).Return(nil, http.StatusOK)
+				mUsrRep.EXPECT().UpdateProfileData(ctx, tt.usrData).Return(nil, http.StatusOK)
 			}
 
 			respData, errData := userService.UpdateProfile(ctx, tt.usrData)
@@ -244,10 +244,4 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Вспомогательная функция для хеширования пароля
-func hashPassword(password string) string {
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(hashedPassword)
 }

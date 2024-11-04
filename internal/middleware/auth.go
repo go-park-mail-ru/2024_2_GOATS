@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -32,12 +33,12 @@ func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 		ck, err := r.Cookie("session_id")
 
 		if err == http.ErrNoCookie {
-			lg.Error().Msg("no cookie")
+			lg.Error().Err(fmt.Errorf("sessionMiddleware: no cookie %w", err)).Msg("no_cookie_err")
 			w.WriteHeader(http.StatusForbidden)
 
 			return
 		} else if err != nil {
-			lg.Error().Msg(fmt.Sprintf("problems with getting cookie: %v", err))
+			lg.Error().Err(fmt.Errorf("problems with getting cookie: %w", err)).Msg("check_cookie_err")
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
@@ -45,10 +46,14 @@ func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 
 		_, errResp := converter.ToApiSessionResponse(sessionSrvResp), converter.ToApiErrorResponse(errSrvResp)
 		if errResp != nil {
+			errMsg := errors.New("failed to authorize")
+			lg.Error().Err(errMsg).Interface("sessionResp", errResp).Msg("request_failed")
 			api.Response(r.Context(), w, errResp.StatusCode, errResp)
+
 			return
 		}
 
+		lg.Info().Interface("sessionResp", sessionSrvResp).Msg("authMiddleware success")
 		next.ServeHTTP(w, r)
 	})
 }

@@ -12,7 +12,7 @@ import (
 
 func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) (*models.UpdateUserRespData, *models.ErrorRespData) {
 	logger := log.Ctx(ctx)
-	usr, err, status := u.userRepo.UserById(ctx, passwordData.UserId)
+	usr, err, status := u.userRepo.UserByID(ctx, passwordData.UserID)
 	if err != nil {
 		return nil, &models.ErrorRespData{
 			StatusCode: status,
@@ -22,7 +22,7 @@ func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.P
 
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(passwordData.OldPassword))
 	if cryptErr != nil {
-		logger.Err(cryptErr).Msg("BCrypt: password missmatch.")
+		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
 		return nil, &models.ErrorRespData{
 			StatusCode: http.StatusConflict,
@@ -30,7 +30,7 @@ func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.P
 		}
 	}
 
-	err, status = u.userRepo.UpdatePassword(ctx, passwordData.UserId, passwordData.Password)
+	err, status = u.userRepo.UpdatePassword(ctx, passwordData.UserID, passwordData.Password)
 
 	if err != nil {
 		return nil, &models.ErrorRespData{

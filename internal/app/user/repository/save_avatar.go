@@ -12,17 +12,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
-	locS := config.FromLocalStorageContext(ctx)
-	fullPath := locS.UserAvatarsFullUrl + usrData.AvatarName
-	relativePath := locS.UserAvatarsRelativeUrl + usrData.AvatarName
+func (u *UserRepo) SaveUserAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
+	lclStrg := config.FromLocalStorageContext(ctx)
+	fullPath := lclStrg.UserAvatarsFullUrl + usrData.AvatarName
+	relativePath := lclStrg.UserAvatarsRelativeUrl + usrData.AvatarName
 
-	outFile, osErr := os.Create(fullPath)
-	if osErr != nil {
-		return "", &errVals.ErrorObj{
-			Code:  errVals.ErrFileUploadCode,
-			Error: errVals.CustomError{Err: fmt.Errorf("cannot find or create nginx static folder: %w", osErr)},
-		}
+	outFile, fileErr := os.Create(fullPath)
+	if fileErr != nil {
+		return "", errVals.NewErrorObj(
+			errVals.ErrFileUploadCode,
+			errVals.CustomError{Err: fmt.Errorf("cannot find or create nginx static folder: %w", fileErr)},
+		)
 	}
 
 	defer func() {
@@ -31,12 +31,12 @@ func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string
 		}
 	}()
 
-	_, osErr = io.Copy(outFile, usrData.Avatar)
-	if osErr != nil {
-		return "", &errVals.ErrorObj{
-			Code:  errVals.ErrFileUploadCode,
-			Error: errVals.CustomError{Err: fmt.Errorf("cannot save file into nginx static folder: %w", osErr)},
-		}
+	_, fileErr = io.Copy(outFile, usrData.Avatar)
+	if fileErr != nil {
+		return "", errVals.NewErrorObj(
+			errVals.ErrFileUploadCode,
+			errVals.CustomError{Err: fmt.Errorf("cannot save file into nginx static folder: %w", fileErr)},
+		)
 	}
 
 	return relativePath, nil

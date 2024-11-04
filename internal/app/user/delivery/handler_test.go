@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 
@@ -24,6 +22,7 @@ import (
 )
 
 func TestUserHandler_UpdatePassword(t *testing.T) {
+	ctx := testContext()
 	tests := []struct {
 		name       string
 		reqBody    string
@@ -66,7 +65,9 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -76,11 +77,11 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 			}
 			req.Header.Set("Content-Type", "application/json")
 
-			srv := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(testContext(), srv)
+			ms := mockSrv.NewMockUserServiceInterface(ctrl)
+			handler := NewUserHandler(ctx, ms)
 
 			if test.mockReturn != nil || test.mockErr != nil {
-				srv.EXPECT().UpdatePassword(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				ms.EXPECT().UpdatePassword(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			w := httptest.NewRecorder()
@@ -96,6 +97,8 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 }
 
 func TestUserHandler_UpdateProfile(t *testing.T) {
+	ctx := testContext()
+
 	tests := []struct {
 		name       string
 		formData   map[string]string
@@ -152,7 +155,9 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -176,11 +181,11 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 				req = mux.SetURLVars(req, map[string]string{"id": "1"})
 			}
 
-			srv := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(testContext(), srv)
+			ms := mockSrv.NewMockUserServiceInterface(ctrl)
+			handler := NewUserHandler(ctx, ms)
 
 			if test.mockReturn != nil || test.mockErr != nil {
-				srv.EXPECT().UpdateProfile(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				ms.EXPECT().UpdateProfile(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			w := httptest.NewRecorder()
@@ -198,12 +203,12 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 func testContext() context.Context {
 	err := os.Chdir("../../../..")
 	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
+		log.Fatal().Msgf("failed to change directory: %v", err)
 	}
 
-	cfg, err := config.New(&zerolog.Logger{}, false)
+	cfg, err := config.New(false)
 	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
+		log.Fatal().Msgf("failed to read config: %v", err)
 	}
 
 	ctx := config.WrapContext(context.Background(), cfg)
