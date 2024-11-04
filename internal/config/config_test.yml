@@ -3,6 +3,8 @@ listener:
   port: 8085
   timeout: 4s
   idleTimeout: 60s
+  certFile: test_certificates/certificate.crt
+  keyFile: test_certificates/private.key
 
 databases:
   postgres:
