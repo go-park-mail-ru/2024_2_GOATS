@@ -111,8 +111,10 @@ func (a *App) Run() {
 		}
 	}()
 
+	certFile := ctxValues.Listener.CertFile
+	keyFile := ctxValues.Listener.KeyFile
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := a.Server.ListenAndServeTLS(certFile, keyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		a.lg.Fatal().Msgf("server stopped: %v", err)
 	}
 }

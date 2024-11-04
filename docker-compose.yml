@@ -10,6 +10,7 @@ services:
     restart: always
     volumes:
       - /home/ubuntu/images:/home/ubuntu/images
+      - /home/ubuntu/certificates:/home/ubuntu/certificates
     ports:
       - 8080:8080
     networks:
@@ -41,8 +42,10 @@ services:
       - ../disk:/usr/share/nginx/html/static
       - ../images:/usr/share/nginx/html/images
       - ../frontend/2024_2_GOATS/public/assets:/usr/share/nginx/html/assets
+      - ../certificates:/etc/nginx/ssl/certificates
     ports:
       - 80:80
+      - 443:443
     depends_on:
       - app
     restart: "always"

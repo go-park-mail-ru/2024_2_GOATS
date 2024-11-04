@@ -3,6 +3,8 @@ listener:
   port: 8080
   timeout: 4s
   idleTimeout: 60s
+  certFile: /home/ubuntu/certificates/certificate.crt
+  keyFile: /home/ubuntu/certificates/private.key
 
 databases:
   postgres:

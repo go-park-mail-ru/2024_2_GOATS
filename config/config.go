@@ -47,6 +47,8 @@ type Listener struct {
 	Port        int           `yaml:"port"`
 	Timeout     time.Duration `yaml:"timeout"`
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
+	CertFile    string        `yaml:"certFile"`
+	KeyFile     string        `yaml:"keyFile"`
 }
 
 func New(isTest bool) (*Config, error) {
