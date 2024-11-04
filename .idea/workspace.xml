@@ -5,7 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/middleware/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/middleware/middleware.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,12 +32,12 @@
   <component name="GitRewordedCommitMessages">
     <option name="commitMessagesMapping">
       <RewordedCommitMessageMapping>
-        <option name="originalMessage" value="Service Example (#1)" />
-        <option name="rewordedMessage" value="[GOATS-auth] add auth service" />
+        <option name="originalMessage" value="fix gitignore" />
+        <option name="rewordedMessage" value="fix gitignore" />
       </RewordedCommitMessageMapping>
     </option>
     <option name="currentCommit" value="1" />
-    <option name="onto" value="37c145dea332f0241bedc85dd479da25bc165103" />
+    <option name="onto" value="a47a3af85f86588674d4ff35d374d3f82839b89a" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -42,50 +47,50 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "Go Test.TestNewExampleService in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_GetRoomState in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_GetRoomState/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
-    "Go Test.TestRoomService_HandleAction/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Debug",
-    "Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
-    "Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
-    "Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
-    "Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
-    "Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
-    "Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
-    "Go Test.go test 2024_2_GOATS.executor": "Coverage",
-    "Go Test.go test internal.executor": "Coverage",
-    "Go Test.go test room.executor": "Coverage",
-    "Go Test.go test service (1).executor": "Coverage",
-    "Go Test.go test service.executor": "Coverage",
-    "Go Test.login_test.go.executor": "Coverage",
-    "Makefile Target.generate.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "joint__viewing",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.goide.configuration.GoLibrariesConfigurableProvider"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Go Test.TestNewExampleService in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_GetRoomState in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_GetRoomState/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestRoomService_HandleAction/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Debug&quot;,
+    &quot;Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.go test 2024_2_GOATS.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.go test internal.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.go test room.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.go test service (1).executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.go test service.executor&quot;: &quot;Coverage&quot;,
+    &quot;Go Test.login_test.go.executor&quot;: &quot;Coverage&quot;,
+    &quot;Makefile Target.generate.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;joint__viewing&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.goide.configuration.GoLibrariesConfigurableProvider&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/internal/app/room/service" />
@@ -95,6 +100,7 @@
       <recent name="$PROJECT_DIR$/dz0" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/app/secur/csrf/token" />
       <recent name="$PROJECT_DIR$/internal/app/room/ws" />
       <recent name="$PROJECT_DIR$/internal/app/room/room_handler" />
       <recent name="$PROJECT_DIR$/internal/app/room" />

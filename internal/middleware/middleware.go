@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/microcosm-cc/bluemonday"
 	"net/http"
 	"time"
 
@@ -65,4 +66,43 @@ func logRequest(r *http.Request, start time.Time, msg string) {
 		Str("url", r.URL.Path).
 		Dur("work_time", time.Since(start)).
 		Msg(msg)
+}
+
+var policy = bluemonday.UGCPolicy()
+
+func sanitizeInput(input string) string {
+	return policy.Sanitize(input)
+}
+
+func XssMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		for key, values := range r.Form {
+			for i, v := range values {
+				r.Form[key][i] = sanitizeInput(v)
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// CsrfMiddleware проверяет CSRF-токен для защищенных маршрутов
+func CsrfMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Пропускаем GET-запросы и маршрут генерации CSRF-токена
+			if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			cookie, err := r.Cookie("csrf_token")
+			if err != nil || r.Header.Get("X-CSRF-Token") != cookie.Value {
+				http.Error(w, "Forbidden - CSRF token invalid", http.StatusForbidden)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

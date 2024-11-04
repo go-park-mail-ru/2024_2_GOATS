@@ -83,6 +83,7 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 	go roomHub.Run() // Запуск обработчика Hub'a
 
 	mx := mux.NewRouter()
+	router.SetupCsrf(mx)
 	router.ActivateMiddlewares(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
