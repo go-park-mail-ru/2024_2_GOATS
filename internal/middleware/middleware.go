@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"time"
@@ -25,7 +26,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
 			log.Info().Msg("corsMiddleware: PREFLIGHT END")
@@ -75,7 +76,11 @@ func sanitizeInput(input string) string {
 
 func XssMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Invalid form data", http.StatusBadRequest)
+			return
+		}
+
 		for key, values := range r.Form {
 			for i, v := range values {
 				r.Form[key][i] = sanitizeInput(v)
@@ -85,22 +90,25 @@ func XssMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func CsrfMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Пропускаем GET-запросы и маршрут генерации CSRF-токена
-			if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			cookie, err := r.Cookie("csrf_token")
-			if err != nil || r.Header.Get("X-CSRF-Token") != cookie.Value {
-				http.Error(w, "Forbidden - CSRF token invalid", http.StatusForbidden)
-				return
-			}
-
+func CsrfMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
 			next.ServeHTTP(w, r)
-		})
-	}
+			return
+		}
+
+		cookie, err := r.Cookie("csrf_token")
+		if err != nil {
+			http.Error(w, "Forbidden - CSRF token missing", http.StatusForbidden)
+			return
+		}
+
+		csrfHeaderToken := r.Header.Get("X-CSRF-Token")
+		if subtle.ConstantTimeCompare([]byte(csrfHeaderToken), []byte(cookie.Value)) != 1 {
+			http.Error(w, "Forbidden - CSRF token invalid", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

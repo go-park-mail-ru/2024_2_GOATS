@@ -23,6 +23,7 @@ var (
 	ErrUnauthorizedCode          = "user_unauthorized"
 	ErrRedisClearCode            = "failed_delete_from_redis"
 	ErrRedisWriteCode            = "failed_write_into_redis"
+	ErrGenCSRF                   = "Failed to generate CSRF token"
 )
 
 type CustomError struct {

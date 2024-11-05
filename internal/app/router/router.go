@@ -42,7 +42,7 @@ func ActivateMiddlewares(mx *mux.Router) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
-	mx.Use(middleware.CsrfMiddleware())
+	mx.Use(middleware.CsrfMiddleware)
 	mx.Use(middleware.XssMiddleware)
 }
 
