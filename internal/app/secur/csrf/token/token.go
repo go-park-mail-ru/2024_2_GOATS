@@ -19,10 +19,9 @@ func GenerateToken() (string, error) {
 // SetCSRFTokenCookie сохраняет CSRF-токен в cookie
 func SetCSRFTokenCookie(w http.ResponseWriter, token string) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     "csrf_token",
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true, // Для прода
+		Name:   "csrf_token",
+		Value:  token,
+		Path:   "/",
+		Secure: true, // Для прода
 	})
 }
