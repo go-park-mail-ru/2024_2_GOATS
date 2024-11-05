@@ -232,11 +232,11 @@ func TestUpdateProfileData_Success(t *testing.T) {
 		ID:        1,
 		Email:     "test@mail.ru",
 		Username:  "testuser",
-		AvatarUrl: "some_avatar_url",
+		AvatarURL: "some_avatar_url",
 	}
 
 	mock.ExpectExec(`UPDATE users SET email = \$1, username = \$2, avatar_url = \$3, updated_at = \$4 WHERE id = \$5`).
-		WithArgs(profileData.Email, profileData.Username, profileData.AvatarUrl, sqlmock.AnyArg(), profileData.ID).
+		WithArgs(profileData.Email, profileData.Username, profileData.AvatarURL, sqlmock.AnyArg(), profileData.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	errObj, status := r.UpdateProfileData(context.Background(), profileData)
@@ -256,11 +256,11 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 		ID:        1,
 		Email:     "test@mail.ru",
 		Username:  "testuser",
-		AvatarUrl: "some_avatar_url",
+		AvatarURL: "some_avatar_url",
 	}
 
 	mock.ExpectExec(`UPDATE users SET email = \$1, username = \$2, avatar_url = \$3, updated_at = \$4 WHERE id = \$5`).
-		WithArgs(profileData.Email, profileData.Username, profileData.AvatarUrl, sqlmock.AnyArg(), profileData.ID).
+		WithArgs(profileData.Email, profileData.Username, profileData.AvatarURL, sqlmock.AnyArg(), profileData.ID).
 		WillReturnError(fmt.Errorf("some database error"))
 
 	errObj, status := r.UpdateProfileData(context.Background(), profileData)

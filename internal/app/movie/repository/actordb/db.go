@@ -38,7 +38,7 @@ func FindByID(ctx context.Context, actorID int, db *sql.DB) (*models.ActorInfo, 
 		&actorInfo.Surname,
 		&actorInfo.Biography,
 		&actorInfo.Birthdate,
-		&actorInfo.BigPhotoUrl,
+		&actorInfo.BigPhotoURL,
 		&actorInfo.Country,
 	)
 

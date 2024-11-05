@@ -14,12 +14,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	servUserMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 	"github.com/golang/mock/gomock"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestService_Register(t *testing.T) {
-	ctx := testContext(true)
+	ctx := testContext(t)
 
 	tests := []struct {
 		name string
@@ -294,7 +294,7 @@ func TestService_Login(t *testing.T) {
 		loginData *models.LoginData
 	}
 
-	ctx := testContext(true)
+	ctx := testContext(t)
 
 	tests := []struct {
 		name                  string
@@ -489,7 +489,7 @@ func TestService_Logout(t *testing.T) {
 		cookie string
 	}
 
-	ctx := testContext(true)
+	ctx := testContext(t)
 
 	tests := []struct {
 		name                  string
@@ -551,20 +551,11 @@ func TestService_Logout(t *testing.T) {
 	}
 }
 
-func testContext(isRedis bool) context.Context {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		log.Fatal().Msgf("failed to change directory: %v", err)
-	}
+func testContext(t *testing.T) context.Context {
+	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
 
-	cfg, err := config.New(false)
-	if err != nil {
-		log.Fatal().Msgf("failed to read config from Register test: %v", err)
-	}
+	cfg, err := config.New(true)
+	require.NoError(t, err, "failed to read config from auth service_test")
 
-	if isRedis {
-		return config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
-	} else {
-		return config.WrapContext(context.Background(), cfg)
-	}
+	return config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
 }

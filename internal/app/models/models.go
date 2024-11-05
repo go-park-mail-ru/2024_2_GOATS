@@ -52,9 +52,9 @@ type User struct {
 	Email      string
 	Username   string
 	Password   string
-	AvatarUrl  string
+	AvatarURL  string
 	AvatarName string
-	Avatar     multipart.File
+	AvatarFile multipart.File
 }
 
 type Collection struct {
@@ -68,27 +68,27 @@ type MovieInfo struct {
 	Title            string        `json:"title"`
 	ShortDescription string        `json:"short_description"`
 	FullDescription  string        `json:"full_description"`
-	CardUrl          string        `json:"card_url"`
-	AlbumUrl         string        `json:"album_url"`
-	TitleUrl         string        `json:"title_url"`
+	CardURL          string        `json:"card_url"`
+	AlbumURL         string        `json:"album_url"`
+	TitleURL         string        `json:"title_url"`
 	Rating           float32       `json:"rating"`
-	ReleaseDate      time.Time     `json:"release_date"`
+	ReleaseDate      string        `json:"release_date"`
 	MovieType        string        `json:"movie_type"`
 	Country          string        `json:"country"`
-	VideoUrl         string        `json:"video_url"`
+	VideoURL         string        `json:"video_url"`
 	Actors           []*ActorInfo  `json:"actors_info"`
 	Director         *DirectorInfo `json:"director_info"`
 }
 
 type MovieShortInfo struct {
-	ID          int       `json:"id"`
-	Title       string    `json:"title"`
-	CardUrl     string    `json:"card_url"`
-	AlbumUrl    string    `json:"album_url"`
-	Rating      float32   `json:"rating"`
-	ReleaseDate time.Time `json:"release_date"`
-	MovieType   string    `json:"movie_type"`
-	Country     string    `json:"country"`
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	CardURL     string  `json:"card_url"`
+	AlbumURL    string  `json:"album_url"`
+	Rating      float32 `json:"rating"`
+	ReleaseDate string  `json:"release_date"`
+	MovieType   string  `json:"movie_type"`
+	Country     string  `json:"country"`
 }
 
 type ActorInfo struct {
@@ -96,9 +96,9 @@ type ActorInfo struct {
 	ID            int               `json:"id"`
 	Biography     string            `json:"biography"`
 	Post          string            `json:"post"`
-	Birthdate     sql.NullTime      `json:"birthdate"`
-	SmallPhotoUrl string            `json:"small_photo_url"`
-	BigPhotoUrl   string            `json:"big_photo_url"`
+	Birthdate     sql.NullString    `json:"birthdate"`
+	SmallPhotoURL string            `json:"small_photo_url"`
+	BigPhotoURL   string            `json:"big_photo_url"`
 	Country       string            `json:"country"`
 	Movies        []*MovieShortInfo `json:"movies"`
 }

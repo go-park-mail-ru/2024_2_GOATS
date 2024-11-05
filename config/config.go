@@ -19,8 +19,8 @@ type Databases struct {
 }
 
 type LocalStorage struct {
-	UserAvatarsFullUrl     string `yaml:"userAvatarsFullUrl"`
-	UserAvatarsRelativeUrl string `yaml:"userAvatarsRelativeUrl"`
+	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
+	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
 }
 
 type Postgres struct {

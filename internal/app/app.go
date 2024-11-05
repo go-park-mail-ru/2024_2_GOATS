@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -37,13 +38,13 @@ type App struct {
 	Context           context.Context
 	Server            *http.Server
 	Mux               *mux.Router
-	lg                *zerolog.Logger
+	Logger            *zerolog.Logger
 	AcceptConnections bool
 }
 
 func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	lg := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
 	cfg, err := config.New(isTest)
 	if err != nil {
@@ -52,6 +53,8 @@ func New(isTest bool) (*App, error) {
 
 	ctx := config.WrapContext(context.Background(), cfg)
 	ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	
 	database, err := db.SetupDatabase(ctxDBTimeout, cancel)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize database: %w", err)
@@ -93,7 +96,7 @@ func New(isTest bool) (*App, error) {
 		Redis:    rdb,
 		Context:  ctx,
 		Server:   srv,
-		lg:       &lg,
+		Logger:   &logger,
 		Mux:      mx,
 	}, nil
 }
@@ -102,18 +105,22 @@ func (a *App) Run() {
 	ctxValues := config.FromContext(a.Context)
 	a.Mux.Use(a.AppReadyMiddleware)
 
-	a.lg.Info().Msgf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
+	a.Logger.Info().Msgf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
 
 	// Not ready yet
 	defer func() {
 		if err := a.GracefulShutdown(); err != nil {
-			a.lg.Fatal().Msgf("failed to graceful shutdown: %v", err)
+			a.Logger.Fatal().Msgf("failed to graceful shutdown: %v", err)
 		}
 	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.lg.Fatal().Msgf("server stopped: %v", err)
+	if err := a.Server.ListenAndServe(); err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			a.Logger.Info().Msg("server closed under request")
+		} else {
+			a.Logger.Info().Msgf("server stopped: %v", err)
+		}
 	}
 }
 
@@ -121,15 +128,22 @@ func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
 	log.Info().Msg("Starting graceful shutdown")
 
-	if err := a.Database.Close(); err != nil {
-		return fmt.Errorf("failed to close database: %w", err)
-	}
-	log.Info().Msg("Postgres shut down")
+	var wg sync.WaitGroup
+	errChan := make(chan error, 2)
 
-	if err := a.Redis.Close(); err != nil {
-		return fmt.Errorf("failed to close redis: %w", err)
+	wg.Add(2)
+
+	go a.shutdownPostgres(&wg, errChan)
+	go a.shutdownRedis(&wg, errChan)
+
+	wg.Wait()
+	close(errChan)
+
+	for err := range errChan {
+		if err != nil {
+			return err
+		}
 	}
-	log.Info().Msg("Redis shut down")
 
 	shutdownCtx, cancel := context.WithTimeout(a.Context, 5*time.Second)
 	defer cancel()
@@ -148,4 +162,22 @@ func (a *App) GracefulShutdown() error {
 	}
 
 	return nil
+}
+
+func (a *App) shutdownPostgres(wg *sync.WaitGroup, errChan chan error) {
+	defer wg.Done()
+	if err := a.Database.Close(); err != nil {
+		errChan <- fmt.Errorf("failed to close database: %w", err)
+	} else {
+		log.Info().Msg("Postgres shut down")
+	}
+}
+
+func (a *App) shutdownRedis(wg *sync.WaitGroup, errChan chan error) {
+	defer wg.Done()
+	if err := a.Redis.Close(); err != nil {
+		errChan <- fmt.Errorf("failed to close redis: %w", err)
+	} else {
+		log.Info().Msg("Redis shut down")
+	}
 }

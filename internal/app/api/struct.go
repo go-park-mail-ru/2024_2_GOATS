@@ -2,7 +2,6 @@ package api
 
 import (
 	"mime/multipart"
-	"time"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -19,7 +18,7 @@ type UpdateProfileRequest struct {
 	UserID     int    `json:"user_id"`
 	Email      string `json:"email"`
 	Username   string `json:"username"`
-	Avatar     multipart.File
+	AvatarFile multipart.File
 	AvatarName string
 }
 
@@ -74,14 +73,14 @@ type MovieInfo struct {
 	Title            string       `json:"title"`
 	FullDescription  string       `json:"full_description"`
 	ShortDescription string       `json:"short_description"`
-	CardUrl          string       `json:"card_url"`
-	AlbumUrl         string       `json:"album_url"`
-	TitleUrl         string       `json:"title_url"`
+	CardURL          string       `json:"card_url"`
+	AlbumURL         string       `json:"album_url"`
+	TitleURL         string       `json:"title_url"`
 	Rating           float32      `json:"rating"`
-	ReleaseDate      time.Time    `json:"release_date"`
+	ReleaseDate      string       `json:"release_date"`
 	MovieType        string       `json:"movie_type"`
 	Country          string       `json:"country"`
-	VideoUrl         string       `json:"video_url"`
+	VideoURL         string       `json:"video_url"`
 	Director         string       `json:"director"`
 	Actors           []*ActorInfo `json:"actors_info"`
 }
@@ -94,7 +93,7 @@ type ActorResponse struct {
 type ActorInfo struct {
 	ID       int    `json:"id"`
 	FullName string `json:"full_name"`
-	PhotoUrl string `json:"photo_url"`
+	PhotoURL string `json:"photo_url"`
 	Country  string `json:"country"`
 }
 type Actor struct {
@@ -102,7 +101,7 @@ type Actor struct {
 	FullName  string                   `json:"full_name"`
 	Biography string                   `json:"biography"`
 	Birthdate string                   `json:"birthdate"`
-	PhotoUrl  string                   `json:"photo_url"`
+	PhotoURL  string                   `json:"photo_url"`
 	Country   string                   `json:"country"`
 	Movies    []*models.MovieShortInfo `json:"movies"`
 }
@@ -117,5 +116,5 @@ type User struct {
 	ID        int    `json:"id"`
 	Email     string `json:"email"`
 	Username  string `json:"username"`
-	AvatarUrl string `json:"avatar_url"`
+	AvatarURL string `json:"avatar_url"`
 }

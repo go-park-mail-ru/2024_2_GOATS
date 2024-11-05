@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -16,11 +17,12 @@ type ErrorDetails struct {
 }
 
 func Response(ctx context.Context, w http.ResponseWriter, code int, obj interface{}) {
-	w.WriteHeader(code)
-	err := json.NewEncoder(w).Encode(obj)
+	var buf bytes.Buffer
+	logger := log.Ctx(ctx)
+	err := json.NewEncoder(&buf).Encode(obj)
+
 	if err != nil {
-		lg := log.Ctx(ctx)
-		lg.Err(fmt.Errorf("error while encoding success response: %v", err))
+		logger.Error().Err(err).Msg("error while encoding success response")
 
 		errObj := ErrorDetails{
 			Message: err.Error(),
@@ -30,16 +32,24 @@ func Response(ctx context.Context, w http.ResponseWriter, code int, obj interfac
 		w.WriteHeader(http.StatusInternalServerError)
 		err = json.NewEncoder(w).Encode(errObj)
 		if err != nil {
-			lg.Err(fmt.Errorf("error while encoding error details: %v", err))
+			logger.Error().Err(err).Msg("error while encoding error details")
 		}
+
+		return
+	}
+
+	w.WriteHeader(code)
+	_, writeErr := w.Write(buf.Bytes())
+	if writeErr != nil {
+		logger.Error().Err(writeErr).Msg("error while writing response to client")
 	}
 }
 
 func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
-		lg := log.Ctx(r.Context())
-		lg.Err(fmt.Errorf("cannot parse request: %w", err))
+		logger := log.Ctx(r.Context())
+		logger.Error().Err(err).Msg("cannot parse request")
 		Response(r.Context(), w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
 
 		return
@@ -57,9 +67,8 @@ func PreparedDefaultError(code string, err error) *ErrorResponse {
 }
 
 func RequestError(ctx context.Context, w http.ResponseWriter, code string, status int, err error) {
-	errMsg := fmt.Errorf("request error: %w", err)
-	lg := log.Ctx(ctx)
-	lg.Error().Err(errMsg).Msg("request error")
+	logger := log.Ctx(ctx)
+	logger.Error().Err(err).Msg("request error")
 
-	Response(ctx, w, status, PreparedDefaultError(code, errMsg))
+	Response(ctx, w, status, PreparedDefaultError(code, err))
 }

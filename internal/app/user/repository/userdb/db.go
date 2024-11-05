@@ -67,7 +67,7 @@ func FindByID(ctx context.Context, userID int, db *sql.DB) (*models.User, error)
 	var usr models.User
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarUrl)
+	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarURL)
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
@@ -116,9 +116,9 @@ func UpdateProfile(ctx context.Context, usrData *models.User, db *sql.DB) error 
 		args = append(args, usrData.Username)
 		argCount++
 	}
-	if usrData.AvatarUrl != "" {
+	if usrData.AvatarURL != "" {
 		sets = append(sets, fmt.Sprintf("avatar_url = $%d", argCount))
-		args = append(args, usrData.AvatarUrl)
+		args = append(args, usrData.AvatarURL)
 		argCount++
 	}
 

@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"testing"
 	"time"
@@ -16,7 +15,7 @@ import (
 )
 
 func TestAppIntegration(t *testing.T) {
-	ctx := testContext()
+	ctx := testContext(t)
 
 	pool, err := dockertest.NewPool("")
 	require.NoError(t, err, "cannot create new pool")
@@ -25,18 +24,14 @@ func TestAppIntegration(t *testing.T) {
 	require.NoError(t, err, "cannot init postgres")
 
 	defer func() {
-		if err := pool.Purge(pg); err != nil {
-			t.Fatalf("failed to stop container: %v", err)
-		}
+		require.NoError(t, pool.Purge(pg), "failed to stop postgres container")
 	}()
 
 	rdb, err := initRedis(ctx, pool)
 	require.NoError(t, err, "cannot init redis")
 
 	defer func() {
-		if err := pool.Purge(rdb); err != nil {
-			t.Fatalf("failed to stop container: %v", err)
-		}
+		require.NoError(t, pool.Purge(rdb), "failed to stop redis container")
 	}()
 
 	app, err := New(true)
@@ -59,23 +54,16 @@ func TestAppIntegration(t *testing.T) {
 		require.NoError(t, err, "failed to ping redis from test")
 	}
 
-	if err := app.Server.Shutdown(ctx); err != nil {
-		t.Fatalf("failed to shut down server: %v", err)
-	}
+	require.NoError(t, app.Server.Shutdown(ctx), "failed to shut down server")
 
 	<-done
 }
 
-func testContext() context.Context {
-	err := os.Chdir("../..")
-	if err != nil {
-		log.Fatalf("failed to change directory: %v", err)
-	}
+func testContext(t *testing.T) context.Context {
+	require.NoError(t, os.Chdir("../.."), "failed to change directory")
 
 	cfg, err := config.New(true)
-	if err != nil {
-		log.Fatalf("failed to read config from Register test: %v", err)
-	}
+	require.NoError(t, err, "failed to read config from app_test")
 
 	return config.WrapContext(context.Background(), cfg)
 }

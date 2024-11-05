@@ -40,7 +40,7 @@ func NewUserHandler(ctx context.Context, srv UserServiceInterface) handlers.User
 }
 
 func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	lg := log.Ctx(r.Context())
+	logger := log.Ctx(r.Context())
 	passwordReq := &api.UpdatePasswordRequest{}
 	api.DecodeBody(w, r, passwordReq)
 
@@ -68,19 +68,19 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	if errResp != nil {
 		errMsg := errors.New("failed to update password")
-		lg.Error().Err(errMsg).Interface("updatePasswdResp", errResp).Msg("request_failed")
+		logger.Error().Err(errMsg).Interface("updatePasswdResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.StatusCode, errResp)
 
 		return
 	}
 
-	lg.Info().Interface("updatePasswdResp", usrResp).Msg("updatePasswd success")
+	logger.Info().Interface("updatePasswdResp", usrResp).Msg("updatePasswd success")
 
 	api.Response(r.Context(), w, usrResp.StatusCode, usrResp)
 }
 
 func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	lg := log.Ctx(r.Context())
+	logger := log.Ctx(r.Context())
 	ctx := config.WrapLocalStorageContext(r.Context(), u.lclStrg)
 	vars := mux.Vars(r)
 	usrID, err := getUserID(vars)
@@ -102,7 +102,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	profileReq, err := u.parseProfileRequest(r, usrID)
 	if err != nil {
 		errMsg := fmt.Errorf("cannot read file from request: %w", err)
-		lg.Error().Err(errMsg).Msg("read_file_error")
+		logger.Error().Err(errMsg).Msg("read_file_error")
 		api.Response(ctx, w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
 
 		return
@@ -139,35 +139,35 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	if errResp != nil {
 		errMsg := errors.New("failed to update profile")
-		lg.Error().Err(errMsg).Interface("updateProfileResp", errResp).Msg("request_failed")
+		logger.Error().Err(errMsg).Interface("updateProfileResp", errResp).Msg("request_failed")
 		api.Response(ctx, w, errResp.StatusCode, errResp)
 		return
 	}
 
-	lg.Info().Interface("updateProfileResp", usrResp).Msg("updateProfile success")
+	logger.Info().Interface("updateProfileResp", usrResp).Msg("updateProfile success")
 
 	api.Response(ctx, w, usrResp.StatusCode, usrResp)
 }
 
 func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, error) {
-	lg := log.Ctx(r.Context())
+	logger := log.Ctx(r.Context())
 	formData := r.MultipartForm.Value
 	file, handler, err := r.FormFile("avatar")
 
 	defer func() {
 		if file != nil {
 			if err := file.Close(); err != nil {
-				lg.Error().Err(fmt.Errorf("cannot close file: %v", err)).Msg("close_file_error")
+				logger.Error().Err(fmt.Errorf("cannot close file: %v", err)).Msg("close_file_error")
 			}
 		}
 	}()
 
 	if err != nil {
 		if errors.Is(err, http.ErrMissingFile) {
-			lg.Info().Msg("file was not given")
+			logger.Info().Msg("file was not given")
 		} else {
 			errMsg := fmt.Errorf("cannot read file from request: %w", err)
-			lg.Error().Err(errMsg).Msg("read_file_error")
+			logger.Error().Err(errMsg).Msg("read_file_error")
 
 			return nil, err
 		}
@@ -182,7 +182,7 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 		UserID:     usrID,
 		Email:      getFormValue(formData, "email"),
 		Username:   getFormValue(formData, "username"),
-		Avatar:     file,
+		AvatarFile: file,
 		AvatarName: filename,
 	}
 

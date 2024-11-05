@@ -20,5 +20,5 @@ databases:
       name: session_id
 
   localStorage:
-    userAvatarsFullUrl: /home/ubuntu/images/user_avatars/
-    userAvatarsRelativeUrl: /images/user_avatars/
+    userAvatarsFullURL: /home/ubuntu/images/user_avatars/
+    userAvatarsRelativeURL: /images/user_avatars/

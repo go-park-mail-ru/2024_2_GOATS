@@ -24,7 +24,7 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 		var movie models.MovieShortInfo
 
 		err := rows.Scan(&collectionID, &collectionTitle,
-			&movie.ID, &movie.Title, &movie.CardUrl, &movie.AlbumUrl, &movie.Rating, &movie.ReleaseDate, &movie.MovieType, &movie.Country)
+			&movie.ID, &movie.Title, &movie.CardURL, &movie.AlbumURL, &movie.Rating, &movie.ReleaseDate, &movie.MovieType, &movie.Country)
 
 		if err != nil {
 			errMsg := fmt.Errorf("error while scanning movie collections: %w", err)

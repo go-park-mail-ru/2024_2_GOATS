@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -30,11 +29,11 @@ func TestGetActor_Success(t *testing.T) {
 			Surname: "Doe",
 		},
 		Biography: "Some biography",
-		Birthdate: sql.NullTime{
-			Time:  time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC),
-			Valid: true,
+		Birthdate: sql.NullString{
+			String: "1980-03-10",
+			Valid:  true,
 		},
-		BigPhotoUrl: "some_photo_url",
+		BigPhotoURL: "some_photo_url",
 		Country:     "USA",
 		Movies:      nil,
 	}
@@ -74,12 +73,12 @@ func TestGetActor_Success(t *testing.T) {
 	`).
 		WithArgs(actorID).RowsWillBeClosed().
 		WillReturnRows(sqlmock.NewRows([]string{"id", "title", "card_url", "rating", "release_date", "country_title"}).
-			AddRow(1, "Movie 1", "https://example.com/movie1.jpg", 8.5, time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC), "Russia").
-			AddRow(2, "Movie 2", "https://example.com/movie2.jpg", 7.9, time.Date(2019, time.June, 15, 0, 0, 0, 0, time.UTC), "USA"))
+			AddRow(1, "Movie 1", "https://example.com/movie1.jpg", 8.5, "2020-01-01", "Russia").
+			AddRow(2, "Movie 2", "https://example.com/movie2.jpg", 7.9, "2019-06-15", "USA"))
 
 	expectedMovies := []*models.MovieShortInfo{
-		{ID: 1, Title: "Movie 1", CardUrl: "https://example.com/movie1.jpg", Rating: 8.5, ReleaseDate: time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC), Country: "Russia"},
-		{ID: 2, Title: "Movie 2", CardUrl: "https://example.com/movie2.jpg", Rating: 7.9, ReleaseDate: time.Date(2019, time.June, 15, 0, 0, 0, 0, time.UTC), Country: "USA"},
+		{ID: 1, Title: "Movie 1", CardURL: "https://example.com/movie1.jpg", Rating: 8.5, ReleaseDate: "2020-01-01", Country: "Russia"},
+		{ID: 2, Title: "Movie 2", CardURL: "https://example.com/movie2.jpg", Rating: 7.9, ReleaseDate: "2019-06-15", Country: "USA"},
 	}
 
 	actor, errObj, statusCode := r.GetActor(context.Background(), actorID)
@@ -147,7 +146,7 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 	`).
 		WithArgs(actorID).RowsWillBeClosed().
 		WillReturnRows(sqlmock.NewRows([]string{"id", "first_name", "second_name", "biography", "birthdate", "big_photo_url", "title"}).
-			AddRow(actorID, "John", "Doe", "Some biography", time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC), "some_photo_url", "USA"))
+			AddRow(actorID, "John", "Doe", "Some biography", "1980-03-10", "some_photo_url", "USA"))
 
 	mock.ExpectQuery(`
 		SELECT
@@ -188,10 +187,10 @@ func TestGetCollection_Success(t *testing.T) {
 			{
 				ID:          1,
 				Title:       "test movie",
-				CardUrl:     "some_card_url",
-				AlbumUrl:    "some_album_url",
+				CardURL:     "some_card_url",
+				AlbumURL:    "some_album_url",
 				Rating:      7.6,
-				ReleaseDate: time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC),
+				ReleaseDate: "1980-03-10",
 				MovieType:   "film",
 				Country:     "Russia",
 			},
@@ -236,7 +235,7 @@ func TestGetCollection_Success(t *testing.T) {
 			"some_card_url",
 			"some_album_url",
 			7.6,
-			time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC),
+			"1980-03-10",
 			"film",
 			"Russia",
 		),
@@ -294,13 +293,13 @@ func TestGetMovie_Success(t *testing.T) {
 		Title:            "test movie",
 		ShortDescription: "short desc",
 		FullDescription:  "long desc",
-		CardUrl:          "card url",
-		AlbumUrl:         "album url",
+		CardURL:          "card url",
+		AlbumURL:         "album url",
 		Rating:           7.6,
-		ReleaseDate:      time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC),
-		VideoUrl:         "video url",
+		ReleaseDate:      "1980-03-10",
+		VideoURL:         "video url",
 		MovieType:        "film",
-		TitleUrl:         "title url",
+		TitleURL:         "title url",
 		Country:          "Russia",
 		Director: &models.DirectorInfo{
 			Person: models.Person{
@@ -354,7 +353,7 @@ func TestGetMovie_Success(t *testing.T) {
 		"card url",
 		"album url",
 		7.6,
-		time.Date(1980, time.March, 10, 0, 0, 0, 0, time.UTC),
+		"1980-03-10",
 		"video url",
 		"film",
 		"title url",
@@ -428,7 +427,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 			Surname: "Tester",
 		},
 		Biography:     "some bio",
-		SmallPhotoUrl: "some_small_photo_link",
+		SmallPhotoURL: "some_small_photo_link",
 	}}
 
 	mock.ExpectQuery(`

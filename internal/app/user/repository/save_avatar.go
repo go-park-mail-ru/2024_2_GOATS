@@ -14,8 +14,8 @@ import (
 
 func (u *UserRepo) SaveUserAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
 	lclStrg := config.FromLocalStorageContext(ctx)
-	fullPath := lclStrg.UserAvatarsFullUrl + usrData.AvatarName
-	relativePath := lclStrg.UserAvatarsRelativeUrl + usrData.AvatarName
+	fullPath := lclStrg.UserAvatarsFullURL + usrData.AvatarName
+	relativePath := lclStrg.UserAvatarsRelativeURL + usrData.AvatarName
 
 	outFile, fileErr := os.Create(fullPath)
 	if fileErr != nil {
@@ -31,7 +31,7 @@ func (u *UserRepo) SaveUserAvatar(ctx context.Context, usrData *models.User) (st
 		}
 	}()
 
-	_, fileErr = io.Copy(outFile, usrData.Avatar)
+	_, fileErr = io.Copy(outFile, usrData.AvatarFile)
 	if fileErr != nil {
 		return "", errVals.NewErrorObj(
 			errVals.ErrFileUploadCode,

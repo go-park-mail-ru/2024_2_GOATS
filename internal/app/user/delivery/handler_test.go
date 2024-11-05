@@ -12,8 +12,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -22,7 +22,7 @@ import (
 )
 
 func TestUserHandler_UpdatePassword(t *testing.T) {
-	ctx := testContext()
+	ctx := testContext(t)
 	tests := []struct {
 		name       string
 		reqBody    string
@@ -43,13 +43,13 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 		{
 			name:       "Parse_error",
 			reqBody:    `{"password": "newpass123"}`,
-			resp:       `{"success":false,"errors":[{"Code":"user_request_parse_error","Error":"request error: updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			resp:       `{"success":false,"errors":[{"Code":"user_request_parse_error","Error":"updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
 		{
 			name:       "Validation error",
 			reqBody:    `{"password": "newpass123", "passwordConfirmation": "wrongpass"}`,
-			resp:       `{"success":false,"errors":[{"Code":"user_validation_error","Error":"request error: updatePassword action: Password err - password doesnt match with passwordConfirmation"}]}`,
+			resp:       `{"success":false,"errors":[{"Code":"user_validation_error","Error":"updatePassword action: Password err - password doesnt match with passwordConfirmation"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
 		{
@@ -97,7 +97,7 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 }
 
 func TestUserHandler_UpdateProfile(t *testing.T) {
-	ctx := testContext()
+	ctx := testContext(t)
 
 	tests := []struct {
 		name       string
@@ -126,7 +126,7 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			formData: map[string]string{
 				"email": "test@mail.ru",
 			},
-			resp:       `{"success":false,"errors":[{"Code":"user_request_parse_error","Error":"request error: updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			resp:       `{"success":false,"errors":[{"Code":"user_request_parse_error","Error":"updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
 		{
@@ -200,18 +200,11 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 	}
 }
 
-func testContext() context.Context {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		log.Fatal().Msgf("failed to change directory: %v", err)
-	}
+func testContext(t *testing.T) context.Context {
+	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
 
-	cfg, err := config.New(false)
-	if err != nil {
-		log.Fatal().Msgf("failed to read config: %v", err)
-	}
+	cfg, err := config.New(true)
+	require.NoError(t, err, "failed to read config from user handler_test")
 
-	ctx := config.WrapContext(context.Background(), cfg)
-
-	return ctx
+	return config.WrapContext(context.Background(), cfg)
 }

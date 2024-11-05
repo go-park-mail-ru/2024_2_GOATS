@@ -20,5 +20,5 @@ databases:
       name: session_id
 
   localStorage:
-    userAvatarsFullUrl: images/user_avatars/
-    userAvatarsRelativeUrl: images/user_avatars/
+    userAvatarsFullURL: images/user_avatars/
+    userAvatarsRelativeURL: images/user_avatars/

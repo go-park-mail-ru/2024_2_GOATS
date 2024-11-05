@@ -45,7 +45,7 @@ func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 		Email:      pr.Email,
 		Username:   pr.Username,
 		AvatarName: pr.AvatarName,
-		Avatar:     pr.Avatar,
+		AvatarFile: pr.AvatarFile,
 	}
 }
 
@@ -77,18 +77,16 @@ func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 		return nil
 	}
 
-	resp := &api.SessionResponse{
+	return &api.SessionResponse{
 		Success: true,
 		UserData: api.User{
 			ID:        sr.UserData.ID,
 			Email:     sr.UserData.Email,
 			Username:  sr.UserData.Username,
-			AvatarUrl: sr.UserData.AvatarUrl,
+			AvatarURL: sr.UserData.AvatarURL,
 		},
 		StatusCode: sr.StatusCode,
 	}
-
-	return resp
 }
 
 func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsResponse {
@@ -96,7 +94,7 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 		return nil
 	}
 
-	var colls []api.Collection
+	var colls = make([]api.Collection, 0, len(cl.Collections))
 	for _, coll := range cl.Collections {
 		tempCol := api.Collection{ID: coll.ID, Title: coll.Title, Movies: coll.Movies}
 		colls = append(colls, tempCol)
@@ -119,23 +117,23 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		Title:            mv.Title,
 		FullDescription:  mv.FullDescription,
 		ShortDescription: mv.ShortDescription,
-		CardUrl:          mv.CardUrl,
-		AlbumUrl:         mv.AlbumUrl,
-		TitleUrl:         mv.TitleUrl,
+		CardURL:          mv.CardURL,
+		AlbumURL:         mv.AlbumURL,
+		TitleURL:         mv.TitleURL,
 		Rating:           mv.Rating,
 		ReleaseDate:      mv.ReleaseDate,
 		MovieType:        mv.MovieType,
 		Country:          mv.Country,
-		VideoUrl:         mv.VideoUrl,
+		VideoURL:         mv.VideoURL,
 		Director:         mv.Director.FullName(),
 	}
 
-	var actors []*api.ActorInfo
+	var actors = make([]*api.ActorInfo, 0, len(mv.Actors))
 	for _, actor := range mv.Actors {
 		tempSt := &api.ActorInfo{
 			ID:       actor.ID,
 			FullName: actor.FullName(),
-			PhotoUrl: actor.SmallPhotoUrl,
+			PhotoURL: actor.SmallPhotoURL,
 			Country:  actor.Country,
 		}
 
@@ -159,13 +157,13 @@ func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 		ID:        ac.ID,
 		FullName:  ac.FullName(),
 		Biography: ac.Biography,
-		PhotoUrl:  ac.BigPhotoUrl,
+		PhotoURL:  ac.BigPhotoURL,
 		Country:   ac.Country,
 		Movies:    ac.Movies,
 	}
 
 	if ac.Birthdate.Valid {
-		actor.Birthdate = ac.Birthdate.Time.Format("2006-01-02")
+		actor.Birthdate = ac.Birthdate.String
 	} else {
 		actor.Birthdate = ""
 	}

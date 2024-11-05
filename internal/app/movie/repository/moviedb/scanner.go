@@ -25,13 +25,13 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 			&mvInfo.Title,
 			&mvInfo.ShortDescription,
 			&mvInfo.FullDescription,
-			&mvInfo.CardUrl,
-			&mvInfo.AlbumUrl,
+			&mvInfo.CardURL,
+			&mvInfo.AlbumURL,
 			&mvInfo.Rating,
 			&mvInfo.ReleaseDate,
-			&mvInfo.VideoUrl,
+			&mvInfo.VideoURL,
 			&mvInfo.MovieType,
-			&mvInfo.TitleUrl,
+			&mvInfo.TitleURL,
 			&directorInfo.Name,
 			&directorInfo.Surname,
 			&mvInfo.Country,
@@ -68,7 +68,7 @@ func ScanActorsConnections(rows *sql.Rows) ([]*models.ActorInfo, error) {
 			&actorInfo.Name,
 			&actorInfo.Surname,
 			&actorInfo.Biography,
-			&actorInfo.SmallPhotoUrl,
+			&actorInfo.SmallPhotoURL,
 		)
 
 		if err != nil {
@@ -100,7 +100,7 @@ func ScanActorMoviesConnections(rows *sql.Rows) ([]*models.MovieShortInfo, error
 		err := rows.Scan(
 			&mvShortInfo.ID,
 			&mvShortInfo.Title,
-			&mvShortInfo.CardUrl,
+			&mvShortInfo.CardURL,
 			&mvShortInfo.Rating,
 			&mvShortInfo.ReleaseDate,
 			&mvShortInfo.Country,
