@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"time"
 
@@ -58,11 +60,21 @@ func PanicMiddleware(next http.Handler) http.Handler {
 }
 
 func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
+	var bodyCopy bytes.Buffer
+	
+	tee := io.TeeReader(r.Body, &bodyCopy)
+	r.Body = io.NopCloser(&bodyCopy)
+	bodyBytes, err := io.ReadAll(tee)
+	if err != nil {
+		log.Error().Err(err).Msg("invalid-request-body")
+	}
+
 	log.Info().
 		Str("method", r.Method).
 		Str("remote_addr", r.RemoteAddr).
 		Str("url", r.URL.Path).
 		Str("request-id", requestID).
+		Bytes("body", bodyBytes).
 		Dur("work_time", time.Since(start)).
 		Msg(msg)
 }

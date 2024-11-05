@@ -3,18 +3,17 @@ package validation
 import (
 	"regexp"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
 const (
-	passwordLength = 6
-	usernameLength = 8
+	passwordLength = 8
+	usernameLength = 6
 )
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-func ValidatePassword(pass, passConf string) *errors.CustomError {
+func ValidatePassword(pass, passConf string) *errVals.CustomError {
 	if pass != passConf {
 		return &errVals.ErrInvalidPasswordsMatchText
 	}
@@ -26,7 +25,7 @@ func ValidatePassword(pass, passConf string) *errors.CustomError {
 	return nil
 }
 
-func ValidateEmail(email string) *errors.CustomError {
+func ValidateEmail(email string) *errVals.CustomError {
 	if !emailRegex.MatchString(email) {
 		return &errVals.ErrInvalidEmailText
 	}
@@ -34,7 +33,7 @@ func ValidateEmail(email string) *errors.CustomError {
 	return nil
 }
 
-func ValidateUsername(username string) *errors.CustomError {
+func ValidateUsername(username string) *errVals.CustomError {
 	if len(username) < usernameLength {
 		return &errVals.ErrInvalidUsernameText
 	}
@@ -42,7 +41,7 @@ func ValidateUsername(username string) *errors.CustomError {
 	return nil
 }
 
-func ValidateCookie(cookie string) *errors.CustomError {
+func ValidateCookie(cookie string) *errVals.CustomError {
 	if len(cookie) == 0 {
 		return &errVals.ErrBrokenCookieText
 	}
