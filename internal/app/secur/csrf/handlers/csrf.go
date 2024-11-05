@@ -3,7 +3,7 @@ package handlers
 import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	token_gen "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/token"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -12,7 +12,8 @@ func GenerateCSRFTokenHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := token_gen.GenerateToken()
 	if err != nil {
 		http.Error(w, "Failed to generate CSRF token", http.StatusInternalServerError)
-		log.Println(errVals.ErrGenCSRF)
+		log.Info().Msg(errVals.ErrGenCSRF)
+
 		return
 	}
 
