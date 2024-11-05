@@ -7,12 +7,12 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	movieCollection "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/movie_collection"
+	movieCollectionDB "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/movie_collectiondb"
 	"github.com/rs/zerolog/log"
 )
 
-func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int) {
-	rows, err := movieCollection.Obtain(ctx, r.Database)
+func (r *MovieRepo) GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int) {
+	rows, err := movieCollectionDB.GetMovieCollections(ctx, r.Database)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
@@ -23,7 +23,7 @@ func (r *Repo) GetCollection(ctx context.Context) ([]models.Collection, *errVals
 		}
 	}()
 
-	collections, err := movieCollection.ScanConnections(rows)
+	collections, err := movieCollectionDB.ScanConnections(rows)
 	if err != nil {
 		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}

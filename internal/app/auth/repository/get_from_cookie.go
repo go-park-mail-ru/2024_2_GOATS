@@ -9,21 +9,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
+func (r *AuthRepo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
 	var userID string
 	logger := log.Ctx(ctx)
 
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)
 	if err != nil {
 		errMsg := fmt.Errorf("redis: cannot get cookie from redis - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("redis_get_error")
 
 		return "", errVals.NewErrorObj(
-			"no_cookie_matches",
+			errVals.ErrCookieMissmatchCode,
 			errVals.CustomError{Err: errMsg},
 		), http.StatusForbidden
 	}
 
-	logger.Info().Msg(fmt.Sprintf("redis: successfully get info from cookie - %s", cookie))
+	logger.Info().Msg("redis: successfully get info from cookie")
 	return userID, nil, http.StatusOK
 }

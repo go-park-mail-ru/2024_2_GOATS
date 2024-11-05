@@ -6,10 +6,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
-	"github.com/rs/zerolog"
 )
 
-func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router) {
+func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 
@@ -19,23 +18,30 @@ func SetupAuth(delLayer handlers.AuthImplementationInterface, router *mux.Router
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Router) {
+func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
+	movieRouter := apiMux.PathPrefix("/movies").Subrouter()
+	actorRouter := apiMux.PathPrefix("/actors").Subrouter()
 
 	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions)
+	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {
+func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.SessionMiddleware, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
-	userRouter.HandleFunc("/{id:[0-9]+}/update_profile", delLayer.UpdateProfile).Methods(http.MethodPost, http.MethodOptions)
-	userRouter.HandleFunc("/{id:[0-9]+}/update_password", delLayer.UpdatePassword).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/profile", delLayer.UpdateProfile).Methods(http.MethodPut, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/password", delLayer.UpdatePassword).Methods(http.MethodPut, http.MethodOptions)
+
+	userRouter.Use(authMW.AuthMiddleware)
 }
 
-func ActivateMiddlewares(mx *mux.Router, logger *zerolog.Logger) {
-	mx.Use(middleware.AccessLogMiddleware(logger))
-	mx.Use(middleware.PanicMiddleware(logger))
-	mx.Use(middleware.CorsMiddleware(logger))
+func UseCommonMiddlewares(mx *mux.Router) {
+	mx.Use(middleware.AccessLogMiddleware)
+	mx.Use(middleware.WithLogger)
+	mx.Use(middleware.PanicMiddleware)
+	mx.Use(middleware.CorsMiddleware)
 }

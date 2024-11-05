@@ -15,15 +15,15 @@ type RegisterRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	UserId     int    `json:"user_id"`
+	UserID     int    `json:"user_id"`
 	Email      string `json:"email"`
 	Username   string `json:"username"`
-	Avatar     multipart.File
+	AvatarFile multipart.File
 	AvatarName string
 }
 
 type UpdatePasswordRequest struct {
-	UserId               int    `json:"user_id"`
+	UserID               int    `json:"user_id"`
 	OldPassword          string `json:"oldPassword"`
 	Password             string `json:"password"`
 	PasswordConfirmation string `json:"passwordConfirmation"`
@@ -52,9 +52,58 @@ type AuthResponse struct {
 }
 
 type CollectionsResponse struct {
-	Success     bool                `json:"success"`
-	Collections []models.Collection `json:"collections"`
-	StatusCode  int                 `json:"-"`
+	Success     bool         `json:"success"`
+	Collections []Collection `json:"collections"`
+	StatusCode  int          `json:"-"`
+}
+
+type Collection struct {
+	ID     int                      `json:"id"`
+	Title  string                   `json:"title"`
+	Movies []*models.MovieShortInfo `json:"movies"`
+}
+
+type MovieResponse struct {
+	Success   bool       `json:"success"`
+	MovieInfo *MovieInfo `json:"movie_info"`
+}
+
+type MovieInfo struct {
+	ID               int          `json:"id"`
+	Title            string       `json:"title"`
+	FullDescription  string       `json:"full_description"`
+	ShortDescription string       `json:"short_description"`
+	CardURL          string       `json:"card_url"`
+	AlbumURL         string       `json:"album_url"`
+	TitleURL         string       `json:"title_url"`
+	Rating           float32      `json:"rating"`
+	ReleaseDate      string       `json:"release_date"`
+	MovieType        string       `json:"movie_type"`
+	Country          string       `json:"country"`
+	VideoURL         string       `json:"video_url"`
+	Director         string       `json:"director"`
+	Actors           []*ActorInfo `json:"actors_info"`
+}
+
+type ActorResponse struct {
+	Success   bool   `json:"success"`
+	ActorInfo *Actor `json:"actor_info"`
+}
+
+type ActorInfo struct {
+	ID       int    `json:"id"`
+	FullName string `json:"full_name"`
+	PhotoURL string `json:"photo_url"`
+	Country  string `json:"country"`
+}
+type Actor struct {
+	ID        int                      `json:"id"`
+	FullName  string                   `json:"full_name"`
+	Biography string                   `json:"biography"`
+	Birthdate string                   `json:"birthdate"`
+	PhotoURL  string                   `json:"photo_url"`
+	Country   string                   `json:"country"`
+	Movies    []*models.MovieShortInfo `json:"movies"`
 }
 
 type ErrorResponse struct {
@@ -64,8 +113,8 @@ type ErrorResponse struct {
 }
 
 type User struct {
-	Id        int    `json:"id"`
+	ID        int    `json:"id"`
 	Email     string `json:"email"`
 	Username  string `json:"username"`
-	AvatarUrl string `json:"avatar_url"`
+	AvatarURL string `json:"avatar_url"`
 }

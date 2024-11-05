@@ -4,14 +4,10 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
@@ -21,9 +17,18 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+const (
+	registerPath = "/api/auth/signup"
+	loginPath    = "/api/auth/login"
+	logoutPath   = "/api/auth/logout"
+	sessionPath  = "/api/auth/session"
 )
 
 func TestDelivery_Register(t *testing.T) {
+	ctx := testContext(t)
 	tests := []struct {
 		name         string
 		req          string
@@ -95,24 +100,26 @@ func TestDelivery_Register(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/signup"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
 			if !test.isValidation {
-				authSrv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Register)
+			r.HandleFunc(registerPath, handler.Register)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", path, bytes.NewBufferString(test.req))
+			req := httptest.NewRequest("POST", registerPath, bytes.NewBufferString(test.req))
 
 			r.ServeHTTP(w, req)
 
@@ -123,6 +130,8 @@ func TestDelivery_Register(t *testing.T) {
 }
 
 func TestDelivery_Login(t *testing.T) {
+	ctx := testContext(t)
+
 	tests := []struct {
 		name       string
 		req        string
@@ -160,22 +169,24 @@ func TestDelivery_Login(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/login"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
-			authSrv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			mAuthSrv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Login)
+			r.HandleFunc(loginPath, handler.Login)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", path, bytes.NewBufferString(test.req))
+			req := httptest.NewRequest("POST", loginPath, bytes.NewBufferString(test.req))
 
 			r.ServeHTTP(w, req)
 
@@ -186,6 +197,8 @@ func TestDelivery_Login(t *testing.T) {
 }
 
 func TestDelivery_Logout(t *testing.T) {
+	ctx := testContext(t)
+
 	tests := []struct {
 		name         string
 		resp         string
@@ -222,36 +235,37 @@ func TestDelivery_Logout(t *testing.T) {
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,
-			resp:         `{"success":false,"errors":[{"Code":"cookie_validation_error","Error":"Logout action: Invalid cookie err - broken cookie was given"}]}`,
+			resp:         `{"success":false,"errors":[{"Code":"auth_validation_error","Error":"logout action: Invalid cookie err - broken cookie was given"}]}`,
 		},
 		{
 			name:         "No cookie provided",
-			statusCode:   http.StatusForbidden,
+			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			noCookie:     true,
-			resp:         `{"success":false,"errors":[{"Code":"no_cookie_provided","Error":"Logout action: No cookie err - http: named cookie not present"}]}`,
+			resp:         `{"success":false,"errors":[{"Code":"auth_request_parse_error","Error":"logout action: No cookie err - http: named cookie not present"}]}`,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/logout"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Logout)
+			r.HandleFunc(logoutPath, handler.Logout)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", path, bytes.NewBufferString(""))
+			req := httptest.NewRequest("POST", logoutPath, bytes.NewBufferString(""))
 
 			if !test.isValidation {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				authSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			} else if test.emptyCookie {
 				req.Header.Set("Cookie", "session_id=")
 			}
@@ -265,6 +279,8 @@ func TestDelivery_Logout(t *testing.T) {
 }
 
 func TestDelivery_Session(t *testing.T) {
+	ctx := testContext(t)
+
 	tests := []struct {
 		name       string
 		mockReturn *models.SessionRespData
@@ -277,7 +293,7 @@ func TestDelivery_Session(t *testing.T) {
 			name: "Success",
 			mockReturn: &models.SessionRespData{
 				UserData: models.User{
-					Id:       1,
+					ID:       1,
 					Email:    "test@mail.ru",
 					Username: "Tester",
 				},
@@ -300,31 +316,33 @@ func TestDelivery_Session(t *testing.T) {
 		},
 		{
 			name:       "Forbidden",
-			resp:       `{"success":false,"errors":[{"Code":"no_cookie_provided","Error":"Session action: No cookie err - http: named cookie not present"}]}`,
+			resp:       `{"success":false,"errors":[{"Code":"auth_request_parse_error","Error":"session action: No cookie err - http: named cookie not present"}]}`,
 			statusCode: http.StatusForbidden,
 			noCookie:   true,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/session"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Session)
+			r.HandleFunc(sessionPath, handler.Session)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", path, bytes.NewBufferString(""))
+			req := httptest.NewRequest("GET", sessionPath, bytes.NewBufferString(""))
 
 			if !test.noCookie {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				authSrv.EXPECT().Session(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Session(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			r.ServeHTTP(w, req)
@@ -335,18 +353,11 @@ func TestDelivery_Session(t *testing.T) {
 	}
 }
 
-func testContext() context.Context {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
-	}
+func testContext(t *testing.T) context.Context {
+	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
 
-	cfg, err := config.New(zerolog.Logger{}, false)
-	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
-	}
+	cfg, err := config.New(true)
+	require.NoError(t, err, "failed to read config from auth handler_test")
 
-	ctx := config.WrapContext(context.Background(), cfg)
-
-	return ctx
+	return config.WrapContext(context.Background(), cfg)
 }

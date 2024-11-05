@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
-	Logger    zerolog.Logger
 }
 
 type Databases struct {
-	Postgres Postgres `yaml:"postgres"`
-	Redis    Redis    `yaml:"redis"`
+	Postgres     Postgres     `yaml:"postgres"`
+	Redis        Redis        `yaml:"redis"`
+	LocalStorage LocalStorage `yaml:"localStorage"`
+}
+
+type LocalStorage struct {
+	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
+	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
 }
 
 type Postgres struct {
@@ -45,7 +49,7 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
-func New(logger zerolog.Logger, isTest bool) (*Config, error) {
+func New(isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {
 		return nil, fmt.Errorf("config creation error: %w", err)
@@ -56,8 +60,6 @@ func New(logger zerolog.Logger, isTest bool) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal the config file: %w", err)
 	}
-
-	cfg.Logger = logger
 
 	return cfg, nil
 }

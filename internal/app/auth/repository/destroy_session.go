@@ -9,16 +9,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *Repo) DestroySession(ctx context.Context, cookie string) (*errVals.ErrorObj, int) {
+func (r *AuthRepo) DestroySession(ctx context.Context, cookie string) (*errVals.ErrorObj, int) {
 	logger := log.Ctx(ctx)
 	_, err := r.Redis.Del(ctx, cookie).Result()
 
 	if err != nil {
-		errMsg := fmt.Errorf("redis: failed to destroy session by cookie - %s. Error - %w", cookie, err)
-		logger.Error().Msg(errMsg.Error())
+		errMsg := fmt.Errorf("redis: failed to destroy session. Error - %w", err)
+		logger.Error().Err(errMsg).Msg("redis_destroy_error")
 		return errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errMsg}), http.StatusInternalServerError
 	}
 
-	logger.Info().Msg(fmt.Sprintf("redis: successfully destruct session by cookie - %s", cookie))
+	logger.Info().Msg("redis: successfully destroy session")
 	return nil, http.StatusOK
 }

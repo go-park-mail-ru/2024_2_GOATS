@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS movies CASCADE;
 DROP TABLE IF EXISTS actors CASCADE;
+DROP TABLE IF EXISTS directors CASCADE;
 DROP TABLE IF EXISTS movie_actors CASCADE;
 DROP TABLE IF EXISTS collections CASCADE;
 DROP TABLE IF EXISTS movie_collections CASCADE;
@@ -17,6 +18,12 @@ CREATE TABLE public.genres(
 );
 
 CREATE INDEX idx_genres_title ON public.genres(title);
+
+CREATE TABLE public.directors(
+  id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  first_name text NOT NULL,
+  second_name text NOT NULL
+);
 
 CREATE TABLE public.users(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -48,14 +55,17 @@ CREATE TYPE public.movie_type_enum AS ENUM ('film', 'serial');
 CREATE TABLE public.movies(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   title text NOT NULL,
-  description text NOT NULL,
+  short_description text NOT NULL,
+  long_description text NOT NULL,
   card_url text DEFAULT '',
   album_url text DEFAULT '',
+  title_url text DEFAULT '',
   release_date date NOT NULL,
   rating decimal(10,2) DEFAULT '0.0',
   movie_type MOVIE_TYPE_ENUM,
   video_url text DEFAULT '',
   country_id int REFERENCES public.countries(id),
+  director_id int REFERENCES public.directors(id),
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -69,9 +79,9 @@ CREATE TABLE public.actors(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   first_name text NOT NULL,
   second_name text NOT NULL,
-  patronymic text,
   country_id int REFERENCES public.countries(id),
-  photo_url text DEFAULT '',
+  small_photo_url text DEFAULT '',
+  big_photo_url text DEFAULT '',
   birthdate date,
   biography text DEFAULT ''
 );

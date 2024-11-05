@@ -23,7 +23,7 @@ type AuthService struct {
 	userRepository usrServ.UserRepositoryInterface
 }
 
-func NewService(authRepo AuthRepositoryInterface, usrRepo usrServ.UserRepositoryInterface) delivery.AuthServiceInterface {
+func NewAuthService(authRepo AuthRepositoryInterface, usrRepo usrServ.UserRepositoryInterface) delivery.AuthServiceInterface {
 	return &AuthService{
 		authRepository: authRepo,
 		userRepository: usrRepo,

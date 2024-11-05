@@ -11,12 +11,9 @@ func (s *MovieService) GetCollection(ctx context.Context) (*models.CollectionsRe
 	collections, err, code := s.movieRepository.GetCollection(ctx)
 
 	if err != nil {
-		errs := make([]errVals.ErrorObj, 1)
-		errs[0] = *err
-
 		return nil, &models.ErrorRespData{
 			StatusCode: code,
-			Errors:     errs,
+			Errors:     []errVals.ErrorObj{*err},
 		}
 	}
 

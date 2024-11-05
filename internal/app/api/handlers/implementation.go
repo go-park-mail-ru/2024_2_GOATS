@@ -4,19 +4,20 @@ import (
 	"net/http"
 )
 
-//go:generate mockgen -source=interface.go -destination=mocks/mock.go
-type MovieImplementationInterface interface {
+type MovieHandlerInterface interface {
 	GetCollections(w http.ResponseWriter, r *http.Request)
+	GetMovie(w http.ResponseWriter, r *http.Request)
+	GetActor(w http.ResponseWriter, r *http.Request)
 }
 
-type AuthImplementationInterface interface {
+type AuthHandlerInterface interface {
 	Register(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
 	Session(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
 }
 
-type UserImplementationInterface interface {
+type UserHandlerInterface interface {
 	UpdateProfile(w http.ResponseWriter, r *http.Request)
 	UpdatePassword(w http.ResponseWriter, r *http.Request)
 }

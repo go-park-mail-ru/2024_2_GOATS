@@ -11,32 +11,29 @@ import (
 )
 
 func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
-	strUserId, err, code := s.authRepository.GetFromCookie(ctx, cookie)
-	if err != nil || strUserId == "" {
+	strUserID, err, code := s.authRepository.GetFromCookie(ctx, cookie)
+	if err != nil || strUserID == "" {
 		return nil, &models.ErrorRespData{
 			Errors:     []errVals.ErrorObj{*err},
 			StatusCode: code,
 		}
 	}
 
-	usrId, convErr := strconv.Atoi(strUserId)
+	usrID, convErr := strconv.Atoi(strUserID)
 	if convErr != nil {
 		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
-		log.Ctx(ctx).Error().Msg(errMsg.Error())
+		log.Ctx(ctx).Error().Err(errMsg).Msg("covertion_error")
 
 		return nil, &models.ErrorRespData{
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj("convertion_error", errVals.CustomError{Err: errMsg})},
+			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrConvertionCode, errVals.CustomError{Err: errMsg})},
 			StatusCode: code,
 		}
 	}
 
-	user, sesErr, code := s.userRepository.UserById(ctx, usrId)
+	user, sesErr, code := s.userRepository.UserByID(ctx, usrID)
 	if sesErr != nil {
-		errs := make([]errVals.ErrorObj, 1)
-		errs[0] = *sesErr
-
 		return nil, &models.ErrorRespData{
-			Errors:     errs,
+			Errors:     []errVals.ErrorObj{*sesErr},
 			StatusCode: code,
 		}
 	}

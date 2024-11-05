@@ -1,71 +1,68 @@
 package middleware
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
-func AccessLogMiddleware(logger *zerolog.Logger) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			start := time.Now()
+func AccessLogMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		reqID := r.Header.Get("Req-ID")
+		if reqID == "" {
+			reqID = generateRequestID()
+		}
 
-			logger.Info().
-				Str("method", r.Method).
-				Str("remote_addr", r.RemoteAddr).
-				Str("url", r.URL.Path).
-				Dur("work_time", time.Since(start)).
-				Msg("accessLogMiddleware: END")
+		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
+		w.Header().Set("Req-ID", reqID)
+		logRequest(r, start, "accessLogMiddleware", reqID)
 
-			next.ServeHTTP(w, r)
-		})
-	}
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
-func CorsMiddleware(logger *zerolog.Logger) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+func CorsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-			if r.Method == http.MethodOptions {
-				logger.Info().Msg("corsMiddleware: PREFLIGHT END")
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 
-			if r.Method == http.MethodGet || r.Method == http.MethodPost {
-				w.Header().Set("Content-Type", "application/json")
-			}
+		w.Header().Set("Content-Type", "application/json")
 
-			logger.Info().Msg("corsMiddleware: END")
-
-			next.ServeHTTP(w, r)
-		})
-	}
+		next.ServeHTTP(w, r)
+	})
 }
 
-func PanicMiddleware(logger *zerolog.Logger) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func PanicMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				logger := log.Ctx(r.Context())
+				logger.Error().Msgf("panicMiddleware: Panic happend: %v", err)
+				http.Error(w, "Internal server error", 500)
+			}
+		}()
 
-			defer func() {
-				if err := recover(); err != nil {
-					logger.Error().Msg(fmt.Sprintf("panicMiddleware: Fail to recover err: %v", err))
-					http.Error(w, "Internal server error", 500)
-				}
-			}()
+		next.ServeHTTP(w, r)
+	})
+}
 
-			logger.Info().Msg("panicMiddleware: END")
-
-			next.ServeHTTP(w, r)
-		})
-	}
+func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
+	log.Info().
+		Str("method", r.Method).
+		Str("remote_addr", r.RemoteAddr).
+		Str("url", r.URL.Path).
+		Str("request-id", requestID).
+		Dur("work_time", time.Since(start)).
+		Msg(msg)
 }
