@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
@@ -54,7 +53,7 @@ func New(isTest bool) (*App, error) {
 	ctx := config.WrapContext(context.Background(), cfg)
 	ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	
+
 	database, err := db.SetupDatabase(ctxDBTimeout, cancel)
 	if err != nil {
 		return nil, fmt.Errorf("error initialize database: %w", err)
@@ -126,23 +125,39 @@ func (a *App) Run() {
 
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
-	log.Info().Msg("Starting graceful shutdown")
+	a.Logger.Info().Msg("Starting graceful shutdown")
 
 	var wg sync.WaitGroup
 	errChan := make(chan error, 2)
 
-	wg.Add(2)
+	shutdownFuncs := []func() error{
+		a.Database.Close,
+		a.Redis.Close,
+	}
 
-	go a.shutdownPostgres(&wg, errChan)
-	go a.shutdownRedis(&wg, errChan)
+	wg.Add(len(shutdownFuncs))
+
+	for _, shutdownFunc := range shutdownFuncs {
+		go func(shutdownFunc func() error) {
+			defer wg.Done()
+			if err := shutdownFunc(); err != nil {
+				errChan <- err
+			}
+		}(shutdownFunc)
+	}
 
 	wg.Wait()
 	close(errChan)
 
+	var errs []error
 	for err := range errChan {
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("shutdown errors: %v", errs)
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(a.Context, 5*time.Second)
@@ -151,33 +166,15 @@ func (a *App) GracefulShutdown() error {
 	if err := a.Server.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("failed to shut down HTTP server: %w", err)
 	}
-	log.Info().Msg("HTTP shut down")
+	a.Logger.Info().Msg("HTTP shut down")
 
 	select {
 	case <-shutdownCtx.Done():
-		log.Info().Msg("Graceful shutdown complete")
+		a.Logger.Info().Msg("Graceful shutdown complete")
 	default:
-		log.Info().Msg("Waiting for all goroutines to finish...")
+		a.Logger.Info().Msg("Waiting for all goroutines to finish...")
 		time.Sleep(500 * time.Millisecond)
 	}
 
 	return nil
-}
-
-func (a *App) shutdownPostgres(wg *sync.WaitGroup, errChan chan error) {
-	defer wg.Done()
-	if err := a.Database.Close(); err != nil {
-		errChan <- fmt.Errorf("failed to close database: %w", err)
-	} else {
-		log.Info().Msg("Postgres shut down")
-	}
-}
-
-func (a *App) shutdownRedis(wg *sync.WaitGroup, errChan chan error) {
-	defer wg.Done()
-	if err := a.Redis.Close(); err != nil {
-		errChan <- fmt.Errorf("failed to close redis: %w", err)
-	} else {
-		log.Info().Msg("Redis shut down")
-	}
 }
