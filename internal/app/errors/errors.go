@@ -24,6 +24,7 @@ const (
 	ErrInvalidPasswordCode = "invalid_password"
 	ErrUserNotFoundCode    = "user_not_found"
 	ErrInvalidUsernameCode = "invalid_username"
+	ErrGenCSRF                   = "Failed to generate CSRF token"
 )
 
 var (
