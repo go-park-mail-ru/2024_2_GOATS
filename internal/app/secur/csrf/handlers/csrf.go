@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-var store = sessions.NewCookieStore([]byte("secret-key")) // Этот ключ должен быть одинаковым
+var store = sessions.NewCookieStore([]byte("secret-key"))
 
 // GenerateCSRFTokenHandler создает CSRF-токен и сохраняет его в сессии
 func GenerateCSRFTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +23,13 @@ func GenerateCSRFTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
 		return
+	}
+
+	session.Options = &sessions.Options{
+		Path:     "/api",
+		MaxAge:   86400,
+		HttpOnly: true,
+		Secure:   false,
 	}
 
 	session.Values["csrf_token"] = token
