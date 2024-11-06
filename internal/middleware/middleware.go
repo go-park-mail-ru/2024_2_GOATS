@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/subtle"
+	"github.com/gorilla/sessions"
 	"io"
 	"net/http"
 	"time"
@@ -102,6 +103,9 @@ func XssMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+var store = sessions.NewCookieStore([]byte("secret-key")) // Этот ключ должен быть одинаковым
+
+// CsrfMiddleware проверяет CSRF токен из сессии и заголовка запроса
 func CsrfMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
@@ -109,14 +113,21 @@ func CsrfMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		cookie, err := r.Cookie("csrf_token")
+		session, err := store.Get(r, "session-name")
 		if err != nil {
+			http.Error(w, "Failed to get session", http.StatusInternalServerError)
+			return
+		}
+
+		token, ok := session.Values["csrf_token"].(string)
+
+		if !ok {
 			http.Error(w, "Forbidden - CSRF token missing", http.StatusForbidden)
 			return
 		}
 
 		csrfHeaderToken := r.Header.Get("X-CSRF-Token")
-		if subtle.ConstantTimeCompare([]byte(csrfHeaderToken), []byte(cookie.Value)) != 1 {
+		if subtle.ConstantTimeCompare([]byte(csrfHeaderToken), []byte(token)) != 1 {
 			http.Error(w, "Forbidden - CSRF token invalid", http.StatusForbidden)
 			return
 		}
