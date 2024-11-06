@@ -4,7 +4,6 @@ import (
 	token_gen "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/token"
 	"github.com/gorilla/sessions"
 	"github.com/rs/zerolog/log"
-	ll "log"
 	"net/http"
 )
 
@@ -13,9 +12,6 @@ var store = sessions.NewCookieStore([]byte("secret-key")) // Этот ключ �
 // GenerateCSRFTokenHandler создает CSRF-токен и сохраняет его в сессии
 func GenerateCSRFTokenHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := token_gen.GenerateToken()
-	ll.Println("token=", token)
-	ll.Println("token=", token)
-	ll.Println("token=", token)
 
 	if err != nil {
 		http.Error(w, "Failed to generate CSRF token", http.StatusInternalServerError)

@@ -3,7 +3,6 @@ package token
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"net/http"
 )
 
 // GenerateToken генерирует случайный CSRF-токен
@@ -14,14 +13,4 @@ func GenerateToken() (string, error) {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(token), nil
-}
-
-// SetCSRFTokenCookie сохраняет CSRF-токен в cookie
-func SetCSRFTokenCookie(w http.ResponseWriter, token string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:   "csrf_token",
-		Value:  token,
-		Path:   "/",
-		Secure: true, // Для прода
-	})
 }
