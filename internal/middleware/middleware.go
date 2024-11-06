@@ -104,7 +104,7 @@ func XssMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-var store = sessions.NewCookieStore([]byte("secret-key")) // Этот ключ должен быть одинаковым
+var store = sessions.NewCookieStore([]byte("secret-key"))
 
 // CsrfMiddleware проверяет CSRF токен из сессии и заголовка запроса
 func CsrfMiddleware(next http.Handler) http.Handler {
