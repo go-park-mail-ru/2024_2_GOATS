@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/room/ws/websocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/ws/websocket.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/service/service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,12 +27,12 @@
   <component name="GitRewordedCommitMessages">
     <option name="commitMessagesMapping">
       <RewordedCommitMessageMapping>
-        <option name="originalMessage" value="fix gitignore" />
-        <option name="rewordedMessage" value="fix gitignore" />
+        <option name="originalMessage" value="add joint viewing with division into tooms" />
+        <option name="rewordedMessage" value="add joint viewing with division into tooms" />
       </RewordedCommitMessageMapping>
     </option>
     <option name="currentCommit" value="1" />
-    <option name="onto" value="a47a3af85f86588674d4ff35d374d3f82839b89a" />
+    <option name="onto" value="b0e29d7827a3c87658c64ee2bc47300feccca868" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4

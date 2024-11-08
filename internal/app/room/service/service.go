@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -73,15 +72,16 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*models.
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", roomState)
 
-	movie, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.Id)
-	if errMovie != nil {
-		return nil, fmt.Errorf("errMovie = %+v", errMovie)
-	}
-	roomState.Movie = models.Movie{
-		Id:         movie.Id,
-		Title:      movie.Title,
-		TitleImage: movie.TitleUrl,
-		Video:      movie.VideoUrl,
+	//movie, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.Id)
+	//if errMovie != nil {
+	//	return nil, fmt.Errorf("errMovie = %+v", errMovie)
+	//}
+	roomState.Movie = models.MovieInfo{
+		Id:               24,
+		Title:            "Пеле: Рождение легенды",
+		TitleUrl:         "/static/movies/pele/logo.png",
+		ShortDescription: "Героическая история о начале карьеры лучшего футболиста XX века", //short_description
+		VideoUrl:         "/static/movies/pele/movie.mp4",                                   //video_url
 	}
 	return roomState, err
 }

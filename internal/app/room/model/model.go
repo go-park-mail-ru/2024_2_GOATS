@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"mime/multipart"
+	"time"
 )
 
 type Room struct {
@@ -13,27 +14,58 @@ type Room struct {
 	AdminID string `json:"admin_id"`
 }
 
-type Movie struct {
-	Id               int    `json:"id"`
-	Title            string `json:"title"`
-	TitleImage       string `json:"titleImage"`
-	ShortDescription string `json:"shortDescription"`
-	LongDescription  string `json:"longDescription"`
-	Image            string `json:"image"`
-	Rating           int    `json:"rating"`
-	ReleaseDate      string `json:"releaseDate"`
-	Country          string `json:"country"`
-	Director         string `json:"director"`
-	IsSerial         bool   `json:"isSerial"`
-	Video            string `json:"video"`
+//type Movie struct {
+//	Id               int    `json:"id"`
+//	Title            string `json:"title"`
+//	TitleImage       string `json:"titleImage"`
+//	ShortDescription string `json:"short_description"`
+//	LongDescription  string `json:"full_description"`
+//	Image            string `json:"image"`
+//	Rating           int    `json:"rating"`
+//	ReleaseDate      string `json:"releaseDate"`
+//	Country          string `json:"country"`
+//	Director         string `json:"director"`
+//	IsSerial         bool   `json:"isSerial"`
+//	Video            string `json:"video"`
+//}
+
+// ////////////Movie теперь такой
+type MovieInfo struct {
+	Id               int          `json:"id"`
+	Title            string       `json:"title"`
+	ShortDescription string       `json:"short_description"`
+	FullDescription  string       `json:"full_description"`
+	CardUrl          string       `json:"card_url"`
+	AlbumUrl         string       `json:"album_url"`
+	TitleUrl         string       `json:"title_url"`
+	Rating           float32      `json:"rating"`
+	ReleaseDate      time.Time    `json:"release_date"`
+	MovieType        string       `json:"movie_type"`
+	Country          string       `json:"country"`
+	VideoUrl         string       `json:"video_url"`
+	Actors           []*StaffInfo `json:"actors_info"`
+	Directors        []*StaffInfo `json:"directors_info"`
+}
+
+type StaffInfo struct {
+	Id            int          `json:"id"`
+	Name          string       `json:"name"`
+	Surname       string       `json:"surname"`
+	Patronymic    string       `json:"patronymic"`
+	Biography     string       `json:"biography"`
+	Post          string       `json:"post"`
+	Birthdate     sql.NullTime `json:"birthdate"`
+	SmallPhotoUrl string       `json:"small_photo_url"`
+	BigPhotoUrl   string       `json:"big_photo_url"`
+	Country       string       `json:"country"`
 }
 
 type RoomState struct {
-	Id       string  `json:"id"`
-	Status   string  `json:"status"` // paused, playing
-	TimeCode float64 `json:"time_code"`
-	Movie    Movie   `json:"movie"`
-	Message  string  `json:"message"`
+	Id       string    `json:"id"`
+	Status   string    `json:"status"` // paused, playing
+	TimeCode float64   `json:"time_code"`
+	Movie    MovieInfo `json:"movie_info"`
+	Message  string    `json:"message"`
 }
 
 type Action struct {
