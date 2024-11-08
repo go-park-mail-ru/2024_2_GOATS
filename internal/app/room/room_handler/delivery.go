@@ -3,9 +3,6 @@ package delivery
 import (
 	"context"
 	"encoding/json"
-	"log"
-	"net/http"
-
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
@@ -13,6 +10,8 @@ import (
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
+	"log"
+	"net/http"
 )
 
 type RoomServiceInterface interface {
@@ -42,14 +41,11 @@ func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHand
 
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var room models.RoomState
-	log.Println("room", room)
 	if err := json.NewDecoder(r.Body).Decode(&room); err != nil {
-		log.Println("err", err)
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
-	log.Println("room", room)
 	createdRoom, err := h.roomService.CreateRoom(r.Context(), &room)
 	if err != nil {
 		http.Error(w, "Failed to create room", http.StatusInternalServerError)
@@ -74,7 +70,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	sessionResp, errResp := converter.ToApiSessionResponseForRoom(sessionSrvResp), converter.ToApiErrorResponseForRoom(errSrvResp)
 
 	if errResp != nil {
-		log.Println("errResp", errResp)
 		api.Response(w, errResp.StatusCode, errResp)
 		return
 	}
@@ -98,59 +93,48 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
 		return
 	}
+
 	defer conn.Close()
 
-	// Регистрация клиента в Hub
-	h.roomHub.Register <- conn
+	// Регистрация клиента в комнате
+	h.roomHub.RegisterClient(conn, roomID)
 	h.roomHub.Users[conn] = user
 
-	// Получение состояния комнаты
 	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
-	log.Println("roomStateroomStateroomStateroomState:", roomState)
-
 	if err != nil {
 		log.Println("Failed to get room state from Redis:", err)
 	} else {
-		// Отправка текущего состояния новому пользователю
 		if err := conn.WriteJSON(roomState); err != nil {
 			log.Println("Failed to send room state:", err)
 			return
 		}
 	}
 
-	h.broadcastUserList(conn)
+	h.broadcastUserList(conn, roomID)
 
 	for {
 		var action models.Action
 		if err := conn.ReadJSON(&action); err != nil {
-			// Если ошибка — отключаем клиента
-			log.Println("Unregister action:", action.TimeCode)
-			log.Println("Unregister action:", action.Name)
 			h.roomHub.Unregister <- conn
-			log.Println("Unregister:", action.TimeCode)
 			delete(h.roomHub.Users, conn)
-			h.broadcastUserList(conn)
+			h.broadcastUserList(conn, roomID)
 			break
 		}
-		log.Println("Received action:", action.TimeCode)
-		log.Println("Received action:", action.Name)
-		// Отправляем сообщение в Hub для рассылки всем клиентам
-		h.roomHub.Broadcast <- ws.BroadcastMessage{Action: action, ExcludeConn: conn}
-		// Обработка действия и обновление состояния комнаты
+
+		h.roomHub.Broadcast <- ws.BroadcastMessage{Action: action, RoomID: roomID, ExcludeConn: conn}
 		if err := h.roomService.HandleAction(r.Context(), roomID, action); err != nil {
 			log.Println("Error handling action:", err)
 		}
 	}
 }
 
-func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn) {
+func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
 	userList := make([]models.User, 0, len(h.roomHub.Users))
 	for _, user := range h.roomHub.Users {
 		userList = append(userList, user)
 	}
-	log.Println("broadcastUserList:", userList)
 
-	for conn := range h.roomHub.Clients {
+	for conn := range h.roomHub.GetClients(roomID) {
 		if err := conn.WriteJSON(userList); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)

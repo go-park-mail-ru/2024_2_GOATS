@@ -48,8 +48,8 @@ func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationIn
 }
 
 func ActivateMiddlewares(mx *mux.Router) {
-	mx.Use(middleware.CsrfMiddleware())
-	mx.Use(middleware.XssMiddleware)
+	//mx.Use(middleware.CsrfMiddleware())
+	//mx.Use(middleware.XssMiddleware)
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
