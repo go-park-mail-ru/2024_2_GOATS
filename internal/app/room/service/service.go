@@ -63,9 +63,9 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 	case "timer":
 		roomState.TimeCode = action.TimeCode
 	case "message":
-		roomState.Message.Avatar = action.Message.Avatar
-		roomState.Message.Text = action.Message.Text
-		roomState.Message.Sender = action.Message.Sender
+		roomState.Message = action.Message
+		//roomState.Message.Text = action.Message.Text
+		//roomState.Message.Sender = action.Message.Sender
 	}
 
 	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
