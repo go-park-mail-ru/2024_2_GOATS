@@ -174,11 +174,11 @@ func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID stri
 
 	// Отправляем список пользователей всем подключенным клиентам в комнате
 	for conn := range h.roomHub.GetClients(roomID) {
-		if conn != excludeConn { // исключаем соединение, не нуждающееся в обновлении
-			if err := conn.WriteJSON(userList); err != nil {
-				h.roomHub.Unregister <- conn
-				delete(h.roomHub.Users, conn)
-			}
+		//if conn != excludeConn { // исключаем соединение, не нуждающееся в обновлении
+		if err := conn.WriteJSON(userList); err != nil {
+			h.roomHub.Unregister <- conn
+			delete(h.roomHub.Users, conn)
 		}
+		//}
 	}
 }
