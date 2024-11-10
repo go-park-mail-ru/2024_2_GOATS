@@ -64,7 +64,7 @@ type RoomState struct {
 	Id       string    `json:"id"`
 	Status   string    `json:"status"` // paused, playing
 	TimeCode float64   `json:"time_code"`
-	Movie    MovieInfo `json:"movie_info"`
+	Movie    MovieInfo `json:"movie"`
 	Message  string    `json:"message"`
 }
 
