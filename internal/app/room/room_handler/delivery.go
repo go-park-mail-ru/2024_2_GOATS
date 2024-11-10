@@ -77,8 +77,8 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	user := models.User{
 		Id:        sessionResp.UserData.Id,
 		AvatarUrl: sessionResp.UserData.AvatarUrl,
-		Username:  sessionResp.UserData.Email,
-		Email:     sessionResp.UserData.Username,
+		Username:  sessionResp.UserData.Username,
+		Email:     sessionResp.UserData.Email,
 	}
 
 	roomID := r.URL.Query().Get("room_id")
