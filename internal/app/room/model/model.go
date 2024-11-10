@@ -65,13 +65,23 @@ type RoomState struct {
 	Status   string    `json:"status"` // paused, playing
 	TimeCode float64   `json:"time_code"`
 	Movie    MovieInfo `json:"movie"`
-	Message  string    `json:"message"`
+	Message  Msg       `json:"message"`
 }
 
 type Action struct {
 	Name     string  `json:"name"` // pause, play, rewind
 	TimeCode float64 `json:"time_code"`
-	Message  string  `json:"message"`
+	Message  Msg     `json:"message"`
+}
+
+//	type ActionMsg struct {
+//		Name     string  `json:"name"` // pause, play, rewind
+//		Msg  string  `json:"message"`
+//	}
+type Msg struct {
+	Text   string  `json:"text"` // pause, play, rewind
+	Sender float64 `json:"sender"`
+	Avatar string  `json:"avatar"`
 }
 
 type User struct {

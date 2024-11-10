@@ -128,16 +128,37 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
+//	userList := make([]models.User, 0, len(h.roomHub.Users))
+//	for _, user := range h.roomHub.Users {
+//		userList = append(userList, user)
+//	}
+//
+//	for conn := range h.roomHub.GetClients(roomID) {
+//		if err := conn.WriteJSON(userList); err != nil {
+//			h.roomHub.Unregister <- conn
+//			delete(h.roomHub.Users, conn)
+//		}
+//	}
+//}
+
 func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
-	userList := make([]models.User, 0, len(h.roomHub.Users))
-	for _, user := range h.roomHub.Users {
-		userList = append(userList, user)
+	// Получаем пользователей, которые находятся только в указанной комнате
+	userList := make([]models.User, 0)
+	for conn := range h.roomHub.GetClients(roomID) {
+		// Извлекаем пользователя, связанного с каждым соединением, если он существует
+		if user, ok := h.roomHub.Users[conn]; ok {
+			userList = append(userList, user)
+		}
 	}
 
+	// Рассылаем обновленный список пользователей всем клиентам в указанной комнате
 	for conn := range h.roomHub.GetClients(roomID) {
+		//if conn != excludeConn { // исключаем отправителя
 		if err := conn.WriteJSON(userList); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)
 		}
+		//}
 	}
 }
