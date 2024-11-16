@@ -5,17 +5,21 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
@@ -34,9 +38,9 @@ import (
 type App struct {
 	Database          *sql.DB
 	Redis             *redis.Client
-	Server            *http.Server
-	Mux               *mux.Router
+	Config            *config.Config
 	Logger            *zerolog.Logger
+	Server            *http.Server
 	AcceptConnections bool
 }
 
@@ -61,15 +65,38 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
-	repoUser := userRepo.NewUserRepository(database)
+	return &App{
+		Database: database,
+		Redis:    rdb,
+		Config:   cfg,
+		Logger:   &logger,
+	}, nil
+}
+
+func (a *App) Run() {
+	ctx := config.WrapContext(context.Background(), a.Config)
+
+	repoUser := userRepo.NewUserRepository(a.Database)
 	srvUser := userServ.NewUserService(repoUser)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
 
-	repoAuth := authRepo.NewAuthRepository(database, rdb)
-	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
-	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
+	grpcConn, err := grpc.NewClient(
+		"127.0.0.1:8081",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
 
-	repoMov := movieRepo.NewMovieRepository(database)
+	defer grpcConn.Close()
+
+	sessManager := auth.NewSessionRPCClient(grpcConn)
+
+	repoAuth := authRepo.NewAuthRepository(a.Database, a.Redis)
+	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
+	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser, sessManager)
+
+	repoMov := movieRepo.NewMovieRepository(a.Database)
 	srvMov := movieServ.NewMovieService(repoMov)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
@@ -81,28 +108,19 @@ func New(isTest bool) (*App, error) {
 
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)
+	ctxValues := config.FromContext(ctx)
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
+		Addr:         fmt.Sprintf(":%d", ctxValues.Listener.Port),
 		Handler:      mx,
-		ReadTimeout:  cfg.Listener.Timeout,
-		WriteTimeout: cfg.Listener.Timeout,
-		IdleTimeout:  cfg.Listener.IdleTimeout,
+		ReadTimeout:  ctxValues.Listener.Timeout,
+		WriteTimeout: ctxValues.Listener.Timeout,
+		IdleTimeout:  ctxValues.Listener.IdleTimeout,
 	}
 
-	return &App{
-		Database: database,
-		Redis:    rdb,
-		Server:   srv,
-		Logger:   &logger,
-		Mux:      mx,
-	}, nil
-}
+	mx.Use(a.AppReadyMiddleware)
 
-func (a *App) Run() {
-	a.Mux.Use(a.AppReadyMiddleware)
-
-	a.Logger.Info().Msgf("Server is listening: %s", a.Server.Addr)
+	a.Logger.Info().Msgf("Server is listening: %s", srv.Addr)
 
 	// Not ready yet
 	defer func() {
@@ -112,7 +130,7 @@ func (a *App) Run() {
 	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			a.Logger.Info().Msg("server closed under request")
 		} else {

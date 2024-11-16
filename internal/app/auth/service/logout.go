@@ -3,16 +3,16 @@ package service
 import (
 	"context"
 
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (s *AuthService) Logout(ctx context.Context, cookie string) (*models.AuthRespData, *errVals.ServiceError) {
-	err := s.authRepository.DestroySession(ctx, cookie)
+func (s *AuthService) Logout(ctx context.Context, cookie string) *errVals.ServiceError {
+	_, err := s.authMS.DestroySession(ctx, &auth.DestroySessionRequest{Cookie: cookie})
 
 	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		// return errVals.ToServiceErrorFromRepo(err)
 	}
 
-	return &models.AuthRespData{}, nil
+	return nil
 }

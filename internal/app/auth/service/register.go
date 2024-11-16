@@ -2,30 +2,40 @@ package service
 
 import (
 	"context"
+	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/converter"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
 
 func (s *AuthService) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *errVals.ServiceError) {
-	usr, err := s.userRepository.CreateUser(ctx, converter.ConvertToRepoRegister(registerData))
+	createResp, err := s.userMS.Create(ctx, &user.CreateUserRequest{
+		Email:                registerData.Email,
+		Username:             registerData.Username,
+		Password:             registerData.Password,
+		PasswordConfirmation: registerData.PasswordConfirmation,
+	})
+
 	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		// return nil, errVals.ToServiceErrorFromRepo(err)
 	}
 
-	token, errVal := cookie.GenerateToken(ctx, usr.ID)
-	if errVal != nil {
-		return nil, errVals.NewServiceError(errVals.ErrGenerateTokenCode, errVals.NewCustomError(errVal.Error()))
-	}
+	resp, msErr := s.authMS.CreateSession(ctx, &auth.CreateSessionRequest{UserID: createResp.ID})
 
-	ck, errCk := s.authRepository.SetCookie(ctx, token)
-	if errCk != nil {
-		return nil, errVals.ToServiceErrorFromRepo(errCk)
+	if msErr != nil {
+		// return nil, errVals.ToServiceErrorFromRepo(msErr)
 	}
 
 	return &models.AuthRespData{
-		NewCookie: ck,
+		NewCookie: &models.CookieData{
+			Name: resp.Name,
+			Token: &models.Token{
+				UserID:  int(createResp.ID),
+				TokenID: resp.Cookie,
+				Expiry:  time.Unix(resp.MaxAge, 0),
+			},
+		},
 	}, nil
 }

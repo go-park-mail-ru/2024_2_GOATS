@@ -2,34 +2,32 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/rs/zerolog/log"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
 
 func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *errVals.ServiceError) {
-	strUserID, err := s.authRepository.GetFromCookie(ctx, cookie)
-	if err != nil || strUserID == "" {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+	aMsResp, msErr := s.authMS.Session(ctx, &auth.GetSessionRequest{Cookie: cookie})
+
+	if msErr != nil || aMsResp.UserID != 0 {
+		// return nil, errVals.ToServiceErrorFromRepo(msErr)
 	}
 
-	usrID, convErr := strconv.Atoi(strUserID)
-	if convErr != nil {
-		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
-		log.Ctx(ctx).Error().Err(errMsg).Msg("covertion_error")
-
-		return nil, errVals.NewServiceError(errVals.ErrTransformationCode, errVals.NewCustomError(errMsg.Error()))
-	}
-
-	user, sesErr := s.userRepository.UserByID(ctx, usrID)
-	if sesErr != nil {
-		return nil, errVals.ToServiceErrorFromRepo(sesErr)
+	usr, err := s.userMS.FindByID(ctx, &user.ID{ID: aMsResp.UserID})
+	if err != nil {
+		// return nil, errVals.ToServiceErrorFromRepo(err)
 	}
 
 	return &models.SessionRespData{
-		UserData: *user,
+		UserData: models.User{
+			ID:         int(usr.UserID),
+			Email:      usr.Email,
+			Username:   usr.Username,
+			AvatarURL:  usr.AvatarURL,
+			AvatarName: usr.AvatarName,
+		},
 	}, nil
 }

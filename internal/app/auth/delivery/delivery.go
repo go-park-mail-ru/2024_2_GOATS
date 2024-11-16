@@ -12,5 +12,5 @@ type AuthServiceInterface interface {
 	Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *errVals.ServiceError)
 	Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *errVals.ServiceError)
 	Session(ctx context.Context, cookie string) (*models.SessionRespData, *errVals.ServiceError)
-	Logout(ctx context.Context, cookie string) (*models.AuthRespData, *errVals.ServiceError)
+	Logout(ctx context.Context, cookie string) *errVals.ServiceError
 }

@@ -59,9 +59,8 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logoutSrvResp, errSrvResp := a.authService.Logout(r.Context(), ck.Value)
-
-	logoutResp, errResp := converter.ToApiAuthResponse(logoutSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
+	errSrvResp := a.authService.Logout(r.Context(), ck.Value)
+	errResp := errVals.ToDeliveryErrorFromService(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to logout")
 		logger.Error().Err(errMsg).Interface("logoutResp", errResp).Msg("request_failed")
@@ -71,9 +70,9 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, preparedExpiredCookie())
-	logger.Info().Interface("logoutResp", logoutResp).Msg("Logout success")
+	logger.Info().Msg("Logout success")
 
-	api.Response(r.Context(), w, http.StatusOK, logoutResp)
+	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
 func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +162,13 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	// usrID, err := a.authMS.Session(r.Context(), &auth.GetSessionRequest{Cookie: ck.Value})
+	// if err != nil {
+	// 	return
+	// }
+
+	// usrData, err := a.userMS.GetUserInfo(ctx, usrID)
 
 	sessionSrvResp, errSrvResp := a.authService.Session(r.Context(), ck.Value)
 
