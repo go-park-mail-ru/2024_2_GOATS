@@ -21,12 +21,13 @@ func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 
 func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
-	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 	movieRouter := apiMux.PathPrefix("/movies").Subrouter()
 	actorRouter := apiMux.PathPrefix("/actors").Subrouter()
+	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 
 	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
 	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/genres", delLayer.GetByGenre).Methods(http.MethodGet, http.MethodOptions)
 	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
 }
 
@@ -36,6 +37,8 @@ func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.Sessio
 
 	userRouter.HandleFunc("/{id:[0-9]+}/profile", delLayer.UpdateProfile).Methods(http.MethodPut, http.MethodOptions)
 	userRouter.HandleFunc("/{id:[0-9]+}/password", delLayer.UpdatePassword).Methods(http.MethodPut, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/favorites", delLayer.GetFavorites).Methods(http.MethodGet, http.MethodOptions)
+	userRouter.HandleFunc("/favorites", delLayer.Favorites).Methods(http.MethodPost, http.MethodDelete, http.MethodOptions)
 
 	userRouter.Use(authMW.AuthMiddleware)
 }

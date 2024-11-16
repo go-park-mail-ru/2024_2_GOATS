@@ -24,10 +24,21 @@ const (
 			movies.title_url,
 			directors.first_name,
 			directors.second_name,
-			countries.title
+			countries.title,
+			episodes.id,
+   		episodes.title,
+   		episodes.description,
+   		seasons.season_number,
+   		episodes.episode_number,
+   		episodes.release_date,
+   		episodes.rating,
+   		episodes.preview_url,
+   		episodes.video_url
 		FROM movies
 		JOIN directors ON directors.id = movies.director_id
 		JOIN countries ON countries.id = movies.country_id
+		LEFT JOIN seasons ON seasons.movie_id = movies.id AND movies.movie_type = 'serial'
+		LEFT JOIN episodes ON seasons.id = episodes.season_id AND movies.movie_type = 'serial'
 		WHERE movies.id = $1
 	`
 

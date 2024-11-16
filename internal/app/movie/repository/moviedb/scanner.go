@@ -5,12 +5,14 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/converter"
 	"github.com/rs/zerolog/log"
 )
 
 func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	mvInfo := &models.MovieInfo{}
 	directorInfo := &models.DirectorInfo{}
+	seasons := make(map[int]models.Season)
 
 	defer func() {
 		if err := rows.Close(); err != nil {
@@ -20,6 +22,9 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	}()
 
 	for rows.Next() {
+		var seasonNumber sql.NullInt64
+		episode := &models.DBEpisode{}
+
 		err := rows.Scan(
 			&mvInfo.ID,
 			&mvInfo.Title,
@@ -35,10 +40,31 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 			&directorInfo.Name,
 			&directorInfo.Surname,
 			&mvInfo.Country,
+			&episode.ID,
+			&episode.Title,
+			&episode.Description,
+			&seasonNumber,
+			&episode.EpisodeNumber,
+			&episode.ReleaseDate,
+			&episode.Rating,
+			&episode.PreviewURL,
+			&episode.VideoURL,
 		)
 
+		if episode.ID.Valid && seasonNumber.Valid {
+			sn := int(seasonNumber.Int64)
+			if _, exists := seasons[sn]; !exists {
+				seasons[sn] = models.Season{SeasonNumber: sn, Episodes: []*models.Episode{}}
+			}
+
+			season := seasons[sn]
+			season.Episodes = append(season.Episodes, converter.ToRepoEpisodeFromDB(episode))
+
+			seasons[sn] = season
+		}
+
 		if err != nil {
-			errMsg := fmt.Errorf("error while scanning actors info: %w", err)
+			errMsg := fmt.Errorf("error while scanning movies info: %w", err)
 			log.Error().Err(errMsg).Msg(errMsg.Error())
 
 			return nil, errMsg
@@ -46,6 +72,12 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	}
 
 	mvInfo.Director = directorInfo
+	seasRes := make([]*models.Season, 0, len(seasons))
+	for _, season := range seasons {
+		seasRes = append(seasRes, &season)
+	}
+
+	mvInfo.Seasons = seasRes
 
 	return mvInfo, nil
 }

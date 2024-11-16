@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
+	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -25,22 +26,46 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 	}
 }
 
+func (m *MovieHandler) GetByGenre(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+	genre := r.URL.Query().Get("genre")
+
+	resp, errServResp := m.movieService.GetByGenre(r.Context(), genre)
+	if errServResp != nil {
+		errResp := errVals.ToDeliveryErrorFromService(errServResp)
+		errMsg := errors.New("failed to get movies by genre")
+		logger.Error().Err(errMsg).Interface("byGenreResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Interface("byGenreResp", resp).Msg("byGenre success")
+
+	api.Response(r.Context(), w, http.StatusOK, resp)
+}
+
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
-	collectionsServResp, errServResp := m.movieService.GetCollection(r.Context())
-	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), converter.ToApiErrorResponse(errServResp)
+	filter := r.URL.Query().Get("filter")
+	if filter != "" {
+		logger.Info().Str("filter", filter).Msg("with_filter")
+	}
+
+	collectionsServResp, errServResp := m.movieService.GetCollection(r.Context(), filter)
+	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to get collections")
 		logger.Error().Err(errMsg).Interface("getCollectionsResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
 
 	logger.Info().Interface("getCollectionsResp", collectionsResp).Msg("getCollections success")
 
-	api.Response(r.Context(), w, collectionsResp.StatusCode, collectionsResp)
+	api.Response(r.Context(), w, http.StatusOK, collectionsResp)
 }
 
 func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
@@ -55,12 +80,12 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	movieServResp, errServResp := m.movieService.GetMovie(r.Context(), mvID)
-	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), converter.ToApiErrorResponse(errServResp)
+	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to get movie")
 		logger.Error().Err(errMsg).Interface("getMovieResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
@@ -82,12 +107,12 @@ func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	actorServResp, errServResp := m.movieService.GetActor(r.Context(), actorID)
-	actorResp, errResp := converter.ToApiGetActorResponse(actorServResp), converter.ToApiErrorResponse(errServResp)
+	actorResp, errResp := converter.ToApiGetActorResponse(actorServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to getActor")
 		logger.Error().Err(errMsg).Interface("actorResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}

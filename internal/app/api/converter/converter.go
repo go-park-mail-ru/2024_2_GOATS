@@ -49,26 +49,21 @@ func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 	}
 }
 
+func ToServFavData(fr *api.FavReq) *models.Favorite {
+	return &models.Favorite{
+		UserID:  fr.UserID,
+		MovieID: fr.MovieID,
+	}
+}
+
 func ToApiAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
 	if ld == nil {
 		return nil
 	}
 
 	return &api.AuthResponse{
-		Success:    true,
-		NewCookie:  ld.NewCookie,
-		StatusCode: ld.StatusCode,
-	}
-}
-
-func ToApiUpdateUserResponse(ud *models.UpdateUserRespData) *api.UpdateUserResponse {
-	if ud == nil {
-		return nil
-	}
-
-	return &api.UpdateUserResponse{
-		Success:    true,
-		StatusCode: ud.StatusCode,
+		Success:   true,
+		NewCookie: ld.NewCookie,
 	}
 }
 
@@ -85,7 +80,6 @@ func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 			Username:  sr.UserData.Username,
 			AvatarURL: sr.UserData.AvatarURL,
 		},
-		StatusCode: sr.StatusCode,
 	}
 }
 
@@ -103,7 +97,6 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 	return &api.CollectionsResponse{
 		Success:     true,
 		Collections: colls,
-		StatusCode:  cl.StatusCode,
 	}
 }
 
@@ -126,6 +119,7 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		Country:          mv.Country,
 		VideoURL:         mv.VideoURL,
 		Director:         mv.Director.FullName(),
+		Seasons:          mv.Seasons,
 	}
 
 	var actors = make([]*api.ActorInfo, 0, len(mv.Actors))
@@ -171,17 +165,5 @@ func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 	return &api.ActorResponse{
 		Success:   true,
 		ActorInfo: actor,
-	}
-}
-
-func ToApiErrorResponse(e *models.ErrorRespData) *api.ErrorResponse {
-	if e == nil {
-		return nil
-	}
-
-	return &api.ErrorResponse{
-		Success:    false,
-		StatusCode: e.StatusCode,
-		Errors:     e.Errors,
 	}
 }

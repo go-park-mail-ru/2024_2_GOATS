@@ -3,7 +3,6 @@ package api
 import (
 	"mime/multipart"
 
-	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
@@ -35,26 +34,18 @@ type LoginRequest struct {
 	Cookie   string `json:"-"`
 }
 type SessionResponse struct {
-	Success    bool `json:"success"`
-	UserData   User `json:"user_data"`
-	StatusCode int  `json:"-"`
-}
-
-type UpdateUserResponse struct {
-	Success    bool `json:"success"`
-	StatusCode int  `json:"-"`
+	Success  bool `json:"success"`
+	UserData User `json:"user_data"`
 }
 
 type AuthResponse struct {
-	Success    bool               `json:"success"`
-	NewCookie  *models.CookieData `json:"-"`
-	StatusCode int                `json:"-"`
+	Success   bool               `json:"success"`
+	NewCookie *models.CookieData `json:"-"`
 }
 
 type CollectionsResponse struct {
 	Success     bool         `json:"success"`
 	Collections []Collection `json:"collections"`
-	StatusCode  int          `json:"-"`
 }
 
 type Collection struct {
@@ -69,20 +60,21 @@ type MovieResponse struct {
 }
 
 type MovieInfo struct {
-	ID               int          `json:"id"`
-	Title            string       `json:"title"`
-	FullDescription  string       `json:"full_description"`
-	ShortDescription string       `json:"short_description"`
-	CardURL          string       `json:"card_url"`
-	AlbumURL         string       `json:"album_url"`
-	TitleURL         string       `json:"title_url"`
-	Rating           float32      `json:"rating"`
-	ReleaseDate      string       `json:"release_date"`
-	MovieType        string       `json:"movie_type"`
-	Country          string       `json:"country"`
-	VideoURL         string       `json:"video_url"`
-	Director         string       `json:"director"`
-	Actors           []*ActorInfo `json:"actors_info"`
+	ID               int              `json:"id"`
+	Title            string           `json:"title"`
+	FullDescription  string           `json:"full_description"`
+	ShortDescription string           `json:"short_description"`
+	CardURL          string           `json:"card_url"`
+	AlbumURL         string           `json:"album_url"`
+	TitleURL         string           `json:"title_url"`
+	Rating           float32          `json:"rating"`
+	ReleaseDate      string           `json:"release_date"`
+	MovieType        string           `json:"movie_type"`
+	Country          string           `json:"country"`
+	VideoURL         string           `json:"video_url"`
+	Director         string           `json:"director"`
+	Actors           []*ActorInfo     `json:"actors_info"`
+	Seasons          []*models.Season `json:"seasons"`
 }
 
 type ActorResponse struct {
@@ -106,15 +98,14 @@ type Actor struct {
 	Movies    []*models.MovieShortInfo `json:"movies"`
 }
 
-type ErrorResponse struct {
-	Success    bool               `json:"success"`
-	StatusCode int                `json:"-"`
-	Errors     []errVals.ErrorObj `json:"errors"`
-}
-
 type User struct {
 	ID        int    `json:"id"`
 	Email     string `json:"email"`
 	Username  string `json:"username"`
 	AvatarURL string `json:"avatar_url"`
+}
+
+type FavReq struct {
+	UserID  int `json:"user_id"`
+	MovieID int `json:"movie_id"`
 }
