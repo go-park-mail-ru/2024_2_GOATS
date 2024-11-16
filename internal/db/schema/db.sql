@@ -8,6 +8,9 @@ DROP TABLE IF EXISTS movie_collections CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS movie_genres CASCADE;
 DROP TABLE IF EXISTS countries CASCADE;
+DROP TABLE IF EXISTS favorites CASCADE;
+DROP TABLE IF EXISTS seasons CASCADE;
+DROP TABLE IF EXISTS episodes CASCADE;
 DROP TYPE IF EXISTS movie_type_enum;
 
 CREATE TABLE public.genres(
@@ -129,3 +132,49 @@ CREATE TABLE public.movie_collections(
 
 CREATE INDEX idx_movie_collections_movie_id ON public.movie_collections(movie_id);
 CREATE INDEX idx_movie_collections_collection_id ON public.movie_collections(collection_id);
+
+CREATE TABLE public.favorites(
+  id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  movie_id int REFERENCES public.movies(id),
+  user_id int REFERENCES public.collections(id),
+  created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_favorites_movie_id ON public.favorites(movie_id);
+CREATE INDEX idx_favorites_user_id ON public.favorites(user_id);
+
+CREATE TABLE public.seasons (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  movie_id BIGINT NOT NULL REFERENCES public.movies(id) ON DELETE CASCADE,
+  season_number INT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  rating DECIMAL(10, 2) NOT NULL DEFAULT '0.0',
+  preview_url TEXT DEFAULT '/static/serials/default.png',
+  release_date DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (movie_id, season_number)
+);
+
+CREATE INDEX idx_seasons_movie_id ON public.seasons(movie_id);
+
+CREATE TABLE public.episodes (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  season_id INT NOT NULL REFERENCES public.seasons(id) ON DELETE CASCADE,
+  episode_number INT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  rating DECIMAL(10, 2) NOT NULL DEFAULT '0.0',
+  preview_url TEXT DEFAULT '/static/serials/default.png',
+  video_url TEXT DEFAULT '/static/serials/default.mp4',
+  release_date DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (season_id, episode_number)
+);
+
+CREATE INDEX idx_episodes_season_id ON public.episodes(season_id);
