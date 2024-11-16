@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = ".";
+
+package auth;
+
+message CreateSessionRequest {
+  uint64 UserID = 1;
+}
+
+message CreateSessionResponse {
+  string Cookie = 1;
+  int64 MaxAge = 2;
+}
+
+message DestroySessionRequest {
+  string Cookie = 1;
+}
+
+message GetSessionRequest {
+  string Cookie = 1;
+}
+
+message GetSessionResponse {
+  uint64 UserID = 1;
+}
+
+message CsrfToken {
+  string Token = 1;
+}
+
+message Nothing {
+  bool Dummy = 1;
+}
+
+service SessionRPC {
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  rpc DestroySession(DestroySessionRequest) returns (Nothing);
+  rpc Session(GetSessionRequest) returns (GetSessionResponse);
+}

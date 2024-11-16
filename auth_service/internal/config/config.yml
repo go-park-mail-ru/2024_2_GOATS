@@ -1,0 +1,10 @@
+listener:
+  port: :8081
+
+databases:
+  redis:
+    host: localhost
+    port: 6379
+    cookie:
+      maxAge: 84400s
+      name: session_id
