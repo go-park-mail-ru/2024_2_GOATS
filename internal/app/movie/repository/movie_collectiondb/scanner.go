@@ -46,7 +46,7 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 	return collections, nil
 }
 
-func ScanMovieShortInfo(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
+func ScanMovieShortInfo(rows *sql.Rows) ([]models.MovieShortInfo, error) {
 	defer func() {
 		if err := rows.Close(); err != nil {
 			errMsg := fmt.Errorf("cannot close rows while taking user favorites: %w", err)
@@ -54,7 +54,7 @@ func ScanMovieShortInfo(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
 		}
 	}()
 
-	var movies []*models.MovieShortInfo
+	var movies []models.MovieShortInfo
 
 	for rows.Next() {
 		var movie models.MovieShortInfo
@@ -68,7 +68,7 @@ func ScanMovieShortInfo(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
 			return nil, errMsg
 		}
 
-		movies = append(movies, &movie)
+		movies = append(movies, movie)
 	}
 
 	return movies, nil

@@ -37,65 +37,76 @@ func (m *MockMovieRepositoryInterface) EXPECT() *MockMovieRepositoryInterfaceMoc
 }
 
 // GetActor mocks base method.
-func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorId int) (*models.ActorInfo, *errors.ErrorObj, int) {
+func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errors.RepoError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetActor", ctx, actorId)
+	ret := m.ctrl.Call(m, "GetActor", ctx, actorID)
 	ret0, _ := ret[0].(*models.ActorInfo)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // GetActor indicates an expected call of GetActor.
-func (mr *MockMovieRepositoryInterfaceMockRecorder) GetActor(ctx, actorId interface{}) *gomock.Call {
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetActor(ctx, actorID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActor", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetActor), ctx, actorId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActor", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetActor), ctx, actorID)
+}
+
+// GetByGenre mocks base method.
+func (m *MockMovieRepositoryInterface) GetByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errors.RepoError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByGenre", ctx, genre)
+	ret0, _ := ret[0].([]models.MovieShortInfo)
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
+}
+
+// GetByGenre indicates an expected call of GetByGenre.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetByGenre(ctx, genre interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByGenre", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetByGenre), ctx, genre)
 }
 
 // GetCollection mocks base method.
-func (m *MockMovieRepositoryInterface) GetCollection(ctx context.Context) ([]models.Collection, *errors.ErrorObj, int) {
+func (m *MockMovieRepositoryInterface) GetCollection(ctx context.Context, filter string) ([]models.Collection, *errors.RepoError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCollection", ctx)
+	ret := m.ctrl.Call(m, "GetCollection", ctx, filter)
 	ret0, _ := ret[0].([]models.Collection)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // GetCollection indicates an expected call of GetCollection.
-func (mr *MockMovieRepositoryInterfaceMockRecorder) GetCollection(ctx interface{}) *gomock.Call {
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetCollection(ctx, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetCollection), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetCollection), ctx, filter)
 }
 
 // GetMovie mocks base method.
-func (m *MockMovieRepositoryInterface) GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errors.ErrorObj, int) {
+func (m *MockMovieRepositoryInterface) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errors.RepoError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMovie", ctx, mvId)
+	ret := m.ctrl.Call(m, "GetMovie", ctx, mvID)
 	ret0, _ := ret[0].(*models.MovieInfo)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // GetMovie indicates an expected call of GetMovie.
-func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovie(ctx, mvId interface{}) *gomock.Call {
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovie(ctx, mvID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovie", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovie), ctx, mvId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovie", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovie), ctx, mvID)
 }
 
 // GetMovieActors mocks base method.
-func (m *MockMovieRepositoryInterface) GetMovieActors(ctx context.Context, actorId int) ([]*models.ActorInfo, *errors.ErrorObj, int) {
+func (m *MockMovieRepositoryInterface) GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, *errors.RepoError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMovieActors", ctx, actorId)
+	ret := m.ctrl.Call(m, "GetMovieActors", ctx, mvID)
 	ret0, _ := ret[0].([]*models.ActorInfo)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // GetMovieActors indicates an expected call of GetMovieActors.
-func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovieActors(ctx, actorId interface{}) *gomock.Call {
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovieActors(ctx, mvID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieActors", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovieActors), ctx, actorId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieActors", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovieActors), ctx, mvID)
 }

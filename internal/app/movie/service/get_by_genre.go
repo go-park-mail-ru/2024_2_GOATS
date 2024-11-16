@@ -7,7 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (s *MovieService) GetByGenre(ctx context.Context, genre string) ([]*models.MovieShortInfo, *errVals.ServiceError) {
+func (s *MovieService) GetByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.ServiceError) {
 	movies, err := s.movieRepository.GetByGenre(ctx, genre)
 
 	if err != nil {

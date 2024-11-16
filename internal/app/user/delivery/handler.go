@@ -76,7 +76,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info().Interface("updatePasswdResp", true).Msg("updatePasswd success")
 
-	api.Response(r.Context(), w, http.StatusOK, true)
+	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
 func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +143,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info().Bool("updateProfileResp", true).Msg("updateProfile success")
 
-	api.Response(ctx, w, http.StatusOK, true)
+	api.Response(ctx, w, http.StatusOK, nil)
 }
 
 func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, error) {
@@ -225,12 +225,12 @@ func (u *UserHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, respErr := u.userService.GetFavorites(r.Context(), usrID)
+	srvResp, srvRespErr := u.userService.GetFavorites(r.Context(), usrID)
+	resp, respErr := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(srvRespErr)
 	if respErr != nil {
-		errResp := errVals.ToDeliveryErrorFromService(respErr)
 		errMsg := errors.New("failed to manipulate favorites")
-		logger.Error().Err(errMsg).Interface("favResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+		logger.Error().Err(errMsg).Interface("favResp", respErr).Msg("request_failed")
+		api.Response(r.Context(), w, respErr.HTTPStatus, respErr)
 
 		return
 	}

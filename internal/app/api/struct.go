@@ -34,17 +34,14 @@ type LoginRequest struct {
 	Cookie   string `json:"-"`
 }
 type SessionResponse struct {
-	Success  bool `json:"success"`
 	UserData User `json:"user_data"`
 }
 
 type AuthResponse struct {
-	Success   bool               `json:"success"`
 	NewCookie *models.CookieData `json:"-"`
 }
 
 type CollectionsResponse struct {
-	Success     bool         `json:"success"`
 	Collections []Collection `json:"collections"`
 }
 
@@ -54,8 +51,11 @@ type Collection struct {
 	Movies []*models.MovieShortInfo `json:"movies"`
 }
 
+type MovieShortInfos struct {
+	Movies []models.MovieShortInfo `json:"movies"`
+}
+
 type MovieResponse struct {
-	Success   bool       `json:"success"`
 	MovieInfo *MovieInfo `json:"movie_info"`
 }
 
@@ -78,7 +78,6 @@ type MovieInfo struct {
 }
 
 type ActorResponse struct {
-	Success   bool   `json:"success"`
 	ActorInfo *Actor `json:"actor_info"`
 }
 

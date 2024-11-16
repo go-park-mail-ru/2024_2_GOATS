@@ -22,7 +22,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
-		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.NewCustomError(cryptErr.Error()))
+		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.NewCustomError(errVals.ErrInvalidPasswordsMatch.Err.Error()))
 	}
 
 	token, tokenErr := cookie.GenerateToken(ctx, usr.ID)
@@ -39,7 +39,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 
 	ck, ckErr := s.authRepository.SetCookie(ctx, token)
 	if ckErr != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		return nil, errVals.ToServiceErrorFromRepo(ckErr)
 	}
 
 	return &models.AuthRespData{

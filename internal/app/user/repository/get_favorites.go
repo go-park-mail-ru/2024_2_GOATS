@@ -9,7 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/favoritedb"
 )
 
-func (r *UserRepo) GetFavorites(ctx context.Context, usrID int) ([]*models.MovieShortInfo, *errVals.RepoError) {
+func (r *UserRepo) GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.RepoError) {
 	rows, err := favoritedb.FindByUserID(ctx, usrID, r.Database)
 	if err != nil {
 		return nil, errVals.NewRepoError(errVals.ErrGetFavorites, errVals.NewCustomError(err.Error()))
@@ -20,10 +20,10 @@ func (r *UserRepo) GetFavorites(ctx context.Context, usrID int) ([]*models.Movie
 		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
 	}
 
-	var favs []*models.MovieShortInfo
+	var favs []models.MovieShortInfo
 
 	for _, fav := range favorites {
-		favs = append(favs, converter.ToMovieShortInfoFromDTO(fav))
+		favs = append(favs, *converter.ToMovieShortInfoFromDTO(fav))
 	}
 
 	return favs, nil

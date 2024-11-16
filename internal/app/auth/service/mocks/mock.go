@@ -37,12 +37,11 @@ func (m *MockAuthRepositoryInterface) EXPECT() *MockAuthRepositoryInterfaceMockR
 }
 
 // DestroySession mocks base method.
-func (m *MockAuthRepositoryInterface) DestroySession(ctx context.Context, cookie string) (*errors.ErrorObj, int) {
+func (m *MockAuthRepositoryInterface) DestroySession(ctx context.Context, cookie string) *errors.RepoError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DestroySession", ctx, cookie)
-	ret0, _ := ret[0].(*errors.ErrorObj)
-	ret1, _ := ret[1].(int)
-	return ret0, ret1
+	ret0, _ := ret[0].(*errors.RepoError)
+	return ret0
 }
 
 // DestroySession indicates an expected call of DestroySession.
@@ -52,13 +51,12 @@ func (mr *MockAuthRepositoryInterfaceMockRecorder) DestroySession(ctx, cookie in
 }
 
 // GetFromCookie mocks base method.
-func (m *MockAuthRepositoryInterface) GetFromCookie(ctx context.Context, cookie string) (string, *errors.ErrorObj, int) {
+func (m *MockAuthRepositoryInterface) GetFromCookie(ctx context.Context, cookie string) (string, *errors.RepoError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFromCookie", ctx, cookie)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // GetFromCookie indicates an expected call of GetFromCookie.
@@ -68,13 +66,12 @@ func (mr *MockAuthRepositoryInterfaceMockRecorder) GetFromCookie(ctx, cookie int
 }
 
 // SetCookie mocks base method.
-func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errors.ErrorObj, int) {
+func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errors.RepoError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetCookie", ctx, token)
 	ret0, _ := ret[0].(*models.CookieData)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // SetCookie indicates an expected call of SetCookie.

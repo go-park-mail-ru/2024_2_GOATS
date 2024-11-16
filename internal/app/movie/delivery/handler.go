@@ -30,9 +30,9 @@ func (m *MovieHandler) GetByGenre(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	genre := r.URL.Query().Get("genre")
 
-	resp, errServResp := m.movieService.GetByGenre(r.Context(), genre)
-	if errServResp != nil {
-		errResp := errVals.ToDeliveryErrorFromService(errServResp)
+	srvResp, errServResp := m.movieService.GetByGenre(r.Context(), genre)
+	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
+	if errResp != nil {
 		errMsg := errors.New("failed to get movies by genre")
 		logger.Error().Err(errMsg).Interface("byGenreResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)

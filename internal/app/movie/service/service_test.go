@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"net/http"
 	"testing"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -17,10 +16,9 @@ func TestService_GetCollection(t *testing.T) {
 	tests := []struct {
 		name             string
 		mockReturn       []models.Collection
-		mockErr          *errVals.ErrorObj
+		mockErr          *errVals.RepoError
 		expectedResponse *models.CollectionsRespData
-		expectedError    *models.ErrorRespData
-		statusCode       int
+		expectedError    *errVals.ServiceError
 	}{
 		{
 			name: "Success",
@@ -34,21 +32,18 @@ func TestService_GetCollection(t *testing.T) {
 					{ID: 1, Title: "Collection 1", Movies: []*models.MovieShortInfo{}},
 					{ID: 2, Title: "Collection 2", Movies: []*models.MovieShortInfo{}},
 				},
-				StatusCode: http.StatusOK,
 			},
 			expectedError: nil,
-			statusCode:    http.StatusOK,
 		},
 		{
 			name:             "Error",
 			mockReturn:       nil,
-			mockErr:          &errVals.ErrorObj{Code: errVals.ErrServerCode, Error: errVals.CustomError{Err: errors.New("Database fail")}},
+			mockErr:          &errVals.RepoError{Code: errVals.ErrServerCode, Error: errVals.CustomError{Err: errors.New("Database fail")}},
 			expectedResponse: nil,
-			expectedError: &models.ErrorRespData{
-				StatusCode: http.StatusUnprocessableEntity,
-				Errors:     []errVals.ErrorObj{{Code: errVals.ErrServerCode, Error: errVals.CustomError{Err: errors.New("Database fail")}}},
+			expectedError: &errVals.ServiceError{
+				Code:  errVals.ErrServerCode,
+				Error: errVals.CustomError{Err: errors.New("Database fail")},
 			},
-			statusCode: http.StatusUnprocessableEntity,
 		},
 	}
 
@@ -63,9 +58,9 @@ func TestService_GetCollection(t *testing.T) {
 			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
 			s := NewMovieService(mr)
 
-			mr.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr, test.statusCode)
+			mr.EXPECT().GetCollection(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
-			response, err := s.GetCollection(context.Background())
+			response, err := s.GetCollection(context.Background(), "")
 
 			if test.expectedError != nil {
 				assert.Nil(t, response)
@@ -83,10 +78,9 @@ func TestService_GetActor(t *testing.T) {
 		name             string
 		actorID          int
 		mockReturn       *models.ActorInfo
-		mockErr          *errVals.ErrorObj
+		mockErr          *errVals.RepoError
 		expectedResponse *models.ActorInfo
-		expectedError    *models.ErrorRespData
-		statusCode       int
+		expectedError    *errVals.ServiceError
 	}{
 		{
 			name:    "Success",
@@ -107,24 +101,20 @@ func TestService_GetActor(t *testing.T) {
 				},
 			},
 			expectedError: nil,
-			statusCode:    http.StatusOK,
 		},
 		{
 			name:       "Error",
 			actorID:    1,
 			mockReturn: nil,
-			mockErr: &errVals.ErrorObj{
+			mockErr: &errVals.RepoError{
 				Code:  "actor_not_found",
 				Error: errVals.CustomError{Err: errors.New("actor not found")},
 			},
 			expectedResponse: nil,
-			expectedError: &models.ErrorRespData{
-				StatusCode: http.StatusNotFound,
-				Errors: []errVals.ErrorObj{
-					{Code: "actor_not_found", Error: errVals.CustomError{Err: errors.New("actor not found")}},
-				},
+			expectedError: &errVals.ServiceError{
+				Code:  "actor_not_found",
+				Error: errVals.CustomError{Err: errors.New("actor not found")},
 			},
-			statusCode: http.StatusNotFound,
 		},
 	}
 
@@ -139,7 +129,7 @@ func TestService_GetActor(t *testing.T) {
 			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
 			s := NewMovieService(mr)
 
-			mr.EXPECT().GetActor(gomock.Any(), test.actorID).Return(test.mockReturn, test.mockErr, test.statusCode)
+			mr.EXPECT().GetActor(gomock.Any(), test.actorID).Return(test.mockReturn, test.mockErr)
 
 			response, err := s.GetActor(context.Background(), test.actorID)
 
@@ -159,13 +149,11 @@ func TestService_GetMovie(t *testing.T) {
 		name             string
 		mvID             int
 		mockMovieReturn  *models.MovieInfo
-		mockMovieErr     *errVals.ErrorObj
+		mockMovieErr     *errVals.RepoError
 		mockActorsReturn []*models.ActorInfo
-		mockActorsErr    *errVals.ErrorObj
+		mockActorsErr    *errVals.RepoError
 		expectedResponse *models.MovieInfo
-		expectedError    *models.ErrorRespData
-		mvStatusCode     int
-		acStatusCode     int
+		expectedError    *errVals.ServiceError
 	}{
 		{
 			name: "Success",
@@ -194,22 +182,19 @@ func TestService_GetMovie(t *testing.T) {
 				}},
 			},
 			expectedError: nil,
-			mvStatusCode: http.StatusOK,
-			acStatusCode: http.StatusOK,
 		},
 		{
 			name:             "Error_GetMovie",
 			mvID:             1,
 			mockMovieReturn:  nil,
-			mockMovieErr:     &errVals.ErrorObj{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie not found")}},
+			mockMovieErr:     &errVals.RepoError{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie not found")}},
 			mockActorsReturn: nil,
 			mockActorsErr:    nil,
 			expectedResponse: nil,
-			expectedError: &models.ErrorRespData{
-				StatusCode: http.StatusNotFound,
-				Errors:     []errVals.ErrorObj{{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie not found")}}},
+			expectedError: &errVals.ServiceError{
+				Code:  "movie_not_found",
+				Error: errVals.CustomError{Err: errors.New("movie not found")},
 			},
-			mvStatusCode: http.StatusNotFound,
 		},
 		{
 			name: "Error_GetMovieActors",
@@ -220,14 +205,12 @@ func TestService_GetMovie(t *testing.T) {
 			},
 			mockMovieErr:     nil,
 			mockActorsReturn: nil,
-			mockActorsErr:    &errVals.ErrorObj{Code: "actors_fetch_error", Error: errVals.CustomError{Err: errors.New("failed to fetch actors")}},
+			mockActorsErr:    &errVals.RepoError{Code: "actors_fetch_error", Error: errVals.CustomError{Err: errors.New("failed to fetch actors")}},
 			expectedResponse: nil,
-			expectedError: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{{Code: "actors_fetch_error", Error: errVals.CustomError{Err: errors.New("failed to fetch actors")}}},
+			expectedError: &errVals.ServiceError{
+				Code:  "actors_fetch_error",
+				Error: errVals.CustomError{Err: errors.New("failed to fetch actors")},
 			},
-			mvStatusCode: http.StatusOK,
-			acStatusCode: http.StatusInternalServerError,
 		},
 	}
 
@@ -242,10 +225,10 @@ func TestService_GetMovie(t *testing.T) {
 			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
 			s := NewMovieService(mr)
 
-			mr.EXPECT().GetMovie(gomock.Any(), test.mvID).Return(test.mockMovieReturn, test.mockMovieErr, test.mvStatusCode)
+			mr.EXPECT().GetMovie(gomock.Any(), test.mvID).Return(test.mockMovieReturn, test.mockMovieErr)
 
 			if test.mockMovieErr == nil {
-				mr.EXPECT().GetMovieActors(gomock.Any(), test.mvID).Return(test.mockActorsReturn, test.mockActorsErr, test.acStatusCode)
+				mr.EXPECT().GetMovieActors(gomock.Any(), test.mvID).Return(test.mockActorsReturn, test.mockActorsErr)
 			}
 
 			response, err := s.GetMovie(context.Background(), test.mvID)

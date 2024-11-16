@@ -20,7 +20,7 @@ func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.P
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
-		return errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPassword)
+		return errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidOldPassword)
 	}
 
 	err = u.userRepo.UpdatePassword(ctx, passwordData.UserID, passwordData.Password)

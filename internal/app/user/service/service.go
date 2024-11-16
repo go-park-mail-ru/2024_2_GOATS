@@ -22,7 +22,7 @@ type UserRepositoryInterface interface {
 	SaveUserAvatar(ctx context.Context, avatarName string) (string, *os.File, *errVals.RepoError)
 	CreateFavorite(ctx context.Context, favData *dto.DBFavorite) *errVals.RepoError
 	DestroyFavorite(ctx context.Context, favData *dto.DBFavorite) *errVals.RepoError
-	GetFavorites(ctx context.Context, usrID int) ([]*models.MovieShortInfo, *errVals.RepoError)
+	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.RepoError)
 }
 
 type UserService struct {

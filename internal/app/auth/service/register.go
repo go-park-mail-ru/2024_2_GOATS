@@ -22,7 +22,7 @@ func (s *AuthService) Register(ctx context.Context, registerData *models.Registe
 
 	ck, errCk := s.authRepository.SetCookie(ctx, token)
 	if errCk != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		return nil, errVals.ToServiceErrorFromRepo(errCk)
 	}
 
 	return &models.AuthRespData{
