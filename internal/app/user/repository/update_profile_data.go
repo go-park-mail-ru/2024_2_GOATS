@@ -4,29 +4,30 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/userdb"
 	"github.com/lib/pq"
 )
 
-func (u *UserRepo) UpdateProfileData(ctx context.Context, profileData *models.User) (*errVals.ErrorObj, int) {
+func (u *UserRepo) UpdateProfileData(ctx context.Context, profileData *dto.DBUser) *errVals.RepoError {
 	err := userdb.UpdateProfile(ctx, profileData, u.Database)
 
 	if err != nil {
-		status := http.StatusInternalServerError
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) && pqErr.Code == errVals.DuplicateErrKey {
-			status = http.StatusConflict
+			return errVals.NewRepoError(
+				errVals.DuplicateErrKey,
+				errVals.NewCustomError(fmt.Sprintf("error updating profile: %v", err)),
+			)
 		}
 
-		return errVals.NewErrorObj(
+		return errVals.NewRepoError(
 			errVals.ErrUpdateProfileCode,
-			errVals.CustomError{Err: fmt.Errorf("error updating profile: %w", err)},
-		), status
+			errVals.NewCustomError(fmt.Sprintf("error updating profile: %v", err)),
+		)
 	}
 
-	return nil, http.StatusOK
+	return nil
 }

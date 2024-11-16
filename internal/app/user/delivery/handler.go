@@ -63,20 +63,20 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	passwordServData := converter.ToServPasswordData(passwordReq)
-	usrSrvResp, errSrvResp := u.userService.UpdatePassword(r.Context(), passwordServData)
-	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)
+	errSrvResp := u.userService.UpdatePassword(r.Context(), passwordServData)
+	errResp := errVals.ToDeliveryErrorFromService(errSrvResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to update password")
 		logger.Error().Err(errMsg).Interface("updatePasswdResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
 
-	logger.Info().Interface("updatePasswdResp", usrResp).Msg("updatePasswd success")
+	logger.Info().Interface("updatePasswdResp", true).Msg("updatePasswd success")
 
-	api.Response(r.Context(), w, usrResp.StatusCode, usrResp)
+	api.Response(r.Context(), w, http.StatusOK, true)
 }
 
 func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
@@ -108,45 +108,42 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var errs = make([]errVals.ErrorObj, 0)
+	var errs = make([]errVals.ErrorItem, 0)
 	if profileReq.Username != "" {
 		if valErr := validation.ValidateUsername(profileReq.Username); valErr != nil {
 			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr.Err)
-			errs = append(errs, errVals.ErrorObj{Code: vlErr, Error: errVals.CustomError{Err: errMsg}})
+			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errVals.NewCustomError(errMsg.Error())})
 		}
 	}
 
 	if profileReq.Email != "" {
 		if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
 			errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
-			errs = append(errs, errVals.ErrorObj{Code: vlErr, Error: errVals.CustomError{Err: errMsg}})
+			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errVals.NewCustomError(errMsg.Error())})
 		}
 	}
 
 	if len(errs) > 0 {
-		errResp := &api.ErrorResponse{
-			Errors:     errs,
-			StatusCode: http.StatusBadRequest,
-		}
+		errResp := errVals.NewDeliveryError(http.StatusBadRequest, errs)
 
-		api.Response(ctx, w, errResp.StatusCode, errResp)
+		api.Response(ctx, w, errResp.HTTPStatus, errResp)
 		return
 	}
 
 	profileServData := converter.ToServUserData(profileReq)
-	usrSrvResp, errSrvResp := u.userService.UpdateProfile(ctx, profileServData)
-	usrResp, errResp := converter.ToApiUpdateUserResponse(usrSrvResp), converter.ToApiErrorResponse(errSrvResp)
+	errSrvResp := u.userService.UpdateProfile(ctx, profileServData)
+	errResp := errVals.ToDeliveryErrorFromService(errSrvResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to update profile")
 		logger.Error().Err(errMsg).Interface("updateProfileResp", errResp).Msg("request_failed")
-		api.Response(ctx, w, errResp.StatusCode, errResp)
+		api.Response(ctx, w, errResp.HTTPStatus, errResp)
 		return
 	}
 
-	logger.Info().Interface("updateProfileResp", usrResp).Msg("updateProfile success")
+	logger.Info().Bool("updateProfileResp", true).Msg("updateProfile success")
 
-	api.Response(ctx, w, usrResp.StatusCode, usrResp)
+	api.Response(ctx, w, http.StatusOK, true)
 }
 
 func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, error) {
@@ -187,6 +184,60 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 	}
 
 	return profileReq, nil
+}
+
+func (u *UserHandler) Favorites(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+	var err *errVals.ServiceError
+	favReq := &api.FavReq{}
+	api.DecodeBody(w, r, favReq)
+
+	favSrvData := converter.ToServFavData(favReq)
+
+	if r.Method == http.MethodDelete {
+		err = u.userService.DestroyFavorite(r.Context(), favSrvData)
+	} else {
+		err = u.userService.AddFavorite(r.Context(), favSrvData)
+	}
+
+	if err != nil {
+		errResp := errVals.ToDeliveryErrorFromService(err)
+		errMsg := errors.New("failed to manipulate favorites")
+		logger.Error().Err(errMsg).Interface("favResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Msg("Manipulate Favorites success")
+
+	api.Response(r.Context(), w, http.StatusOK, nil)
+}
+
+func (u *UserHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+	vars := mux.Vars(r)
+	usrID, err := getUserID(vars)
+	if err != nil {
+		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
+		api.RequestError(r.Context(), w, rParseErr, http.StatusBadRequest, errMsg)
+
+		return
+	}
+
+	resp, respErr := u.userService.GetFavorites(r.Context(), usrID)
+	if respErr != nil {
+		errResp := errVals.ToDeliveryErrorFromService(respErr)
+		errMsg := errors.New("failed to manipulate favorites")
+		logger.Error().Err(errMsg).Interface("favResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Interface("GetfavResp", resp).Msg("Favorites success")
+
+	api.Response(r.Context(), w, http.StatusOK, resp)
 }
 
 func getFormValue(formData map[string][]string, key string) string {

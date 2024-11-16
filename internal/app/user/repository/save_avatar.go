@@ -3,25 +3,23 @@ package repository
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/rs/zerolog/log"
 )
 
-func (u *UserRepo) SaveUserAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
+func (u *UserRepo) SaveUserAvatar(ctx context.Context, avatarName string) (string, *os.File, *errVals.RepoError) {
 	lclStrg := config.FromLocalStorageContext(ctx)
-	fullPath := lclStrg.UserAvatarsFullURL + usrData.AvatarName
-	relativePath := lclStrg.UserAvatarsRelativeURL + usrData.AvatarName
+	fullPath := lclStrg.UserAvatarsFullURL + avatarName
+	relativePath := lclStrg.UserAvatarsRelativeURL + avatarName
 
 	outFile, fileErr := os.Create(fullPath)
 	if fileErr != nil {
-		return "", errVals.NewErrorObj(
+		return "", nil, errVals.NewRepoError(
 			errVals.ErrFileUploadCode,
-			errVals.CustomError{Err: fmt.Errorf("cannot find or create nginx static folder: %w", fileErr)},
+			errVals.NewCustomError(fmt.Sprintf("cannot find or create nginx static folder: %v", fileErr)),
 		)
 	}
 
@@ -31,13 +29,5 @@ func (u *UserRepo) SaveUserAvatar(ctx context.Context, usrData *models.User) (st
 		}
 	}()
 
-	_, fileErr = io.Copy(outFile, usrData.AvatarFile)
-	if fileErr != nil {
-		return "", errVals.NewErrorObj(
-			errVals.ErrFileUploadCode,
-			errVals.CustomError{Err: fmt.Errorf("cannot save file into nginx static folder: %w", fileErr)},
-		)
-	}
-
-	return relativePath, nil
+	return relativePath, outFile, nil
 }
