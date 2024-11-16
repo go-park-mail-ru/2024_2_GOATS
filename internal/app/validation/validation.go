@@ -15,11 +15,11 @@ var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-
 
 func ValidatePassword(pass, passConf string) *errVals.CustomError {
 	if pass != passConf {
-		return &errVals.ErrInvalidPasswordsMatchText
+		return &errVals.ErrInvalidPasswordsMatch
 	}
 
 	if len(pass) < passwordLength {
-		return &errVals.ErrInvalidPasswordText
+		return &errVals.ErrInvalidPassword
 	}
 
 	return nil
@@ -27,7 +27,7 @@ func ValidatePassword(pass, passConf string) *errVals.CustomError {
 
 func ValidateEmail(email string) *errVals.CustomError {
 	if !emailRegex.MatchString(email) {
-		return &errVals.ErrInvalidEmailText
+		return &errVals.ErrInvalidEmail
 	}
 
 	return nil
@@ -35,7 +35,7 @@ func ValidateEmail(email string) *errVals.CustomError {
 
 func ValidateUsername(username string) *errVals.CustomError {
 	if len(username) < usernameLength {
-		return &errVals.ErrInvalidUsernameText
+		return &errVals.ErrInvalidUsername
 	}
 
 	return nil
@@ -43,7 +43,7 @@ func ValidateUsername(username string) *errVals.CustomError {
 
 func ValidateCookie(cookie string) *errVals.CustomError {
 	if len(cookie) == 0 {
-		return &errVals.ErrBrokenCookieText
+		return &errVals.ErrBrokenCookie
 	}
 
 	return nil

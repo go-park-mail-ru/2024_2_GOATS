@@ -13,9 +13,9 @@ var _ delivery.AuthServiceInterface = (*AuthService)(nil)
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type AuthRepositoryInterface interface {
-	DestroySession(ctx context.Context, cookie string) (*errVals.ErrorObj, int)
-	SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.ErrorObj, int)
-	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int)
+	DestroySession(ctx context.Context, cookie string) *errVals.RepoError
+	SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.RepoError)
+	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError)
 }
 
 type AuthService struct {
