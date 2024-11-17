@@ -31,7 +31,7 @@ func (u *UserService) UpdateProfile(ctx context.Context, usrData *models.User) *
 		usrData.AvatarURL = avatarURL
 	}
 
-	err := u.userRepo.UpdateProfileData(ctx, converter.ToDBUserFromUser(usrData))
+	err := u.userRepo.UpdateProfileData(ctx, converter.ToRepoUserFromUser(usrData))
 	if err != nil {
 		return errVals.ToServiceErrorFromRepo(err)
 	}

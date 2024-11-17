@@ -28,7 +28,7 @@ const (
 	`
 )
 
-func Create(ctx context.Context, favReq *dto.DBFavorite, db *sql.DB) error {
+func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	logger := log.Ctx(ctx)
 
 	err := db.QueryRowContext(
@@ -49,7 +49,7 @@ func Create(ctx context.Context, favReq *dto.DBFavorite, db *sql.DB) error {
 	return nil
 }
 
-func Destroy(ctx context.Context, favReq *dto.DBFavorite, db *sql.DB) error {
+func Destroy(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	logger := log.Ctx(ctx)
 
 	err := db.QueryRowContext(

@@ -39,7 +39,7 @@ func (m *MockUserRepositoryInterface) EXPECT() *MockUserRepositoryInterfaceMockR
 }
 
 // CreateFavorite mocks base method.
-func (m *MockUserRepositoryInterface) CreateFavorite(ctx context.Context, favData *dto.DBFavorite) *errors.RepoError {
+func (m *MockUserRepositoryInterface) CreateFavorite(ctx context.Context, favData *dto.RepoFavorite) *errors.RepoError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateFavorite", ctx, favData)
 	ret0, _ := ret[0].(*errors.RepoError)
@@ -53,7 +53,7 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) CreateFavorite(ctx, favData i
 }
 
 // CreateUser mocks base method.
-func (m *MockUserRepositoryInterface) CreateUser(ctx context.Context, registerData *dto.DBRegisterData) (*models.User, *errors.RepoError) {
+func (m *MockUserRepositoryInterface) CreateUser(ctx context.Context, registerData *dto.RepoRegisterData) (*models.User, *errors.RepoError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", ctx, registerData)
 	ret0, _ := ret[0].(*models.User)
@@ -68,7 +68,7 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) CreateUser(ctx, registerData 
 }
 
 // DestroyFavorite mocks base method.
-func (m *MockUserRepositoryInterface) DestroyFavorite(ctx context.Context, favData *dto.DBFavorite) *errors.RepoError {
+func (m *MockUserRepositoryInterface) DestroyFavorite(ctx context.Context, favData *dto.RepoFavorite) *errors.RepoError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DestroyFavorite", ctx, favData)
 	ret0, _ := ret[0].(*errors.RepoError)
@@ -127,7 +127,7 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) UpdatePassword(ctx, usrID, pa
 }
 
 // UpdateProfileData mocks base method.
-func (m *MockUserRepositoryInterface) UpdateProfileData(ctx context.Context, usrData *dto.DBUser) *errors.RepoError {
+func (m *MockUserRepositoryInterface) UpdateProfileData(ctx context.Context, usrData *dto.RepoUser) *errors.RepoError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateProfileData", ctx, usrData)
 	ret0, _ := ret[0].(*errors.RepoError)

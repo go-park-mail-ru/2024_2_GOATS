@@ -22,5 +22,5 @@ func (u *UserRepo) UserByEmail(ctx context.Context, email string) (*models.User,
 		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
 	}
 
-	return converter.ToUserFromDBUser(usr), nil
+	return converter.ToUserFromRepoUser(usr), nil
 }

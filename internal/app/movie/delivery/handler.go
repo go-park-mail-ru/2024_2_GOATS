@@ -16,6 +16,10 @@ import (
 
 var _ handlers.MovieHandlerInterface = (*MovieHandler)(nil)
 
+const (
+	genresFilter = "genres"
+)
+
 type MovieHandler struct {
 	movieService MovieServiceInterface
 }
@@ -46,11 +50,15 @@ func (m *MovieHandler) GetByGenre(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
+	m.collectMovieData(w, r, "")
+}
+
+func (m *MovieHandler) GetGenres(w http.ResponseWriter, r *http.Request) {
+	m.collectMovieData(w, r, genresFilter)
+}
+
+func (m *MovieHandler) collectMovieData(w http.ResponseWriter, r *http.Request, filter string) {
 	logger := log.Ctx(r.Context())
-	filter := r.URL.Query().Get("filter")
-	if filter != "" {
-		logger.Info().Str("filter", filter).Msg("with_filter")
-	}
 
 	collectionsServResp, errServResp := m.movieService.GetCollection(r.Context(), filter)
 	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), errVals.ToDeliveryErrorFromService(errServResp)

@@ -9,7 +9,7 @@ import (
 )
 
 func (u *UserService) DestroyFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError {
-	err := u.userRepo.DestroyFavorite(ctx, converter.ToDBFavoriteFromFavorite(favData))
+	err := u.userRepo.DestroyFavorite(ctx, converter.ToRepoFavoriteFromFavorite(favData))
 	if err != nil {
 		return errVals.ToServiceErrorFromRepo(err)
 	}

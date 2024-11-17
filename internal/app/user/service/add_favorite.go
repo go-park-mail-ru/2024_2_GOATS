@@ -9,7 +9,7 @@ import (
 )
 
 func (u *UserService) AddFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError {
-	err := u.userRepo.CreateFavorite(ctx, converter.ToDBFavoriteFromFavorite(favData))
+	err := u.userRepo.CreateFavorite(ctx, converter.ToRepoFavoriteFromFavorite(favData))
 	if err != nil {
 		return errVals.ToServiceErrorFromRepo(err)
 	}

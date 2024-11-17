@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
@@ -23,8 +24,6 @@ func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddle
 		authServ: authServ,
 	}
 }
-
-type CurrentUserKey struct{}
 
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +56,7 @@ func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), CurrentUserKey{}, sessionSrvResp.UserData.ID)
+		ctx := context.WithValue(r.Context(), config.CurrentUserKey{}, sessionSrvResp.UserData.ID)
 
 		logger.Info().Interface("sessionResp", sessionSrvResp).Msg("authMiddleware success")
 		next.ServeHTTP(w, r.WithContext(ctx))

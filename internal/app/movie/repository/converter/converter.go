@@ -4,7 +4,28 @@ import (
 	"database/sql"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/dto"
 )
+
+func ToActorInfoFromRepo(ac *dto.RepoActor) *models.ActorInfo {
+	if ac == nil {
+		return nil
+	}
+
+	return &models.ActorInfo{
+		ID: ac.ID,
+		Person: models.Person{
+			Name:    ac.Name,
+			Surname: ac.Surname,
+		},
+		Biography:     ac.Biography,
+		Post:          ac.Post,
+		Birthdate:     ac.Birthdate,
+		SmallPhotoURL: ac.SmallPhotoURL,
+		BigPhotoURL:   ac.BigPhotoURL,
+		Country:       ac.Country,
+	}
+}
 
 func ToRepoEpisodeFromDB(dbEp *models.DBEpisode) *models.Episode {
 	if dbEp == nil {
@@ -20,6 +41,23 @@ func ToRepoEpisodeFromDB(dbEp *models.DBEpisode) *models.Episode {
 		Rating:        ToFloat32FromSQLFloat(dbEp.Rating),
 		PreviewURL:    ToStringFromSQLString(dbEp.PreviewURL),
 		VideoURL:      ToStringFromSQLString(dbEp.VideoURL),
+	}
+}
+
+func ToMovieShortInfoFromRepo(m *dto.RepoMovieShortInfo) *models.MovieShortInfo {
+	if m == nil {
+		return nil
+	}
+
+	return &models.MovieShortInfo{
+		ID:          m.ID,
+		Title:       m.Title,
+		CardURL:     m.CardURL,
+		AlbumURL:    m.AlbumURL,
+		Rating:      m.Rating,
+		ReleaseDate: m.ReleaseDate,
+		MovieType:   m.MovieType,
+		Country:     m.Country,
 	}
 }
 

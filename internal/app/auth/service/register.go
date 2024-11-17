@@ -10,7 +10,7 @@ import (
 )
 
 func (s *AuthService) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *errVals.ServiceError) {
-	usr, err := s.userRepository.CreateUser(ctx, converter.ToDBRegisterFromRegister(registerData))
+	usr, err := s.userRepository.CreateUser(ctx, converter.ToRepoRegisterFromRegister(registerData))
 	if err != nil {
 		return nil, errVals.ToServiceErrorFromRepo(err)
 	}

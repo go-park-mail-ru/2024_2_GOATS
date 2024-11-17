@@ -23,7 +23,7 @@ func (r *UserRepo) GetFavorites(ctx context.Context, usrID int) ([]models.MovieS
 	var favs []models.MovieShortInfo
 
 	for _, fav := range favorites {
-		favs = append(favs, *converter.ToMovieShortInfoFromDTO(fav))
+		favs = append(favs, *converter.ToMovieShortInfoFromRepo(fav))
 	}
 
 	return favs, nil

@@ -34,7 +34,7 @@ func TestCreateUser_Success(t *testing.T) {
 		Username: usrUsername,
 	}
 
-	regData := &dto.DBRegisterData{
+	regData := &dto.RepoRegisterData{
 		Email:                usrEmail,
 		Username:             usrUsername,
 		Password:             pass,
@@ -65,7 +65,7 @@ func TestCreateUser_DbError(t *testing.T) {
 	usrUsername := "mr tester"
 	pass := "test_password"
 
-	regData := &dto.DBRegisterData{
+	regData := &dto.RepoRegisterData{
 		Email:                usrEmail,
 		Username:             usrUsername,
 		Password:             pass,
@@ -220,7 +220,7 @@ func TestUpdateProfileData_Success(t *testing.T) {
 	defer db.Close()
 
 	r := NewUserRepository(db)
-	profileData := &dto.DBUser{
+	profileData := &dto.RepoUser{
 		ID:        1,
 		Email:     "test@mail.ru",
 		Username:  "testuser",
@@ -243,7 +243,7 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 	defer db.Close()
 
 	r := NewUserRepository(db)
-	profileData := &dto.DBUser{
+	profileData := &dto.RepoUser{
 		ID:        1,
 		Email:     "test@mail.ru",
 		Username:  "testuser",

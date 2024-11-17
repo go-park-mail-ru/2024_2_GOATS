@@ -2,12 +2,15 @@ package errors
 
 import (
 	"encoding/json"
-	"errors"
+	errs "errors"
 	"net/http"
+
+	"github.com/lib/pq"
 )
 
 const (
 	DuplicateErrKey        = "23505"
+	DuplicateErrCode       = "db_duplicate_entry"
 	ErrBrokenCookieCode    = "broken_cookie"
 	ErrNoCookieCode        = "no_cookie_provided"
 	ErrRedisGetCode        = "failed_read_from_redis"
@@ -32,9 +35,8 @@ const (
 	ErrGetFavorites        = "get_favorite_error"
 )
 
-// Сопоставление кодов ошибок с HTTP-статусами
 var ErrorCodeToHTTPStatus = map[string]int{
-	DuplicateErrKey:        http.StatusConflict,
+	DuplicateErrCode:       http.StatusConflict,
 	ErrBrokenCookieCode:    http.StatusBadRequest,
 	ErrNoCookieCode:        http.StatusBadRequest,
 	ErrRedisGetCode:        http.StatusInternalServerError,
@@ -56,7 +58,6 @@ var ErrorCodeToHTTPStatus = map[string]int{
 	ErrSaveFileCode:        http.StatusInternalServerError,
 }
 
-// Предопределённые ошибки
 var (
 	ErrInvalidEmail          = NewCustomError("email is incorrect")
 	ErrInvalidPassword       = NewCustomError("password is too short. The minimal len is 8")
@@ -68,7 +69,6 @@ var (
 	ErrSaveFile              = NewCustomError("cannot save file")
 )
 
-// Типы ошибок
 type CustomError struct {
 	Err error
 }
@@ -93,16 +93,18 @@ type RepoError struct {
 	Error CustomError
 }
 
-//
 // Функции для работы с ошибками
-//
+func IsDuplicateError(err error) bool {
+	var pqErr *pq.Error
+	return errs.As(err, &pqErr) && pqErr.Code == DuplicateErrKey
+}
 
 func (ce *CustomError) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ce.Err.Error())
 }
 
 func NewCustomError(message string) CustomError {
-	return CustomError{Err: errors.New(message)}
+	return CustomError{Err: errs.New(message)}
 }
 
 func NewRepoError(code string, err CustomError) *RepoError {

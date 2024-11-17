@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ScanConnections(rows *sql.Rows) ([]*dto.DBMovieShortInfo, error) {
+func ScanConnections(rows *sql.Rows) ([]*dto.RepoMovieShortInfo, error) {
 	defer func() {
 		if err := rows.Close(); err != nil {
 			errMsg := fmt.Errorf("cannot close rows while taking user favorites: %w", err)
@@ -16,10 +16,10 @@ func ScanConnections(rows *sql.Rows) ([]*dto.DBMovieShortInfo, error) {
 		}
 	}()
 
-	var movies []*dto.DBMovieShortInfo
+	var movies []*dto.RepoMovieShortInfo
 
 	for rows.Next() {
-		var movie dto.DBMovieShortInfo
+		var movie dto.RepoMovieShortInfo
 
 		err := rows.Scan(&movie.ID, &movie.Title, &movie.CardURL, &movie.AlbumURL, &movie.Rating, &movie.ReleaseDate, &movie.MovieType, &movie.Country)
 

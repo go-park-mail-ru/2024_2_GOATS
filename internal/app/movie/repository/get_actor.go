@@ -6,6 +6,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/actordb"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/moviedb"
 )
 
@@ -25,7 +26,10 @@ func (r *MovieRepo) GetActor(ctx context.Context, actorID int) (*models.ActorInf
 		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
 	}
 
-	actor.Movies = actMvs
+	srvAct := converter.ToActorInfoFromRepo(actor)
+	for _, mv := range actMvs {
+		srvAct.Movies = append(srvAct.Movies, converter.ToMovieShortInfoFromRepo(mv))
+	}
 
-	return actor, nil
+	return srvAct, nil
 }

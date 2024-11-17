@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/dto"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,9 +25,9 @@ const (
 	`
 )
 
-func FindByID(ctx context.Context, actorID int, db *sql.DB) (*models.ActorInfo, error) {
+func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, error) {
 	logger := log.Ctx(ctx)
-	actorInfo := &models.ActorInfo{}
+	actorInfo := &dto.RepoActor{}
 
 	row := db.QueryRowContext(ctx, actorFindByIDSQL, actorID)
 	logger.Info().Msg("postgres: successfully select actor info")

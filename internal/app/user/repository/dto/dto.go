@@ -1,13 +1,13 @@
 package dto
 
-type DBRegisterData struct {
+type RepoRegisterData struct {
 	Email                string
 	Username             string
 	Password             string
 	PasswordConfirmation string
 }
 
-type DBUser struct {
+type RepoUser struct {
 	ID        int
 	Email     string
 	Username  string
@@ -15,12 +15,12 @@ type DBUser struct {
 	AvatarURL string
 }
 
-type DBFavorite struct {
+type RepoFavorite struct {
 	UserID  int
 	MovieID int
 }
 
-type DBMovieShortInfo struct {
+type RepoMovieShortInfo struct {
 	ID          int
 	Title       string
 	CardURL     string

@@ -12,7 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/userdb"
 )
 
-func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.DBRegisterData) (*models.User, *errVals.RepoError) {
+func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.RepoRegisterData) (*models.User, *errVals.RepoError) {
 	hashedPasswd, err := password.HashAndSalt(ctx, registerData.Password)
 	if err != nil {
 		return nil, errVals.NewRepoError(
@@ -25,8 +25,13 @@ func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.DBRegisterD
 
 	usr, err := userdb.Create(ctx, *registerData, u.Database)
 	if err != nil {
+		if errVals.IsDuplicateError(err) {
+			errMsg := fmt.Sprintf("error creating users: %v", err)
+			return nil, errVals.NewRepoError(errVals.DuplicateErrCode, errVals.NewCustomError(errMsg))
+		}
+
 		return nil, errVals.NewRepoError(errVals.ErrCreateUserCode, errVals.NewCustomError(err.Error()))
 	}
 
-	return converter.ToUserFromDBUser(usr), nil
+	return converter.ToUserFromRepoUser(usr), nil
 }

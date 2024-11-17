@@ -5,12 +5,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 )
 
-func ToDBUserFromUser(u *models.User) *dto.DBUser {
+func ToRepoUserFromUser(u *models.User) *dto.RepoUser {
 	if u == nil {
 		return nil
 	}
 
-	return &dto.DBUser{
+	return &dto.RepoUser{
 		ID:        u.ID,
 		Email:     u.Email,
 		Username:  u.Username,
@@ -19,12 +19,12 @@ func ToDBUserFromUser(u *models.User) *dto.DBUser {
 	}
 }
 
-func ToDBFavoriteFromFavorite(f *models.Favorite) *dto.DBFavorite {
+func ToRepoFavoriteFromFavorite(f *models.Favorite) *dto.RepoFavorite {
 	if f == nil {
 		return nil
 	}
 
-	return &dto.DBFavorite{
+	return &dto.RepoFavorite{
 		UserID:  f.UserID,
 		MovieID: f.MovieID,
 	}

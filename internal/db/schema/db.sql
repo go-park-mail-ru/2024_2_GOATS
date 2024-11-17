@@ -138,7 +138,9 @@ CREATE TABLE public.favorites(
   movie_id int REFERENCES public.movies(id),
   user_id int REFERENCES public.collections(id),
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (movie_id, user_id)
 );
 
 CREATE INDEX idx_favorites_movie_id ON public.favorites(movie_id);

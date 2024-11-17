@@ -23,10 +23,10 @@ const (
 	usrUpdatePasswordSQL = "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
 )
 
-func Create(ctx context.Context, registerData dto.DBRegisterData, db *sql.DB) (*dto.DBUser, error) {
+func Create(ctx context.Context, registerData dto.RepoRegisterData, db *sql.DB) (*dto.RepoUser, error) {
 	logger := log.Ctx(ctx)
 
-	usr := dto.DBUser{}
+	usr := dto.RepoUser{}
 	err := db.QueryRowContext(
 		ctx,
 		usrCreateSQL,
@@ -45,8 +45,8 @@ func Create(ctx context.Context, registerData dto.DBRegisterData, db *sql.DB) (*
 	return &usr, nil
 }
 
-func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.DBUser, error) {
-	var usr dto.DBUser
+func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, error) {
+	var usr dto.RepoUser
 	logger := log.Ctx(ctx)
 
 	err := db.QueryRowContext(ctx, usrFindByEmail, email).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password)
@@ -63,8 +63,8 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.DBUser, er
 	return &usr, nil
 }
 
-func FindByID(ctx context.Context, userID int, db *sql.DB) (*dto.DBUser, error) {
-	var usr dto.DBUser
+func FindByID(ctx context.Context, userID int, db *sql.DB) (*dto.RepoUser, error) {
+	var usr dto.RepoUser
 	logger := log.Ctx(ctx)
 
 	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarURL)
@@ -98,7 +98,7 @@ func UpdatePassword(ctx context.Context, userID int, pass string, db *sql.DB) er
 	return nil
 }
 
-func UpdateProfile(ctx context.Context, usrData *dto.DBUser, db *sql.DB) error {
+func UpdateProfile(ctx context.Context, usrData *dto.RepoUser, db *sql.DB) error {
 	logger := log.Ctx(ctx)
 
 	sqlStatement := "UPDATE users SET "

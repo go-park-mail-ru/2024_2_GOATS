@@ -185,7 +185,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.mockAvatarErr != nil {
-				mUsrRep.EXPECT().SaveUserAvatar(ctx, converter.ToDBUserFromUser(tt.usrData)).Return("", tt.mockAvatarErr)
+				mUsrRep.EXPECT().SaveUserAvatar(ctx, converter.ToRepoUserFromUser(tt.usrData)).Return("", tt.mockAvatarErr)
 			} else {
 				if tt.usrData.AvatarName != "" {
 					tempFile, err := os.CreateTemp("", tt.usrData.AvatarName)
@@ -195,9 +195,9 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			}
 
 			if tt.mockUpdateErr != nil {
-				mUsrRep.EXPECT().UpdateProfileData(ctx, converter.ToDBUserFromUser(tt.usrData)).Return(tt.mockUpdateErr)
+				mUsrRep.EXPECT().UpdateProfileData(ctx, converter.ToRepoUserFromUser(tt.usrData)).Return(tt.mockUpdateErr)
 			} else if tt.mockAvatarErr == nil {
-				mUsrRep.EXPECT().UpdateProfileData(ctx, converter.ToDBUserFromUser(tt.usrData)).Return(nil)
+				mUsrRep.EXPECT().UpdateProfileData(ctx, converter.ToRepoUserFromUser(tt.usrData)).Return(nil)
 			}
 
 			errData := userService.UpdateProfile(ctx, tt.usrData)

@@ -5,12 +5,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 )
 
-func ToDBRegisterFromRegister(rd *models.RegisterData) *dto.DBRegisterData {
+func ToRepoRegisterFromRegister(rd *models.RegisterData) *dto.RepoRegisterData {
 	if rd == nil {
 		return nil
 	}
 
-	return &dto.DBRegisterData{
+	return &dto.RepoRegisterData{
 		Email:                rd.Email,
 		Username:             rd.Username,
 		Password:             rd.Password,

@@ -5,7 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 )
 
-func ToUserFromDBUser(u *dto.DBUser) *models.User {
+func ToUserFromRepoUser(u *dto.RepoUser) *models.User {
 	if u == nil {
 		return nil
 	}
@@ -19,7 +19,7 @@ func ToUserFromDBUser(u *dto.DBUser) *models.User {
 	}
 }
 
-func ToMovieShortInfoFromDTO(m *dto.DBMovieShortInfo) *models.MovieShortInfo {
+func ToMovieShortInfoFromRepo(m *dto.RepoMovieShortInfo) *models.MovieShortInfo {
 	if m == nil {
 		return nil
 	}

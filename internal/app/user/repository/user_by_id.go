@@ -21,5 +21,5 @@ func (u *UserRepo) UserByID(ctx context.Context, userID int) (*models.User, *err
 		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
 	}
 
-	return converter.ToUserFromDBUser(usr), nil
+	return converter.ToUserFromRepoUser(usr), nil
 }

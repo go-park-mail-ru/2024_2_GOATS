@@ -23,6 +23,8 @@ const (
 	rParseErr      = "user_request_parse_error"
 	vlErr          = "user_validation_error"
 	uploadFileSize = 5 * 1024 * 1024
+	destroyFavOp   = "destroy_favorite"
+	setFavOp       = "set_favorite"
 )
 
 type UserHandler struct {
@@ -186,30 +188,43 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 	return profileReq, nil
 }
 
-func (u *UserHandler) Favorites(w http.ResponseWriter, r *http.Request) {
-	logger := log.Ctx(r.Context())
+func (u *UserHandler) SetFavorite(w http.ResponseWriter, r *http.Request) {
+	u.manipulateFavorite(w, r)
+}
+
+func (u *UserHandler) DestroyFavorite(w http.ResponseWriter, r *http.Request) {
+	u.manipulateFavorite(w, r)
+}
+
+func (u *UserHandler) manipulateFavorite(w http.ResponseWriter, r *http.Request) {
 	var err *errVals.ServiceError
+	var op string
+
+	logger := log.Ctx(r.Context())
 	favReq := &api.FavReq{}
 	api.DecodeBody(w, r, favReq)
+	favReq.UserID = config.CurrentUserID(r.Context())
 
 	favSrvData := converter.ToServFavData(favReq)
 
 	if r.Method == http.MethodDelete {
+		op = destroyFavOp
 		err = u.userService.DestroyFavorite(r.Context(), favSrvData)
 	} else {
+		op = setFavOp
 		err = u.userService.AddFavorite(r.Context(), favSrvData)
 	}
 
 	if err != nil {
 		errResp := errVals.ToDeliveryErrorFromService(err)
-		errMsg := errors.New("failed to manipulate favorites")
+		errMsg := fmt.Errorf("failed to %s", op)
 		logger.Error().Err(errMsg).Interface("favResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
 
-	logger.Info().Msg("Manipulate Favorites success")
+	logger.Info().Msgf("%s success", op)
 
 	api.Response(r.Context(), w, http.StatusOK, nil)
 }
@@ -228,7 +243,7 @@ func (u *UserHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
 	srvResp, srvRespErr := u.userService.GetFavorites(r.Context(), usrID)
 	resp, respErr := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(srvRespErr)
 	if respErr != nil {
-		errMsg := errors.New("failed to manipulate favorites")
+		errMsg := errors.New("failed to get user favorites")
 		logger.Error().Err(errMsg).Interface("favResp", respErr).Msg("request_failed")
 		api.Response(r.Context(), w, respErr.HTTPStatus, respErr)
 
