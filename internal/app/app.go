@@ -33,6 +33,7 @@ import (
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
 
 type App struct {
@@ -80,7 +81,7 @@ func (a *App) Run() {
 	srvUser := userServ.NewUserService(repoUser)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
 
-	grpcConn, err := grpc.NewClient(
+	aGrpcConn, err := grpc.NewClient(
 		"127.0.0.1:8081",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
@@ -88,13 +89,24 @@ func (a *App) Run() {
 		log.Fatalf("cant connect to grpc")
 	}
 
-	defer grpcConn.Close()
+	defer aGrpcConn.Close()
 
-	sessManager := auth.NewSessionRPCClient(grpcConn)
+	uGrpcConn, err := grpc.NewClient(
+		"127.0.0.1:8082",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer uGrpcConn.Close()
+
+	sessManager := auth.NewSessionRPCClient(aGrpcConn)
+	usrManager := user.NewUserRPCClient(uGrpcConn)
 
 	repoAuth := authRepo.NewAuthRepository(a.Database, a.Redis)
-	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
-	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser, sessManager)
+	srvAuth := authServ.NewAuthService(repoAuth, repoUser, sessManager, usrManager)
+	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
 	repoMov := movieRepo.NewMovieRepository(a.Database)
 	srvMov := movieServ.NewMovieService(repoMov)

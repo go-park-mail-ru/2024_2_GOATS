@@ -1,0 +1,14 @@
+listener:
+  port: ":8082"
+
+databases:
+  postgres:
+    host: db
+    port: 5432
+    user: test
+    password: test
+    name: cassette-world
+
+  localStorage:
+    userAvatarsFullURL: /home/ubuntu/images/user_avatars/
+    userAvatarsRelativeURL: /images/user_avatars/

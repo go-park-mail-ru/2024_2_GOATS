@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+option go_package = ".";
+
+package user;
+
+message CreateUserRequest {
+  string Email = 1;
+  string Username = 2;
+  string Password = 3;
+  string PasswordConfirmation = 4;
+}
+
+message UserData {
+  uint64 UserID = 1;
+  string Email = 2;
+  string Username = 3;
+  string Password = 4;
+  string AvatarURL = 5;
+  string AvatarName = 6;
+  // AvatarFile
+}
+
+message UpdatePasswordRequest {
+  string OldPassword = 1;
+  string Password = 2;
+  string PasswordConfirmation = 3;
+}
+
+message GetFavorites {
+  uint64 UserID = 1;
+}
+
+message HandleFavorite {
+  uint64 UserID = 1;
+  uint64 MovieID = 2;
+}
+
+message ID {
+  uint64 ID = 1;
+}
+
+message Email {
+  string Email = 1;
+}
+
+message Nothing {
+  bool Dummy = 1;
+}
+
+service UserRPC {
+  rpc Create(CreateUserRequest) returns (ID);
+  rpc UpdateProfile(Nothing) returns (Nothing);
+	rpc UpdatePassword(UpdatePasswordRequest) returns (Nothing);
+	rpc GetFavorites(Nothing) returns (Nothing);
+	rpc SetFavorite(Nothing) returns (Nothing);
+	rpc ResetFavorite(Nothing) returns (Nothing);
+	rpc CheckFavorite(Nothing) returns (Nothing);
+	rpc FindByID(ID) returns (UserData);
+	rpc FindByEmail(Email) returns (UserData);
+}
