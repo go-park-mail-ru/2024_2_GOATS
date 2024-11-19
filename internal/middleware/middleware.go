@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/subtle"
-	"github.com/gorilla/sessions"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
@@ -25,6 +27,12 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
 		w.Header().Set("Req-ID", reqID)
 		logRequest(r, start, "accessLogMiddleware", reqID)
+
+		md := metadata.Pairs(
+			"request_id", reqID,
+		)
+
+		ctx = metadata.NewOutgoingContext(ctx, md)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -49,19 +57,19 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func PanicMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				logger := log.Ctx(r.Context())
-				logger.Error().Msgf("panicMiddleware: Panic happend: %v", err)
-				http.Error(w, "Internal server error", 500)
-			}
-		}()
+// func PanicMiddleware(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		defer func() {
+// 			if err := recover(); err != nil {
+// 				logger := log.Ctx(r.Context())
+// 				logger.Error().Msgf("panicMiddleware: Panic happend: %v", err)
+// 				http.Error(w, "Internal server error", 500)
+// 			}
+// 		}()
 
-		next.ServeHTTP(w, r)
-	})
-}
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
 
 func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
 	var bodyCopy bytes.Buffer

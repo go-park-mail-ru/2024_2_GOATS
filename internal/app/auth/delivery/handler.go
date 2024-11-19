@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
@@ -28,15 +29,19 @@ const (
 type AuthHandler struct {
 	authService AuthServiceInterface
 	userService userDel.UserServiceInterface
+	authMS      auth.SessionRPCClient
+	userMS      auth.SessionRPCClient
 	redisCfg    *config.Redis
 }
 
-func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) handlers.AuthHandlerInterface {
+func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface, authMS auth.SessionRPCClient) handlers.AuthHandlerInterface {
 	redisCfg := config.FromContext(ctx).Databases.Redis
 
 	return &AuthHandler{
 		authService: authSrv,
 		userService: usrSrv,
+		authMS:      authMS,
+		userMS:      authMS,
 		redisCfg:    &redisCfg,
 	}
 }
@@ -59,9 +64,8 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logoutSrvResp, errSrvResp := a.authService.Logout(r.Context(), ck.Value)
+	logoutResp, err := a.authMS.DestroySession(r.Context(), &auth.DestroySessionRequest{Cookie: ck.Value})
 
-	logoutResp, errResp := converter.ToApiAuthResponse(logoutSrvResp), converter.ToApiErrorResponse(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to logout")
 		logger.Error().Err(errMsg).Interface("logoutResp", errResp).Msg("request_failed")
@@ -112,6 +116,16 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	usrID := 12345
+	resp, err := a.authMS.CreateSession(r.Context(), &auth.CreateSessionRequest{UserID: uint64(usrID)})
+	if err != nil {
+		fmt.Println(fmt.Errorf("error happend %w", err))
+		return
+	}
+
+	fmt.Println(resp)
+	return
+
 	logger := log.Ctx(r.Context())
 	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
 
@@ -167,6 +181,13 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	usrID, err := a.authMS.Session(r.Context(), &auth.GetSessionRequest{Cookie: ck.Value})
+	if err != nil {
+		return
+	}
+
+	usrData, err := a.userMS.GetUserInfo(ctx, usrID)
 
 	sessionSrvResp, errSrvResp := a.authService.Session(r.Context(), ck.Value)
 

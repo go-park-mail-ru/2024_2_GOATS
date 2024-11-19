@@ -5,17 +5,21 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
@@ -62,15 +66,36 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
-	repoUser := userRepo.NewUserRepository(database)
+	return &App{
+		Database: database,
+		Redis:    rdb,
+		Context:  ctx,
+		Logger:   &logger,
+	}, nil
+}
+
+func (a *App) Run() {
+	repoUser := userRepo.NewUserRepository(a.Database)
 	srvUser := userServ.NewUserService(repoUser)
-	delUser := userApi.NewUserHandler(ctx, srvUser)
+	delUser := userApi.NewUserHandler(a.Context, srvUser)
 
-	repoAuth := authRepo.NewAuthRepository(database, rdb)
+	grpcConn, err := grpc.NewClient(
+		"127.0.0.1:8081",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer grpcConn.Close()
+
+	sessManager := auth.NewSessionRPCClient(grpcConn)
+
+	repoAuth := authRepo.NewAuthRepository(a.Database, a.Redis)
 	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
-	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
+	delAuth := authApi.NewAuthHandler(a.Context, srvAuth, srvUser, sessManager)
 
-	repoMov := movieRepo.NewMovieRepository(database)
+	repoMov := movieRepo.NewMovieRepository(a.Database)
 	srvMov := movieServ.NewMovieService(repoMov)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
@@ -82,28 +107,17 @@ func New(isTest bool) (*App, error) {
 
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)
+	ctxValues := config.FromContext(a.Context)
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
+		Addr:         fmt.Sprintf(":%d", ctxValues.Listener.Port),
 		Handler:      mx,
-		ReadTimeout:  cfg.Listener.Timeout,
-		WriteTimeout: cfg.Listener.Timeout,
-		IdleTimeout:  cfg.Listener.IdleTimeout,
+		ReadTimeout:  ctxValues.Listener.Timeout,
+		WriteTimeout: ctxValues.Listener.Timeout,
+		IdleTimeout:  ctxValues.Listener.IdleTimeout,
 	}
 
-	return &App{
-		Database: database,
-		Redis:    rdb,
-		Context:  ctx,
-		Server:   srv,
-		Logger:   &logger,
-		Mux:      mx,
-	}, nil
-}
-
-func (a *App) Run() {
-	ctxValues := config.FromContext(a.Context)
-	a.Mux.Use(a.AppReadyMiddleware)
+	mx.Use(a.AppReadyMiddleware)
 
 	a.Logger.Info().Msgf("Server is listening: %s:%d", ctxValues.Listener.Address, ctxValues.Listener.Port)
 
@@ -115,7 +129,7 @@ func (a *App) Run() {
 	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			a.Logger.Info().Msg("server closed under request")
 		} else {
