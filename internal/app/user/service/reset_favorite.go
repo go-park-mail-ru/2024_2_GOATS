@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/converter"
 )
 
-func (u *UserService) DestroyFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError {
+func (u *UserService) ResetFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError {
 	err := u.userRepo.DestroyFavorite(ctx, converter.ToRepoFavoriteFromFavorite(favData))
 	if err != nil {
 		return errVals.ToServiceErrorFromRepo(err)

@@ -189,14 +189,14 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 }
 
 func (u *UserHandler) SetFavorite(w http.ResponseWriter, r *http.Request) {
-	u.manipulateFavorite(w, r)
+	u.toggleFavorite(w, r)
 }
 
-func (u *UserHandler) DestroyFavorite(w http.ResponseWriter, r *http.Request) {
-	u.manipulateFavorite(w, r)
+func (u *UserHandler) ResetFavorite(w http.ResponseWriter, r *http.Request) {
+	u.toggleFavorite(w, r)
 }
 
-func (u *UserHandler) manipulateFavorite(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandler) toggleFavorite(w http.ResponseWriter, r *http.Request) {
 	var err *errVals.ServiceError
 	var op string
 
@@ -209,7 +209,7 @@ func (u *UserHandler) manipulateFavorite(w http.ResponseWriter, r *http.Request)
 
 	if r.Method == http.MethodDelete {
 		op = destroyFavOp
-		err = u.userService.DestroyFavorite(r.Context(), favSrvData)
+		err = u.userService.ResetFavorite(r.Context(), favSrvData)
 	} else {
 		op = setFavOp
 		err = u.userService.AddFavorite(r.Context(), favSrvData)

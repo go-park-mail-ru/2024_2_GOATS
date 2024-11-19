@@ -82,5 +82,5 @@ func ToStringFromSQLString(sqlStr sql.NullString) string {
 		return ""
 	}
 
-	return string(sqlStr.String)
+	return sqlStr.String
 }

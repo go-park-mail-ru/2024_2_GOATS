@@ -9,7 +9,7 @@ type MovieHandlerInterface interface {
 	GetGenres(w http.ResponseWriter, r *http.Request)
 	GetMovie(w http.ResponseWriter, r *http.Request)
 	GetActor(w http.ResponseWriter, r *http.Request)
-	GetByGenre(w http.ResponseWriter, r *http.Request)
+	GetMovieByGenre(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthHandlerInterface interface {
@@ -24,5 +24,5 @@ type UserHandlerInterface interface {
 	UpdatePassword(w http.ResponseWriter, r *http.Request)
 	GetFavorites(w http.ResponseWriter, r *http.Request)
 	SetFavorite(w http.ResponseWriter, r *http.Request)
-	DestroyFavorite(w http.ResponseWriter, r *http.Request)
+	ResetFavorite(w http.ResponseWriter, r *http.Request)
 }

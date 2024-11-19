@@ -11,7 +11,7 @@ import (
 func (r *UserRepo) DestroyFavorite(ctx context.Context, favData *dto.RepoFavorite) *errVals.RepoError {
 	err := favoritedb.Destroy(ctx, favData, r.Database)
 	if err != nil {
-		return errVals.NewRepoError(errVals.ErrDestroyFavorite, errVals.NewCustomError(err.Error()))
+		return errVals.NewRepoError(errVals.ErrResetFavorite, errVals.NewCustomError(err.Error()))
 	}
 
 	return nil

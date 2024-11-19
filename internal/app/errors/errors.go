@@ -14,7 +14,7 @@ const (
 	ErrBrokenCookieCode    = "broken_cookie"
 	ErrNoCookieCode        = "no_cookie_provided"
 	ErrRedisGetCode        = "failed_read_from_redis"
-	ErrConvertionCode      = "convertion_error"
+	ErrTransformationCode  = "transformation_error"
 	ErrServerCode          = "something_went_wrong"
 	ErrGenerateTokenCode   = "auth_token_generation_error"
 	ErrCreateUserCode      = "create_user_error"
@@ -31,7 +31,7 @@ const (
 	ErrGenCSRFCode         = "failed_to_generate_csrf_token"
 	ErrSaveFileCode        = "failed_to_save_image"
 	ErrCreateFavorite      = "create_favorite_error"
-	ErrDestroyFavorite     = "destroy_favorite_error"
+	ErrResetFavorite       = "destroy_favorite_error"
 	ErrGetFavorites        = "get_favorite_error"
 )
 
@@ -40,7 +40,7 @@ var ErrorCodeToHTTPStatus = map[string]int{
 	ErrBrokenCookieCode:    http.StatusBadRequest,
 	ErrNoCookieCode:        http.StatusBadRequest,
 	ErrRedisGetCode:        http.StatusInternalServerError,
-	ErrConvertionCode:      http.StatusInternalServerError,
+	ErrTransformationCode:  http.StatusInternalServerError,
 	ErrServerCode:          http.StatusInternalServerError,
 	ErrGenerateTokenCode:   http.StatusInternalServerError,
 	ErrCreateUserCode:      http.StatusInternalServerError,

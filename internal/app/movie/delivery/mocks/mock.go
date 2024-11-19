@@ -51,21 +51,6 @@ func (mr *MockMovieServiceInterfaceMockRecorder) GetActor(ctx, actorID interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActor", reflect.TypeOf((*MockMovieServiceInterface)(nil).GetActor), ctx, actorID)
 }
 
-// GetByGenre mocks base method.
-func (m *MockMovieServiceInterface) GetByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errors.ServiceError) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByGenre", ctx, genre)
-	ret0, _ := ret[0].([]models.MovieShortInfo)
-	ret1, _ := ret[1].(*errors.ServiceError)
-	return ret0, ret1
-}
-
-// GetByGenre indicates an expected call of GetByGenre.
-func (mr *MockMovieServiceInterfaceMockRecorder) GetByGenre(ctx, genre interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByGenre", reflect.TypeOf((*MockMovieServiceInterface)(nil).GetByGenre), ctx, genre)
-}
-
 // GetCollection mocks base method.
 func (m *MockMovieServiceInterface) GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errors.ServiceError) {
 	m.ctrl.T.Helper()
@@ -94,4 +79,19 @@ func (m *MockMovieServiceInterface) GetMovie(ctx context.Context, mvID int) (*mo
 func (mr *MockMovieServiceInterfaceMockRecorder) GetMovie(ctx, mvID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovie", reflect.TypeOf((*MockMovieServiceInterface)(nil).GetMovie), ctx, mvID)
+}
+
+// GetMovieByGenre mocks base method.
+func (m *MockMovieServiceInterface) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errors.ServiceError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMovieByGenre", ctx, genre)
+	ret0, _ := ret[0].([]models.MovieShortInfo)
+	ret1, _ := ret[1].(*errors.ServiceError)
+	return ret0, ret1
+}
+
+// GetMovieByGenre indicates an expected call of GetMovieByGenre.
+func (mr *MockMovieServiceInterfaceMockRecorder) GetMovieByGenre(ctx, genre interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByGenre", reflect.TypeOf((*MockMovieServiceInterface)(nil).GetMovieByGenre), ctx, genre)
 }

@@ -50,20 +50,6 @@ func (mr *MockUserServiceInterfaceMockRecorder) AddFavorite(ctx, favData interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFavorite", reflect.TypeOf((*MockUserServiceInterface)(nil).AddFavorite), ctx, favData)
 }
 
-// DestroyFavorite mocks base method.
-func (m *MockUserServiceInterface) DestroyFavorite(ctx context.Context, favData *models.Favorite) *errors.ServiceError {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DestroyFavorite", ctx, favData)
-	ret0, _ := ret[0].(*errors.ServiceError)
-	return ret0
-}
-
-// DestroyFavorite indicates an expected call of DestroyFavorite.
-func (mr *MockUserServiceInterfaceMockRecorder) DestroyFavorite(ctx, favData interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestroyFavorite", reflect.TypeOf((*MockUserServiceInterface)(nil).DestroyFavorite), ctx, favData)
-}
-
 // GetFavorites mocks base method.
 func (m *MockUserServiceInterface) GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errors.ServiceError) {
 	m.ctrl.T.Helper()
@@ -77,6 +63,20 @@ func (m *MockUserServiceInterface) GetFavorites(ctx context.Context, usrID int) 
 func (mr *MockUserServiceInterfaceMockRecorder) GetFavorites(ctx, usrID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockUserServiceInterface)(nil).GetFavorites), ctx, usrID)
+}
+
+// ResetFavorite mocks base method.
+func (m *MockUserServiceInterface) ResetFavorite(ctx context.Context, favData *models.Favorite) *errors.ServiceError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetFavorite", ctx, favData)
+	ret0, _ := ret[0].(*errors.ServiceError)
+	return ret0
+}
+
+// ResetFavorite indicates an expected call of ResetFavorite.
+func (mr *MockUserServiceInterfaceMockRecorder) ResetFavorite(ctx, favData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetFavorite", reflect.TypeOf((*MockUserServiceInterface)(nil).ResetFavorite), ctx, favData)
 }
 
 // UpdatePassword mocks base method.

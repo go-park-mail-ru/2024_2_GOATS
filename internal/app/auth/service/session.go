@@ -21,7 +21,7 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*models.Sessi
 		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
 		log.Ctx(ctx).Error().Err(errMsg).Msg("covertion_error")
 
-		return nil, errVals.NewServiceError(errVals.ErrConvertionCode, errVals.NewCustomError(errMsg.Error()))
+		return nil, errVals.NewServiceError(errVals.ErrTransformationCode, errVals.NewCustomError(errMsg.Error()))
 	}
 
 	user, sesErr := s.userRepository.UserByID(ctx, usrID)

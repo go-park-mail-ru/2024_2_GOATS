@@ -9,14 +9,8 @@ import (
 )
 
 func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
+	defer closeRows(rows, "movie_collections")
 	collections := make(map[int]models.Collection, 3)
-
-	defer func() {
-		if err := rows.Close(); err != nil {
-			errMsg := fmt.Errorf("cannot close rows while taking movie_collections: %w", err)
-			log.Error().Err(errMsg).Msg(errMsg.Error())
-		}
-	}()
 
 	for rows.Next() {
 		var collectionID int
@@ -47,13 +41,7 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 }
 
 func ScanMovieShortInfo(rows *sql.Rows) ([]models.MovieShortInfo, error) {
-	defer func() {
-		if err := rows.Close(); err != nil {
-			errMsg := fmt.Errorf("cannot close rows while taking user favorites: %w", err)
-			log.Error().Err(errMsg).Msg(errMsg.Error())
-		}
-	}()
-
+	defer closeRows(rows, "movie_short_info")
 	var movies []models.MovieShortInfo
 
 	for rows.Next() {
@@ -72,4 +60,11 @@ func ScanMovieShortInfo(rows *sql.Rows) ([]models.MovieShortInfo, error) {
 	}
 
 	return movies, nil
+}
+
+func closeRows(rows *sql.Rows, entity string) {
+	if err := rows.Close(); err != nil {
+		errMsg := fmt.Errorf("cannot close rows while taking %s: %w", entity, err)
+		log.Error().Err(errMsg).Msg(errMsg.Error())
+	}
 }

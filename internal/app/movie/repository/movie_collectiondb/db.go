@@ -52,7 +52,7 @@ func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 
 	rows, err := db.QueryContext(ctx, getGenresCollectionsSQL)
 	if err != nil {
-		errMsg := fmt.Errorf("postgres: error while selecting movie_collections: %w", err)
+		errMsg := fmt.Errorf("postgres: error while selecting genre_collections: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
@@ -63,7 +63,7 @@ func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	return rows, nil
 }
 
-func GetByGenres(ctx context.Context, genre string, db *sql.DB) (*sql.Rows, error) {
+func GetMovieByGenre(ctx context.Context, genre string, db *sql.DB) (*sql.Rows, error) {
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, getByGenreSQL, genre)

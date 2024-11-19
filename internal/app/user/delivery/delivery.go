@@ -12,6 +12,6 @@ type UserServiceInterface interface {
 	UpdateProfile(ctx context.Context, profileData *models.User) *errVals.ServiceError
 	UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errVals.ServiceError
 	AddFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
-	DestroyFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
+	ResetFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
 	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.ServiceError)
 }

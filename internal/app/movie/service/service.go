@@ -16,7 +16,7 @@ type MovieRepositoryInterface interface {
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.RepoError)
 	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errVals.RepoError)
 	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, *errVals.RepoError)
-	GetByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.RepoError)
+	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.RepoError)
 }
 
 type MovieService struct {
