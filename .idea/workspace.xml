@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service" />
+    <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/handlers/implementation.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/handlers/implementation.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/delivery.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -69,7 +81,7 @@
     &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;joint__viewing&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;release/search&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service&quot;,

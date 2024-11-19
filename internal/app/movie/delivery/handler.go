@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,12 +10,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 )
-
-var _ handlers.MovieImplementationInterface = (*MovieHandler)(nil)
 
 type MovieHandler struct {
 	movieService MovieServiceInterface
@@ -83,4 +81,23 @@ func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.Response(w, http.StatusOK, actorResp)
+}
+
+func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		http.Error(w, "query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	movies, err := h.movieService.SearchMovies(r.Context(), query)
+	if err != nil {
+		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(movies); err != nil {
+		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+	}
 }

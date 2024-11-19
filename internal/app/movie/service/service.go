@@ -8,13 +8,12 @@ import (
 	api "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 )
 
-var _ api.MovieServiceInterface = (*MovieService)(nil)
-
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type MovieRepositoryInterface interface {
 	GetCollection(ctx context.Context) ([]models.Collection, *errVals.ErrorObj, int)
 	GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errVals.ErrorObj, int)
 	GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *errVals.ErrorObj, int)
+	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 }
 
 type MovieService struct {
