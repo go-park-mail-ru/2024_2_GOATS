@@ -14,6 +14,7 @@ type MovieRepositoryInterface interface {
 	GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *errVals.ErrorObj, int)
 	GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *errVals.ErrorObj, int)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
+	SearchActors(ctx context.Context, query string) ([]models.StaffInfo, error)
 }
 
 type MovieService struct {

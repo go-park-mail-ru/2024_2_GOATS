@@ -12,4 +12,5 @@ type MovieServiceInterface interface {
 	GetMovie(ctx context.Context, mvId int) (*models.MovieInfo, *models.ErrorRespData)
 	GetActor(ctx context.Context, actorId int) (*models.StaffInfo, *models.ErrorRespData)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
+	SearchActors(ctx context.Context, query string) ([]models.StaffInfo, error)
 }

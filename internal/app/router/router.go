@@ -33,6 +33,7 @@ func SetupMovie(delLayer handlers.MovieImplementationInterface, router *mux.Rout
 
 	router.HandleFunc("/movies/search", delLayer.SearchMovies).Methods("GET")
 
+	router.HandleFunc("/actors/search", delLayer.SearchActors).Methods("GET")
 }
 
 func SetupUser(delLayer handlers.UserImplementationInterface, router *mux.Router) {

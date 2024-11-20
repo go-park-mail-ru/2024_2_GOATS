@@ -101,3 +101,22 @@ func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		http.Error(w, "query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	movies, err := h.movieService.SearchActors(r.Context(), query)
+	if err != nil {
+		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(movies); err != nil {
+		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+	}
+}

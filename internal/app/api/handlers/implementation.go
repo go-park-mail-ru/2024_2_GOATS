@@ -10,6 +10,7 @@ type MovieImplementationInterface interface {
 	GetMovie(w http.ResponseWriter, r *http.Request)
 	GetActor(w http.ResponseWriter, r *http.Request)
 	SearchMovies(w http.ResponseWriter, r *http.Request)
+	SearchActors(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthImplementationInterface interface {
