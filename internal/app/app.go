@@ -69,8 +69,6 @@ func New(isTest bool, port *nat.Port) (*App, error) {
 
 	cfgEl := elasticsearch.Config{
 		Addresses: []string{"http://localhost:9200"},
-		Username:  "foo",
-		Password:  "bar",
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost:   10,
 			ResponseHeaderTimeout: time.Second,
