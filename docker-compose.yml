@@ -49,7 +49,7 @@ services:
       - cassette-world
 
   elasticsearch:
-    image: elasticsearch:8.9.0  # Используйте образ с Docker Hub
+    image: elasticsearch:8.9.0
     container_name: elasticsearch
     environment:
       - "discovery.type=single-node"

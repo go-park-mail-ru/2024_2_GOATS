@@ -26,7 +26,7 @@ func (r *Repo) SearchMovies(ctx context.Context, query string) ([]models.MovieIn
 
 	res, err := r.Elasticsearch.Search(
 		r.Elasticsearch.Search.WithContext(ctx),
-		r.Elasticsearch.Search.WithIndex("movies"), // Укажите ваш индекс
+		r.Elasticsearch.Search.WithIndex("movies"),
 		r.Elasticsearch.Search.WithBody(&buf),
 		r.Elasticsearch.Search.WithTrackTotalHits(true),
 	)

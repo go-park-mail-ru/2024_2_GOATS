@@ -6,15 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/api/handlers/implementation.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/handlers/implementation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/delivery.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/repository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/service.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/app/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
