@@ -3,7 +3,6 @@ package delivery
 import (
 	"bytes"
 	"context"
-	"errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -17,49 +16,44 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	mockSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks"
 )
 
 func TestUserHandler_UpdatePassword(t *testing.T) {
 	ctx := testContext(t)
 	tests := []struct {
-		name       string
-		reqBody    string
-		mockReturn *models.UpdateUserRespData
-		mockErr    *models.ErrorRespData
-		statusCode int
-		resp       string
+		name        string
+		reqBody     string
+		mockErr     *errVals.ServiceError
+		statusCode  int
+		resp        string
+		skipService bool
 	}{
 		{
-			name:    "Success",
-			reqBody: `{"password": "newpass123", "passwordConfirmation": "newpass123"}`,
-			mockReturn: &models.UpdateUserRespData{
-				StatusCode: http.StatusOK,
-			},
-			resp:       `{"success":true}`,
+			name:       "Success",
+			reqBody:    `{"password": "newpass123", "passwordConfirmation": "newpass123"}`,
+			resp:       "",
 			statusCode: http.StatusOK,
 		},
 		{
-			name:       "Parse_error",
-			reqBody:    `{"password": "newpass123"}`,
-			resp:       `{"success":false,"errors":[{"Code":"user_request_parse_error","Error":"updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
-			statusCode: http.StatusBadRequest,
+			name:        "Parse_error",
+			reqBody:     `{"password": "newpass123"}`,
+			resp:        `{"errors":[{"code":"user_request_parse_error","error":"updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			statusCode:  http.StatusBadRequest,
+			skipService: true,
 		},
 		{
-			name:       "Validation error",
-			reqBody:    `{"password": "newpass123", "passwordConfirmation": "wrongpass"}`,
-			resp:       `{"success":false,"errors":[{"Code":"user_validation_error","Error":"updatePassword action: Password err - password doesnt match with passwordConfirmation"}]}`,
-			statusCode: http.StatusBadRequest,
+			name:        "Validation error",
+			reqBody:     `{"password": "newpass123", "passwordConfirmation": "wrongpass"}`,
+			resp:        `{"errors":[{"code":"user_validation_error","error":"updatePassword action: Password err - password doesn't match with passwordConfirmation"}]}`,
+			statusCode:  http.StatusBadRequest,
+			skipService: true,
 		},
 		{
-			name:    "Service error",
-			reqBody: `{"password": "newpass123", "passwordConfirmation": "newpass123"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			name:       "Service error",
+			reqBody:    `{"password": "newpass123", "passwordConfirmation": "newpass123"}`,
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -80,8 +74,8 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
 			handler := NewUserHandler(ctx, ms)
 
-			if test.mockReturn != nil || test.mockErr != nil {
-				ms.EXPECT().UpdatePassword(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			if !test.skipService {
+				ms.EXPECT().UpdatePassword(gomock.Any(), gomock.Any()).Return(test.mockErr)
 			}
 
 			w := httptest.NewRecorder()
@@ -91,7 +85,11 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
-			assert.JSONEq(t, test.resp, w.Body.String())
+			if test.resp == "" {
+				assert.Equal(t, test.resp, w.Body.String())
+			} else {
+				assert.JSONEq(t, test.resp, w.Body.String())
+			}
 		})
 	}
 }
@@ -100,13 +98,13 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 	ctx := testContext(t)
 
 	tests := []struct {
-		name       string
-		formData   map[string]string
-		fileData   []byte
-		mockReturn *models.UpdateUserRespData
-		mockErr    *models.ErrorRespData
-		statusCode int
-		resp       string
+		name        string
+		formData    map[string]string
+		fileData    []byte
+		mockErr     *errVals.ServiceError
+		statusCode  int
+		resp        string
+		skipService bool
 	}{
 		{
 			name: "Success",
@@ -114,11 +112,8 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 				"email":    "test@mail.ru",
 				"username": "testuser",
 			},
-			fileData: []byte("fake image data"),
-			mockReturn: &models.UpdateUserRespData{
-				StatusCode: http.StatusOK,
-			},
-			resp:       `{"success":true}`,
+			fileData:   []byte("fake image data"),
+			resp:       "",
 			statusCode: http.StatusOK,
 		},
 		{
@@ -126,8 +121,9 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			formData: map[string]string{
 				"email": "test@mail.ru",
 			},
-			resp:       `{"success":false,"errors":[{"Code":"user_request_parse_error","Error":"updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
-			statusCode: http.StatusBadRequest,
+			resp:        `{"errors":[{"code":"user_request_parse_error","error":"updateProfile action: Path params err - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			statusCode:  http.StatusBadRequest,
+			skipService: true,
 		},
 		{
 			name: "Validation error",
@@ -135,8 +131,9 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 				"email":    "invalid-email",
 				"username": "testuser",
 			},
-			resp:       `{"success":false,"errors":[{"Code":"user_validation_error","Error":"updateProfile action: Email err - email is incorrect"}]}`,
-			statusCode: http.StatusBadRequest,
+			resp:        `{"errors":[{"code":"user_validation_error","error":"updateProfile action: Email err - email is incorrect"}]}`,
+			statusCode:  http.StatusBadRequest,
+			skipService: true,
 		},
 		{
 			name: "Service error",
@@ -144,12 +141,9 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 				"email":    "test@example.com",
 				"username": "testuser",
 			},
-			fileData: []byte("fake image data"),
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			fileData:   []byte("fake image data"),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -184,8 +178,8 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
 			handler := NewUserHandler(ctx, ms)
 
-			if test.mockReturn != nil || test.mockErr != nil {
-				ms.EXPECT().UpdateProfile(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			if !test.skipService {
+				ms.EXPECT().UpdateProfile(gomock.Any(), gomock.Any()).Return(test.mockErr)
 			}
 
 			w := httptest.NewRecorder()
@@ -195,7 +189,11 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
-			assert.JSONEq(t, test.resp, w.Body.String())
+			if test.resp == "" {
+				assert.Equal(t, test.resp, w.Body.String())
+			} else {
+				assert.JSONEq(t, test.resp, w.Body.String())
+			}
 		})
 	}
 }

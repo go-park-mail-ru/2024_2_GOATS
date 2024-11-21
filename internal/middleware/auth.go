@@ -1,14 +1,17 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
+	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,7 +27,7 @@ func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddle
 
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/api/users") {
+		if !strings.HasPrefix(r.URL.Path, "/api/users") && !strings.HasPrefix(r.URL.Path, "/api/favorites") {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -44,16 +47,18 @@ func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 
 		sessionSrvResp, errSrvResp := mw.authServ.Session(r.Context(), ck.Value)
 
-		_, errResp := converter.ToApiSessionResponse(sessionSrvResp), converter.ToApiErrorResponse(errSrvResp)
+		_, errResp := converter.ToApiSessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 		if errResp != nil {
 			errMsg := errors.New("failed to authorize")
 			logger.Error().Err(errMsg).Interface("sessionResp", errResp).Msg("request_failed")
-			api.Response(r.Context(), w, errResp.StatusCode, errResp)
+			api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 			return
 		}
 
+		ctx := context.WithValue(r.Context(), config.CurrentUserKey{}, sessionSrvResp.UserData.ID)
+
 		logger.Info().Interface("sessionResp", sessionSrvResp).Msg("authMiddleware success")
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

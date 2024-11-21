@@ -34,7 +34,7 @@ func TestDelivery_Register(t *testing.T) {
 		req          string
 		resp         string
 		mockReturn   *models.AuthRespData
-		mockErr      *models.ErrorRespData
+		mockErr      *errVals.ServiceError
 		statusCode   int
 		isValidation bool
 	}{
@@ -49,53 +49,34 @@ func TestDelivery_Register(t *testing.T) {
 						UserID:  1,
 					},
 				},
-				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true}`,
+			resp:       `{}`,
 			statusCode: http.StatusOK,
 		},
 		{
-			name: "Service Error",
-			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "123456789"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errors.New("some token error")})},
-			},
+			name:       "Service Error",
+			req:        `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "123456789"}`,
+			mockErr:    errVals.NewServiceError(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errors.New("some token error")}),
 			statusCode: http.StatusInternalServerError,
-			resp:       `{"success":false,"errors":[{"Code":"auth_token_generation_error","Error":"some token error"}]}`,
+			resp:       `{"errors":[{"code":"auth_token_generation_error","error":"some token error"}]}`,
 		},
 		{
-			name: "Validation Error",
-			req:  `{"email": "invalid", "username": "tester", "password": "short", "passwordConfirmation": "short"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusBadRequest,
-				Errors: []errVals.ErrorObj{
-					{
-						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordText.Err},
-					},
-					{
-						Code: errVals.ErrInvalidEmailCode, Error: errVals.CustomError{Err: errVals.ErrInvalidEmailText.Err},
-					},
-				},
-			},
+			name:         "Validation Error",
+			req:          `{"email": "invalid", "username": "tester", "password": "short", "passwordConfirmation": "short"}`,
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
-			resp:         `{"success":false,"errors":[{"Code":"invalid_password","Error":"password is too short. The minimal len is 8"},{"Code":"invalid_email","Error":"email is incorrect"}]}`,
+			resp:         `{"errors":[{"code":"invalid_password","error":"password is too short. The minimal len is 8"},{"code":"invalid_email","error":"email is incorrect"}]}`,
 		},
 		{
 			name: "Password mismatch",
 			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "12345678910"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusBadRequest,
-				Errors: []errVals.ErrorObj{
-					{
-						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatchText.Err},
-					},
-				},
+			mockErr: &errVals.ServiceError{
+				Code:  errVals.ErrInvalidPasswordCode,
+				Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatch.Err},
 			},
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
-			resp:         `{"success":false,"errors":[{"Code":"invalid_password","Error":"password doesnt match with passwordConfirmation"}]}`,
+			resp:         `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
 		},
 	}
 
@@ -137,7 +118,7 @@ func TestDelivery_Login(t *testing.T) {
 		req        string
 		resp       string
 		mockReturn *models.AuthRespData
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		statusCode int
 	}{
 		{
@@ -151,20 +132,16 @@ func TestDelivery_Login(t *testing.T) {
 						UserID:  1,
 					},
 				},
-				StatusCode: http.StatusOK,
 			},
 			statusCode: http.StatusOK,
-			resp:       `{"success": true}`,
+			resp:       `{}`,
 		},
 		{
-			req:  `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatchText)},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"invalid_password","Error":"password doesnt match with passwordConfirmation"}]}`,
-			statusCode: http.StatusInternalServerError,
+			req:        `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, (errVals.NewCustomError(errVals.ErrInvalidPasswordsMatch.Err.Error()))),
+			resp:       `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
+			statusCode: http.StatusBadRequest,
 		},
 	}
 
@@ -203,46 +180,38 @@ func TestDelivery_Logout(t *testing.T) {
 		name         string
 		resp         string
 		mockReturn   *models.AuthRespData
-		mockErr      *models.ErrorRespData
+		mockErr      *errVals.ServiceError
 		statusCode   int
 		isValidation bool
 		emptyCookie  bool
 		noCookie     bool
 	}{
 		{
-			name: "Success",
-			mockReturn: &models.AuthRespData{
-				StatusCode: http.StatusOK,
-			},
+			name:       "Success",
+			mockReturn: &models.AuthRespData{},
 			statusCode: http.StatusOK,
-			resp:       `{"success": true}`,
+			resp:       `{}`,
 		},
 		{
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some redis error")})},
-			},
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some redis error")}),
 			statusCode: http.StatusInternalServerError,
-			resp:       `{"success":false,"errors":[{"Code":"failed_delete_from_redis","Error":"some redis error"}]}`,
+			resp:       `{"errors":[{"code":"failed_delete_from_redis","error":"some redis error"}]}`,
 		},
 		{
-			name: "Validation Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusBadRequest,
-				Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: errVals.CustomError{Err: errVals.ErrBrokenCookieText.Err}}},
-			},
+			name:         "Validation Error",
+			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.CustomError{Err: errVals.ErrBrokenCookie.Err}),
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,
-			resp:         `{"success":false,"errors":[{"Code":"auth_validation_error","Error":"logout action: Invalid cookie err - broken cookie was given"}]}`,
+			resp:         `{"errors":[{"code":"auth_validation_error","error":"logout action: Invalid cookie err - broken cookie was given"}]}`,
 		},
 		{
 			name:         "No cookie provided",
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			noCookie:     true,
-			resp:         `{"success":false,"errors":[{"Code":"auth_request_parse_error","Error":"logout action: No cookie err - http: named cookie not present"}]}`,
+			resp:         `{"errors":[{"code":"auth_request_parse_error","error":"logout action: No cookie err - http: named cookie not present"}]}`,
 		},
 	}
 
@@ -284,7 +253,7 @@ func TestDelivery_Session(t *testing.T) {
 	tests := []struct {
 		name       string
 		mockReturn *models.SessionRespData
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		resp       string
 		statusCode int
 		noCookie   bool
@@ -297,26 +266,22 @@ func TestDelivery_Session(t *testing.T) {
 					Email:    "test@mail.ru",
 					Username: "Tester",
 				},
-				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
+			resp:       `{"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{
 			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors: []errVals.ErrorObj{*errVals.NewErrorObj(
-					errVals.ErrCreateUserCode,
-					errVals.CustomError{Err: errors.New("cannot get cookie from redis")},
-				)},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"create_user_error","Error":"cannot get cookie from redis"}]}`,
+			mockErr: errVals.NewServiceError(
+				errVals.ErrCreateUserCode,
+				errVals.CustomError{Err: errors.New("cannot get cookie from redis")},
+			),
+			resp:       `{"errors":[{"code":"create_user_error","error":"cannot get cookie from redis"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name:       "Forbidden",
-			resp:       `{"success":false,"errors":[{"Code":"auth_request_parse_error","Error":"session action: No cookie err - http: named cookie not present"}]}`,
+			resp:       `{"errors":[{"code":"auth_request_parse_error","error":"session action: No cookie err - http: named cookie not present"}]}`,
 			statusCode: http.StatusForbidden,
 			noCookie:   true,
 		},

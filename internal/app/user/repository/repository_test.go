@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
 )
 
@@ -34,7 +34,7 @@ func TestCreateUser_Success(t *testing.T) {
 		Username: usrUsername,
 	}
 
-	regData := &models.RegisterData{
+	regData := &dto.RepoRegisterData{
 		Email:                usrEmail,
 		Username:             usrUsername,
 		Password:             pass,
@@ -46,10 +46,9 @@ func TestCreateUser_Success(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
 			AddRow(usrID, usrEmail))
 
-	usr, errObj, statusCode := r.CreateUser(context.Background(), regData)
+	usr, errObj := r.CreateUser(context.Background(), regData)
 
 	assert.Nil(t, errObj)
-	assert.Equal(t, http.StatusOK, statusCode)
 	assert.Equal(t, expectedUsr.Email, usr.Email)
 	assert.Equal(t, expectedUsr.ID, usr.ID)
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -66,7 +65,7 @@ func TestCreateUser_DbError(t *testing.T) {
 	usrUsername := "mr tester"
 	pass := "test_password"
 
-	regData := &models.RegisterData{
+	regData := &dto.RepoRegisterData{
 		Email:                usrEmail,
 		Username:             usrUsername,
 		Password:             pass,
@@ -76,11 +75,10 @@ func TestCreateUser_DbError(t *testing.T) {
 	mock.ExpectQuery(`INSERT INTO users \(email, username, password_hash\) VALUES \(\$1, \$2, \$3\) RETURNING id, email`).
 		WithArgs(usrEmail, usrUsername, sqlmock.AnyArg()).WillReturnError(fmt.Errorf("some_error"))
 
-	usr, errObj, statusCode := r.CreateUser(context.Background(), regData)
+	usr, errObj := r.CreateUser(context.Background(), regData)
 
 	assert.NotNil(t, errObj)
 	assert.Nil(t, usr)
-	assert.Equal(t, http.StatusConflict, statusCode)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -98,10 +96,9 @@ func TestUpdatePassword_Success(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), usrID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	errObj, statusCode := r.UpdatePassword(context.Background(), usrID, pass)
+	errObj := r.UpdatePassword(context.Background(), usrID, pass)
 
 	assert.Nil(t, errObj)
-	assert.Equal(t, http.StatusOK, statusCode)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -119,10 +116,9 @@ func TestUpdatePassword_DbError(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), usrID).
 		WillReturnError(fmt.Errorf("some_error"))
 
-	errObj, statusCode := r.UpdatePassword(context.Background(), usrID, pass)
+	errObj := r.UpdatePassword(context.Background(), usrID, pass)
 
 	assert.NotNil(t, errObj)
-	assert.Equal(t, http.StatusInternalServerError, statusCode)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -143,11 +139,10 @@ func TestUserByEmail_Success(t *testing.T) {
 		WithArgs(usrEmail).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "username", "password_hash"}).
 		AddRow(usrID, usrEmail, usrUsername, passHash))
 
-	usr, errObj, statusCode := r.UserByEmail(context.Background(), usrEmail)
+	usr, errObj := r.UserByEmail(context.Background(), usrEmail)
 
 	assert.NotNil(t, usr)
 	assert.Nil(t, errObj)
-	assert.Equal(t, http.StatusOK, statusCode)
 	assert.Equal(t, usrID, usr.ID)
 	assert.Equal(t, usrEmail, usr.Email)
 	assert.Equal(t, usrUsername, usr.Username)
@@ -166,11 +161,10 @@ func TestUserByEmail_NotFound(t *testing.T) {
 	mock.ExpectQuery(`SELECT id, email, username, password_hash FROM USERS WHERE email = \$1`).
 		WithArgs(usrEmail).WillReturnError(sql.ErrNoRows)
 
-	usr, errObj, statusCode := r.UserByEmail(context.Background(), usrEmail)
+	usr, errObj := r.UserByEmail(context.Background(), usrEmail)
 
 	assert.Nil(t, usr)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -191,11 +185,10 @@ func TestUserByID_Success(t *testing.T) {
 		WithArgs(usrID).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "username", "password_hash", "avatar_url"}).
 		AddRow(usrID, usrEmail, usrUsername, passHash, "test.png"))
 
-	usr, errObj, statusCode := r.UserByID(context.Background(), usrID)
+	usr, errObj := r.UserByID(context.Background(), usrID)
 
 	assert.NotNil(t, usr)
 	assert.Nil(t, errObj)
-	assert.Equal(t, http.StatusOK, statusCode)
 	assert.Equal(t, usrID, usr.ID)
 	assert.Equal(t, usrEmail, usr.Email)
 	assert.Equal(t, usrUsername, usr.Username)
@@ -214,11 +207,10 @@ func TestUserByID_NotFound(t *testing.T) {
 	mock.ExpectQuery(`SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = \$1`).
 		WithArgs(usrID).WillReturnError(sql.ErrNoRows)
 
-	usr, errObj, statusCode := r.UserByID(context.Background(), usrID)
+	usr, errObj := r.UserByID(context.Background(), usrID)
 
 	assert.Nil(t, usr)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -228,7 +220,7 @@ func TestUpdateProfileData_Success(t *testing.T) {
 	defer db.Close()
 
 	r := NewUserRepository(db)
-	profileData := &models.User{
+	profileData := &dto.RepoUser{
 		ID:        1,
 		Email:     "test@mail.ru",
 		Username:  "testuser",
@@ -239,10 +231,9 @@ func TestUpdateProfileData_Success(t *testing.T) {
 		WithArgs(profileData.Email, profileData.Username, profileData.AvatarURL, sqlmock.AnyArg(), profileData.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	errObj, status := r.UpdateProfileData(context.Background(), profileData)
+	errObj := r.UpdateProfileData(context.Background(), profileData)
 
 	assert.Nil(t, errObj)
-	assert.Equal(t, http.StatusOK, status)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -252,7 +243,7 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 	defer db.Close()
 
 	r := NewUserRepository(db)
-	profileData := &models.User{
+	profileData := &dto.RepoUser{
 		ID:        1,
 		Email:     "test@mail.ru",
 		Username:  "testuser",
@@ -263,10 +254,9 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 		WithArgs(profileData.Email, profileData.Username, profileData.AvatarURL, sqlmock.AnyArg(), profileData.ID).
 		WillReturnError(fmt.Errorf("some database error"))
 
-	errObj, status := r.UpdateProfileData(context.Background(), profileData)
+	errObj := r.UpdateProfileData(context.Background(), profileData)
 
 	assert.NotNil(t, errObj)
 	assert.Equal(t, "update_profile_error", errObj.Code)
-	assert.Equal(t, http.StatusInternalServerError, status)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

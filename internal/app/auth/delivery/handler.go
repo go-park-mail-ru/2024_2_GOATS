@@ -61,11 +61,11 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	logoutSrvResp, errSrvResp := a.authService.Logout(r.Context(), ck.Value)
 
-	logoutResp, errResp := converter.ToApiAuthResponse(logoutSrvResp), converter.ToApiErrorResponse(errSrvResp)
+	logoutResp, errResp := converter.ToApiAuthResponse(logoutSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to logout")
 		logger.Error().Err(errMsg).Interface("logoutResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
@@ -73,7 +73,7 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, preparedExpiredCookie())
 	logger.Info().Interface("logoutResp", logoutResp).Msg("Logout success")
 
-	api.Response(r.Context(), w, logoutResp.StatusCode, logoutResp)
+	api.Response(r.Context(), w, http.StatusOK, logoutResp)
 }
 
 func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -85,11 +85,11 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	loginServData := converter.ToServLoginData(loginRequest)
 	authSrvResp, errSrvResp := a.authService.Login(ctx, loginServData)
 
-	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), converter.ToApiErrorResponse(errSrvResp)
+	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to login")
 		logger.Error().Err(errMsg).Interface("loginResp", errResp).Msg("request_failed")
-		api.Response(ctx, w, errResp.StatusCode, errResp)
+		api.Response(ctx, w, errResp.HTTPStatus, errResp)
 
 		return
 	}
@@ -108,7 +108,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger.Info().Msg("successfully set new cookie")
 	logger.Info().Interface("loginResp", authResp).Msg("login success")
 
-	api.Response(ctx, w, authResp.StatusCode, authResp)
+	api.Response(ctx, w, http.StatusOK, authResp)
 }
 
 func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +118,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	registerReq := &api.RegisterRequest{}
 	api.DecodeBody(w, r, registerReq)
 
-	errs := make([]errVals.ErrorObj, 0)
+	errs := make([]errVals.ErrorItem, 0)
 
 	if err := validation.ValidatePassword(registerReq.Password, registerReq.PasswordConfirmation); err != nil {
 		logger.Error().Err(err.Err).Msg(vlErr)
@@ -131,23 +131,19 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(errs) > 0 {
-		errResp := &api.ErrorResponse{
-			Errors:     errs,
-			StatusCode: http.StatusBadRequest,
-		}
-
-		api.Response(ctx, w, errResp.StatusCode, errResp)
+		errResp := errVals.NewDeliveryError(http.StatusBadRequest, errs)
+		api.Response(ctx, w, errResp.HTTPStatus, errResp)
 		return
 	}
 
 	registerServData := converter.ToServRegisterData(registerReq)
 	authSrvResp, errSrvResp := a.authService.Register(ctx, registerServData)
-	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), converter.ToApiErrorResponse(errSrvResp)
+	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to register")
 		logger.Error().Err(errMsg).Interface("registerResp", errResp).Msg("request_failed")
-		api.Response(ctx, w, errResp.StatusCode, errResp)
+		api.Response(ctx, w, errResp.HTTPStatus, errResp)
 
 		return
 	}
@@ -155,7 +151,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, preparedCookie(authResp.NewCookie))
 	logger.Info().Interface("registerResp", authResp).Msg("Register success")
 
-	api.Response(ctx, w, authResp.StatusCode, authResp)
+	api.Response(ctx, w, http.StatusOK, authResp)
 }
 
 func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
@@ -170,18 +166,18 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 
 	sessionSrvResp, errSrvResp := a.authService.Session(r.Context(), ck.Value)
 
-	sessionResp, errResp := converter.ToApiSessionResponse(sessionSrvResp), converter.ToApiErrorResponse(errSrvResp)
+	sessionResp, errResp := converter.ToApiSessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to get session")
 		logger.Error().Err(errMsg).Interface("sessionResp", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.StatusCode, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
 
 	logger.Info().Interface("sessionResp", sessionResp).Msg("getSession success")
 
-	api.Response(r.Context(), w, sessionResp.StatusCode, sessionResp)
+	api.Response(r.Context(), w, http.StatusOK, sessionResp)
 }
 
 func preparedCookie(ck *models.CookieData) *http.Cookie {
@@ -208,8 +204,8 @@ func preparedExpiredCookie() *http.Cookie {
 	}
 }
 
-func addError(code string, err errVals.CustomError, errors *[]errVals.ErrorObj) {
-	errStruct := errVals.ErrorObj{
+func addError(code string, err errVals.CustomError, errors *[]errVals.ErrorItem) {
+	errStruct := errVals.ErrorItem{
 		Code:  code,
 		Error: err,
 	}

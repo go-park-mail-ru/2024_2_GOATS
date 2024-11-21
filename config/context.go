@@ -7,6 +7,7 @@ import (
 type ContextConfigKey struct{}
 type ContextRedisKey struct{}
 type ContextLocalStorageKey struct{}
+type CurrentUserKey struct{}
 
 func WrapContext(ctx context.Context, cfg *Config) context.Context {
 	return context.WithValue(ctx, ContextConfigKey{}, cfg)
@@ -44,6 +45,15 @@ func FromLocalStorageContext(ctx context.Context) *LocalStorage {
 	value, ok := ctx.Value(ContextLocalStorageKey{}).(*LocalStorage)
 	if !ok {
 		return nil
+	}
+
+	return value
+}
+
+func CurrentUserID(ctx context.Context) int {
+	value, ok := ctx.Value(CurrentUserKey{}).(int)
+	if !ok {
+		return 0
 	}
 
 	return value

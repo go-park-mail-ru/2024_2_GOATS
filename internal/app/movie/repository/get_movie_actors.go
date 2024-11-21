@@ -2,23 +2,20 @@ package repository
 
 import (
 	"context"
-	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/moviedb"
 	"github.com/rs/zerolog/log"
 )
 
-func (r *MovieRepo) GetMovieActors(
-	ctx context.Context,
-	mvID int,
-) ([]*models.ActorInfo, *errVals.ErrorObj, int) {
+func (r *MovieRepo) GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, *errVals.RepoError) {
 	logger := log.Ctx(ctx)
 	rows, err := moviedb.GetMovieActors(ctx, mvID, r.Database)
 
 	if err != nil {
-		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
+		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
 	}
 
 	defer func() {
@@ -29,8 +26,13 @@ func (r *MovieRepo) GetMovieActors(
 
 	actorsInfos, err := moviedb.ScanActorsConnections(rows)
 	if err != nil {
-		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
+		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
 	}
 
-	return actorsInfos, nil, http.StatusOK
+	var srvActors = make([]*models.ActorInfo, 0, len(actorsInfos))
+	for _, ac := range actorsInfos {
+		srvActors = append(srvActors, converter.ToActorInfoFromRepo(ac))
+	}
+
+	return srvActors, nil
 }

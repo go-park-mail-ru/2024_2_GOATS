@@ -6,8 +6,6 @@ import (
 	"mime/multipart"
 	"strings"
 	"time"
-
-	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
 type LoginData struct {
@@ -24,27 +22,15 @@ type RegisterData struct {
 }
 
 type SessionRespData struct {
-	UserData   User
-	StatusCode int
+	UserData User
 }
 
 type AuthRespData struct {
 	NewCookie  *CookieData
-	StatusCode int
-}
-
-type UpdateUserRespData struct {
-	StatusCode int
 }
 
 type CollectionsRespData struct {
 	Collections []Collection
-	StatusCode  int
-}
-
-type ErrorRespData struct {
-	StatusCode int
-	Errors     []errVals.ErrorObj
 }
 
 type User struct {
@@ -78,6 +64,34 @@ type MovieInfo struct {
 	VideoURL         string        `json:"video_url"`
 	Actors           []*ActorInfo  `json:"actors_info"`
 	Director         *DirectorInfo `json:"director_info"`
+	Seasons          []*Season     `json:"seasons"`
+}
+
+type Season struct {
+	SeasonNumber int        `json:"season_number"`
+	Episodes     []*Episode `json:"episodes"`
+}
+
+type Episode struct {
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	Description   string  `json:"description"`
+	EpisodeNumber int     `json:"episode_number"`
+	ReleaseDate   string  `json:"release_date"`
+	Rating        float32 `json:"rating"`
+	PreviewURL    string  `json:"preview_url"`
+	VideoURL      string  `json:"video_url"`
+}
+
+type DBEpisode struct {
+	ID            sql.NullInt64   `json:"id"`
+	Title         sql.NullString  `json:"title"`
+	Description   sql.NullString  `json:"description"`
+	EpisodeNumber sql.NullInt64   `json:"episode_number"`
+	ReleaseDate   sql.NullString  `json:"release_date"`
+	Rating        sql.NullFloat64 `json:"rating"`
+	PreviewURL    sql.NullString  `json:"preview_url"`
+	VideoURL      sql.NullString  `json:"video_url"`
 }
 
 type MovieShortInfo struct {
@@ -129,6 +143,11 @@ type PasswordData struct {
 type Person struct {
 	Name    string
 	Surname string
+}
+
+type Favorite struct {
+	UserID  int
+	MovieID int
 }
 
 func (p Person) FullName() string {

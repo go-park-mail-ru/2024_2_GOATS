@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"bytes"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,7 +24,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 	tests := []struct {
 		name       string
 		mockReturn *models.CollectionsRespData
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		statusCode int
 		resp       string
 	}{
@@ -44,18 +43,14 @@ func TestDelivery_GetCollection(t *testing.T) {
 						},
 					},
 				},
-				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
+			resp:       `{"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -71,7 +66,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 			ms := srvMock.NewMockMovieServiceInterface(ctrl)
 			handler := NewMovieHandler(ms)
 
-			ms.EXPECT().GetCollection(gomock.Any()).Return(test.mockReturn, test.mockErr)
+			ms.EXPECT().GetCollection(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
 			r := mux.NewRouter()
 			r.HandleFunc(mvCollPath, handler.GetCollections)
@@ -91,7 +86,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 	tests := []struct {
 		name       string
 		mockReturn *models.MovieInfo
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		statusCode int
 		resp       string
 		badReq     bool
@@ -110,21 +105,18 @@ func TestDelivery_GetMovie(t *testing.T) {
 				VideoURL:        "video_link",
 				Director:        &models.DirectorInfo{},
 			},
-			resp:       `{"success":true,"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[]}}`,
+			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[], "seasons":null}}`,
 			statusCode: http.StatusOK,
 		},
 		{
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name:       "Bad Request",
-			resp:       `{"success":false,"errors":[{"Code":"bad_request","Error":"getMovie action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			resp:       `{"errors":[{"code":"bad_request","error":"getMovie action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
 			statusCode: http.StatusBadRequest,
 			badReq:     true,
 		},
@@ -167,7 +159,7 @@ func TestDelivery_GetActor(t *testing.T) {
 	tests := []struct {
 		name       string
 		mockReturn *models.ActorInfo
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		statusCode int
 		resp       string
 		badReq     bool
@@ -181,21 +173,18 @@ func TestDelivery_GetActor(t *testing.T) {
 					Surname: "Testov",
 				},
 			},
-			resp:       `{"success":true,"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":"", "movies":null}}`,
+			resp:       `{"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":"", "movies":null}}`,
 			statusCode: http.StatusOK,
 		},
 		{
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: errors.New("Some database error")})},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"something_went_wrong","Error":"Some database error"}]}`,
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name:       "Bad Request",
-			resp:       `{"success":false,"errors":[{"Code":"bad_request","Error":"getActor action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
+			resp:       `{"errors":[{"code":"bad_request","error":"getActor action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
 			statusCode: http.StatusBadRequest,
 			badReq:     true,
 		},

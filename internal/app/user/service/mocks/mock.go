@@ -6,10 +6,12 @@ package mock_service
 
 import (
 	context "context"
+	os "os"
 	reflect "reflect"
 
 	errors "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	dto "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,14 +38,27 @@ func (m *MockUserRepositoryInterface) EXPECT() *MockUserRepositoryInterfaceMockR
 	return m.recorder
 }
 
+// CreateFavorite mocks base method.
+func (m *MockUserRepositoryInterface) CreateFavorite(ctx context.Context, favData *dto.RepoFavorite) *errors.RepoError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFavorite", ctx, favData)
+	ret0, _ := ret[0].(*errors.RepoError)
+	return ret0
+}
+
+// CreateFavorite indicates an expected call of CreateFavorite.
+func (mr *MockUserRepositoryInterfaceMockRecorder) CreateFavorite(ctx, favData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFavorite", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CreateFavorite), ctx, favData)
+}
+
 // CreateUser mocks base method.
-func (m *MockUserRepositoryInterface) CreateUser(ctx context.Context, registerData *models.RegisterData) (*models.User, *errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) CreateUser(ctx context.Context, registerData *dto.RepoRegisterData) (*models.User, *errors.RepoError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", ctx, registerData)
 	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // CreateUser indicates an expected call of CreateUser.
@@ -52,28 +67,57 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) CreateUser(ctx, registerData 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CreateUser), ctx, registerData)
 }
 
-// SaveUserAvatar mocks base method.
-func (m *MockUserRepositoryInterface) SaveUserAvatar(ctx context.Context, usrData *models.User) (string, *errors.ErrorObj) {
+// DestroyFavorite mocks base method.
+func (m *MockUserRepositoryInterface) DestroyFavorite(ctx context.Context, favData *dto.RepoFavorite) *errors.RepoError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUserAvatar", ctx, usrData)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*errors.ErrorObj)
+	ret := m.ctrl.Call(m, "DestroyFavorite", ctx, favData)
+	ret0, _ := ret[0].(*errors.RepoError)
+	return ret0
+}
+
+// DestroyFavorite indicates an expected call of DestroyFavorite.
+func (mr *MockUserRepositoryInterfaceMockRecorder) DestroyFavorite(ctx, favData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestroyFavorite", reflect.TypeOf((*MockUserRepositoryInterface)(nil).DestroyFavorite), ctx, favData)
+}
+
+// GetFavorites mocks base method.
+func (m *MockUserRepositoryInterface) GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errors.RepoError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFavorites", ctx, usrID)
+	ret0, _ := ret[0].([]models.MovieShortInfo)
+	ret1, _ := ret[1].(*errors.RepoError)
 	return ret0, ret1
+}
+
+// GetFavorites indicates an expected call of GetFavorites.
+func (mr *MockUserRepositoryInterfaceMockRecorder) GetFavorites(ctx, usrID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockUserRepositoryInterface)(nil).GetFavorites), ctx, usrID)
+}
+
+// SaveUserAvatar mocks base method.
+func (m *MockUserRepositoryInterface) SaveUserAvatar(ctx context.Context, avatarName string) (string, *os.File, *errors.RepoError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveUserAvatar", ctx, avatarName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(*os.File)
+	ret2, _ := ret[2].(*errors.RepoError)
+	return ret0, ret1, ret2
 }
 
 // SaveUserAvatar indicates an expected call of SaveUserAvatar.
-func (mr *MockUserRepositoryInterfaceMockRecorder) SaveUserAvatar(ctx, usrData interface{}) *gomock.Call {
+func (mr *MockUserRepositoryInterfaceMockRecorder) SaveUserAvatar(ctx, avatarName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserAvatar", reflect.TypeOf((*MockUserRepositoryInterface)(nil).SaveUserAvatar), ctx, usrData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserAvatar", reflect.TypeOf((*MockUserRepositoryInterface)(nil).SaveUserAvatar), ctx, avatarName)
 }
 
 // UpdatePassword mocks base method.
-func (m *MockUserRepositoryInterface) UpdatePassword(ctx context.Context, usrID int, pass string) (*errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) UpdatePassword(ctx context.Context, usrID int, pass string) *errors.RepoError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePassword", ctx, usrID, pass)
-	ret0, _ := ret[0].(*errors.ErrorObj)
-	ret1, _ := ret[1].(int)
-	return ret0, ret1
+	ret0, _ := ret[0].(*errors.RepoError)
+	return ret0
 }
 
 // UpdatePassword indicates an expected call of UpdatePassword.
@@ -83,12 +127,11 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) UpdatePassword(ctx, usrID, pa
 }
 
 // UpdateProfileData mocks base method.
-func (m *MockUserRepositoryInterface) UpdateProfileData(ctx context.Context, usrData *models.User) (*errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) UpdateProfileData(ctx context.Context, usrData *dto.RepoUser) *errors.RepoError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateProfileData", ctx, usrData)
-	ret0, _ := ret[0].(*errors.ErrorObj)
-	ret1, _ := ret[1].(int)
-	return ret0, ret1
+	ret0, _ := ret[0].(*errors.RepoError)
+	return ret0
 }
 
 // UpdateProfileData indicates an expected call of UpdateProfileData.
@@ -98,13 +141,12 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) UpdateProfileData(ctx, usrDat
 }
 
 // UserByEmail mocks base method.
-func (m *MockUserRepositoryInterface) UserByEmail(ctx context.Context, email string) (*models.User, *errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) UserByEmail(ctx context.Context, email string) (*models.User, *errors.RepoError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserByEmail", ctx, email)
 	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // UserByEmail indicates an expected call of UserByEmail.
@@ -114,13 +156,12 @@ func (mr *MockUserRepositoryInterfaceMockRecorder) UserByEmail(ctx, email interf
 }
 
 // UserByID mocks base method.
-func (m *MockUserRepositoryInterface) UserByID(ctx context.Context, userID int) (*models.User, *errors.ErrorObj, int) {
+func (m *MockUserRepositoryInterface) UserByID(ctx context.Context, userID int) (*models.User, *errors.RepoError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UserByID", ctx, userID)
 	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(*errors.ErrorObj)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
 }
 
 // UserByID indicates an expected call of UserByID.

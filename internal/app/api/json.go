@@ -17,6 +17,11 @@ type ErrorDetails struct {
 }
 
 func Response(ctx context.Context, w http.ResponseWriter, code int, obj interface{}) {
+	if obj == nil {
+		w.WriteHeader(code)
+		return
+	}
+
 	var buf bytes.Buffer
 	logger := log.Ctx(ctx)
 	err := json.NewEncoder(&buf).Encode(obj)
@@ -56,14 +61,9 @@ func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 	}
 }
 
-func PreparedDefaultError(code string, err error) *ErrorResponse {
-	return &ErrorResponse{
-		StatusCode: http.StatusForbidden,
-		Errors: []errVals.ErrorObj{{
-			Code:  code,
-			Error: errVals.CustomError{Err: err},
-		}},
-	}
+func PreparedDefaultError(code string, err error) *errVals.DeliveryError {
+	errs := []errVals.ErrorItem{errVals.NewErrorItem(code, errVals.NewCustomError(err.Error()))}
+	return errVals.NewDeliveryError(http.StatusForbidden, errs)
 }
 
 func RequestError(ctx context.Context, w http.ResponseWriter, code string, status int, err error) {

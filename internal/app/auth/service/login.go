@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -11,55 +10,39 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *models.ErrorRespData) {
+func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *errVals.ServiceError) {
 	logger := log.Ctx(ctx)
-	usr, err, code := s.userRepository.UserByEmail(ctx, loginData.Email)
+	usr, err := s.userRepository.UserByEmail(ctx, loginData.Email)
 
 	if err != nil {
-		return nil, &models.ErrorRespData{
-			StatusCode: code,
-			Errors:     []errVals.ErrorObj{*err},
-		}
+		return nil, errVals.ToServiceErrorFromRepo(err)
 	}
 
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(loginData.Password))
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
-		return nil, &models.ErrorRespData{
-			StatusCode: http.StatusConflict,
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatchText)},
-		}
+		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.NewCustomError(errVals.ErrInvalidPasswordsMatch.Err.Error()))
 	}
 
 	token, tokenErr := cookie.GenerateToken(ctx, usr.ID)
 	if tokenErr != nil {
-		return nil, &models.ErrorRespData{
-			StatusCode: http.StatusInternalServerError,
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: tokenErr})},
-		}
+		return nil, errVals.NewServiceError(errVals.ErrGenerateTokenCode, errVals.NewCustomError(tokenErr.Error()))
 	}
 
 	if loginData.Cookie != "" {
-		err, code = s.authRepository.DestroySession(ctx, loginData.Cookie)
+		err = s.authRepository.DestroySession(ctx, loginData.Cookie)
 		if err != nil {
-			return nil, &models.ErrorRespData{
-				StatusCode: code,
-				Errors:     []errVals.ErrorObj{*err},
-			}
+			return nil, errVals.ToServiceErrorFromRepo(err)
 		}
 	}
 
-	ck, ckErr, code := s.authRepository.SetCookie(ctx, token)
+	ck, ckErr := s.authRepository.SetCookie(ctx, token)
 	if ckErr != nil {
-		return nil, &models.ErrorRespData{
-			StatusCode: code,
-			Errors:     []errVals.ErrorObj{*ckErr},
-		}
+		return nil, errVals.ToServiceErrorFromRepo(ckErr)
 	}
 
 	return &models.AuthRespData{
-		NewCookie:  ck,
-		StatusCode: code,
+		NewCookie: ck,
 	}, nil
 }
