@@ -2,23 +2,27 @@ package repository
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/user"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/userdb"
 )
 
-func (u *UserRepo) UpdateProfileData(ctx context.Context, profileData *models.User) (*errVals.ErrorObj, int) {
-	err := user.UpdateProfile(ctx, profileData, u.Database)
+func (u *UserRepo) UpdateProfileData(ctx context.Context, profileData *dto.RepoUser) *errVals.RepoError {
+	err := userdb.UpdateProfile(ctx, profileData, u.Database)
+
 	if err != nil {
-		return &errVals.ErrorObj{
-			Code: "update_profile_error",
-			Error: errVals.CustomError{
-				Err: err,
-			},
-		}, http.StatusInternalServerError
+		if errVals.IsDuplicateError(err) {
+			errMsg := fmt.Sprintf("error updating profile: %v", err)
+			return errVals.NewRepoError(errVals.DuplicateErrCode, errVals.NewCustomError(errMsg))
+		}
+
+		return errVals.NewRepoError(
+			errVals.ErrUpdateProfileCode,
+			errVals.NewCustomError(fmt.Sprintf("error updating profile: %v", err)),
+		)
 	}
 
-	return nil, http.StatusOK
+	return nil
 }

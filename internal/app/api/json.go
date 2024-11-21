@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,11 +16,18 @@ type ErrorDetails struct {
 	Message string
 }
 
-func Response(w http.ResponseWriter, code int, obj interface{}) {
-	w.WriteHeader(code)
-	err := json.NewEncoder(w).Encode(obj)
+func Response(ctx context.Context, w http.ResponseWriter, code int, obj interface{}) {
+	if obj == nil {
+		w.WriteHeader(code)
+		return
+	}
+
+	var buf bytes.Buffer
+	logger := log.Ctx(ctx)
+	err := json.NewEncoder(&buf).Encode(obj)
+
 	if err != nil {
-		log.Err(fmt.Errorf("error while encoding success response: %v", err))
+		logger.Error().Err(err).Msg("error while encoding success response")
 
 		errObj := ErrorDetails{
 			Message: err.Error(),
@@ -28,27 +37,38 @@ func Response(w http.ResponseWriter, code int, obj interface{}) {
 		w.WriteHeader(http.StatusInternalServerError)
 		err = json.NewEncoder(w).Encode(errObj)
 		if err != nil {
-			log.Err(fmt.Errorf("error while encoding error details: %v", err))
+			logger.Error().Err(err).Msg("error while encoding error details")
 		}
+
+		return
+	}
+
+	w.WriteHeader(code)
+	_, writeErr := w.Write(buf.Bytes())
+	if writeErr != nil {
+		logger.Error().Err(writeErr).Msg("error while writing response to client")
 	}
 }
 
 func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
-		log.Err(fmt.Errorf("cannot parse request: %w", err))
-		Response(w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
+		logger := log.Ctx(r.Context())
+		logger.Error().Err(err).Msg("cannot parse request")
+		Response(r.Context(), w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
 
 		return
 	}
 }
 
-func PreparedDefaultError(code string, err error) *ErrorResponse {
-	return &ErrorResponse{
-		StatusCode: http.StatusForbidden,
-		Errors: []errVals.ErrorObj{{
-			Code:  code,
-			Error: errVals.CustomError{Err: err},
-		}},
-	}
+func PreparedDefaultError(code string, err error) *errVals.DeliveryError {
+	errs := []errVals.ErrorItem{errVals.NewErrorItem(code, errVals.NewCustomError(err.Error()))}
+	return errVals.NewDeliveryError(http.StatusForbidden, errs)
+}
+
+func RequestError(ctx context.Context, w http.ResponseWriter, code string, status int, err error) {
+	logger := log.Ctx(ctx)
+	logger.Error().Err(err).Msg("request error")
+
+	Response(ctx, w, status, PreparedDefaultError(code, err))
 }

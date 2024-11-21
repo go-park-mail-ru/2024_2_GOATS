@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errors "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,11 +37,11 @@ func (m *MockAuthServiceInterface) EXPECT() *MockAuthServiceInterfaceMockRecorde
 }
 
 // Login mocks base method.
-func (m *MockAuthServiceInterface) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *models.ErrorRespData) {
+func (m *MockAuthServiceInterface) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *errors.ServiceError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, loginData)
 	ret0, _ := ret[0].(*models.AuthRespData)
-	ret1, _ := ret[1].(*models.ErrorRespData)
+	ret1, _ := ret[1].(*errors.ServiceError)
 	return ret0, ret1
 }
 
@@ -51,11 +52,11 @@ func (mr *MockAuthServiceInterfaceMockRecorder) Login(ctx, loginData interface{}
 }
 
 // Logout mocks base method.
-func (m *MockAuthServiceInterface) Logout(ctx context.Context, cookie string) (*models.AuthRespData, *models.ErrorRespData) {
+func (m *MockAuthServiceInterface) Logout(ctx context.Context, cookie string) (*models.AuthRespData, *errors.ServiceError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Logout", ctx, cookie)
 	ret0, _ := ret[0].(*models.AuthRespData)
-	ret1, _ := ret[1].(*models.ErrorRespData)
+	ret1, _ := ret[1].(*errors.ServiceError)
 	return ret0, ret1
 }
 
@@ -66,11 +67,11 @@ func (mr *MockAuthServiceInterfaceMockRecorder) Logout(ctx, cookie interface{}) 
 }
 
 // Register mocks base method.
-func (m *MockAuthServiceInterface) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *models.ErrorRespData) {
+func (m *MockAuthServiceInterface) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *errors.ServiceError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", ctx, registerData)
 	ret0, _ := ret[0].(*models.AuthRespData)
-	ret1, _ := ret[1].(*models.ErrorRespData)
+	ret1, _ := ret[1].(*errors.ServiceError)
 	return ret0, ret1
 }
 
@@ -81,11 +82,11 @@ func (mr *MockAuthServiceInterfaceMockRecorder) Register(ctx, registerData inter
 }
 
 // Session mocks base method.
-func (m *MockAuthServiceInterface) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
+func (m *MockAuthServiceInterface) Session(ctx context.Context, cookie string) (*models.SessionRespData, *errors.ServiceError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Session", ctx, cookie)
 	ret0, _ := ret[0].(*models.SessionRespData)
-	ret1, _ := ret[1].(*models.ErrorRespData)
+	ret1, _ := ret[1].(*errors.ServiceError)
 	return ret0, ret1
 }
 

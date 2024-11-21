@@ -16,7 +16,7 @@ func GenerateToken(ctx context.Context, userID int) (*models.Token, error) {
 	tokenID, err := generateRandomString(32)
 	if err != nil {
 		errMsg := fmt.Errorf("cookie: failed to generate cookie token - %w", err)
-		log.Ctx(ctx).Error().Msg(errMsg.Error())
+		log.Ctx(ctx).Error().Err(errMsg).Msg("token_generation_error")
 
 		return nil, errMsg
 	}
@@ -35,7 +35,7 @@ func generateRandomString(length int) (string, error) {
 	_, err := rand.Read(bytes)
 	if err != nil {
 		errMsg := fmt.Errorf("cookie: failed to generate random string - %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("gen_random_string_error")
 
 		return "", errMsg
 	}

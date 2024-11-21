@@ -3,22 +3,23 @@ package delivery
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
-	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"github.com/gorilla/websocket"
-	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 	"log"
 	"net/http"
 )
 
 type RoomServiceInterface interface {
-	CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error)
-	HandleAction(ctx context.Context, roomID string, action models.Action) error
-	Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData)
-	GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error)
+	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
+	HandleAction(ctx context.Context, roomID string, action model.Action) error
+	Session(ctx context.Context, cookie string) (*model.SessionRespData, *model.ErrorRespData)
+	GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error)
 }
 
 type RoomHandler struct {
@@ -40,7 +41,7 @@ func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHand
 }
 
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	var room models.RoomState
+	var room model.RoomState
 	if err := json.NewDecoder(r.Body).Decode(&room); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
@@ -57,26 +58,35 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
+	logger := zlog.Ctx(r.Context())
 	userID := r.URL.Query().Get("user_id")
 	if userID == "" {
 		http.Error(w, "Missing user_id", http.StatusBadRequest)
 		return
 	}
 
-	cfg, err := config.New(zerolog.Logger{}, false, nil)
+	cfg, err := config.New(false)
 	ctx := config.WrapContext(r.Context(), cfg)
 
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
 	sessionResp, errResp := converter.ToApiSessionResponseForRoom(sessionSrvResp), converter.ToApiErrorResponseForRoom(errSrvResp)
 
+	//if errResp != nil {
+	//	api.Response(w, errResp.StatusCode, errResp)
+	//	return
+	//}
+
 	if errResp != nil {
-		api.Response(w, errResp.StatusCode, errResp)
+		errMsg := errors.New("failed to update password")
+		logger.Error().Err(errMsg).Interface("updatePasswdResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
 		return
 	}
 
-	user := models.User{
-		Id:        sessionResp.UserData.Id,
-		AvatarUrl: sessionResp.UserData.AvatarUrl,
+	user := model.User{
+		ID:        sessionResp.UserData.ID,
+		AvatarURL: sessionResp.UserData.AvatarURL,
 		Username:  sessionResp.UserData.Username,
 		Email:     sessionResp.UserData.Email,
 	}
@@ -113,7 +123,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	h.broadcastUserList(conn, roomID)
 
 	for {
-		var action models.Action
+		var action model.Action
 		if err := conn.ReadJSON(&action); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)
@@ -165,7 +175,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
 	// Получаем список пользователей только для комнаты roomID
-	userList := make([]models.User, 0)
+	userList := make([]model.User, 0)
 	for conn := range h.roomHub.GetClients(roomID) {
 		if user, ok := h.roomHub.Users[conn]; ok {
 			userList = append(userList, user)

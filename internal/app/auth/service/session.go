@@ -10,39 +10,26 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *models.ErrorRespData) {
-	strUserId, err, code := s.authRepository.GetFromCookie(ctx, cookie)
-	if err != nil || strUserId == "" {
-		return nil, &models.ErrorRespData{
-			Errors:     []errVals.ErrorObj{*err},
-			StatusCode: code,
-		}
+func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *errVals.ServiceError) {
+	strUserID, err := s.authRepository.GetFromCookie(ctx, cookie)
+	if err != nil || strUserID == "" {
+		return nil, errVals.ToServiceErrorFromRepo(err)
 	}
 
-	usrId, convErr := strconv.Atoi(strUserId)
+	usrID, convErr := strconv.Atoi(strUserID)
 	if convErr != nil {
-		errMsg := fmt.Errorf("Session service: failed to convert string into integer: %w", convErr)
-		log.Ctx(ctx).Error().Msg(errMsg.Error())
+		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
+		log.Ctx(ctx).Error().Err(errMsg).Msg("covertion_error")
 
-		return nil, &models.ErrorRespData{
-			Errors:     []errVals.ErrorObj{*errVals.NewErrorObj("convertion_error", errVals.CustomError{Err: errMsg})},
-			StatusCode: code,
-		}
+		return nil, errVals.NewServiceError(errVals.ErrTransformationCode, errVals.NewCustomError(errMsg.Error()))
 	}
 
-	user, sesErr, code := s.userRepository.UserById(ctx, usrId)
+	user, sesErr := s.userRepository.UserByID(ctx, usrID)
 	if sesErr != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *sesErr
-
-		return nil, &models.ErrorRespData{
-			Errors:     errors,
-			StatusCode: code,
-		}
+		return nil, errVals.ToServiceErrorFromRepo(sesErr)
 	}
 
 	return &models.SessionRespData{
-		StatusCode: code,
-		UserData:   *user,
+		UserData: *user,
 	}, nil
 }

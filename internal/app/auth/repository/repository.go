@@ -7,15 +7,15 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var _ service.AuthRepositoryInterface = (*Repo)(nil)
+var _ service.AuthRepositoryInterface = (*AuthRepo)(nil)
 
-type Repo struct {
+type AuthRepo struct {
 	Database *sql.DB
 	Redis    *redis.Client
 }
 
-func NewRepository(db *sql.DB, rdb *redis.Client) service.AuthRepositoryInterface {
-	return &Repo{
+func NewAuthRepository(db *sql.DB, rdb *redis.Client) service.AuthRepositoryInterface {
+	return &AuthRepo{
 		Database: db,
 		Redis:    rdb,
 	}

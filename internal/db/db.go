@@ -26,7 +26,7 @@ func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, err
 				return DB, nil
 			}
 
-			log.Error().Msg(fmt.Sprintf("Failed to connect to database. Error: %v. Retrying...", err))
+			log.Error().Err(fmt.Errorf("failed to connect to database. Error: %v Retrying", err)).Msg("setup_db_error")
 			time.Sleep(5 * time.Second)
 		}
 	}
@@ -45,7 +45,7 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 	DB, err := sql.Open("postgres", connString)
 	if err != nil {
 		errMsg := fmt.Errorf("error while opening DB: %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("connect_db_error")
 
 		return nil, errMsg
 	}
@@ -56,7 +56,7 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 	err = DB.Ping()
 	if err != nil {
 		errMsg := fmt.Errorf("error while pinging DB: %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("ping_db_error")
 
 		return nil, errMsg
 	}
@@ -78,7 +78,7 @@ func migrate(db *sql.DB) error {
 	sqlFile, err := os.ReadFile(viper.GetString("SCHEMA_PATH"))
 	if err != nil {
 		errMsg := fmt.Errorf("migration: error read sql script - %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("migrate_db_error")
 
 		return errMsg
 	}
@@ -86,7 +86,7 @@ func migrate(db *sql.DB) error {
 	_, err = db.Exec(string(sqlFile))
 	if err != nil {
 		errMsg := fmt.Errorf("migration: error while exec sqlFile: %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("migrate_db_error")
 
 		return errMsg
 	}
@@ -100,7 +100,7 @@ func seed(db *sql.DB) error {
 
 	if err != nil {
 		errMsg := fmt.Errorf("seed: error read sql script - %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("seed_db_error")
 
 		return errMsg
 	}
@@ -108,7 +108,7 @@ func seed(db *sql.DB) error {
 	_, err = db.Exec(string(seedsFile))
 	if err != nil {
 		errMsg := fmt.Errorf("seed: error while exec seedsFile - %w", err)
-		log.Error().Msg(errMsg.Error())
+		log.Error().Err(errMsg).Msg("seed_db_error")
 
 		return errMsg
 	}

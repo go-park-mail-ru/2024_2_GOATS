@@ -84,24 +84,33 @@ type Msg struct {
 	Avatar string `json:"avatar"`
 }
 
+//type User struct {
+//	Id         int            `json:"id"`
+//	Email      string         `json:"email"`
+//	Username   string         `json:"username"`
+//	Password   string         `json:"password"`
+//	Birthdate  sql.NullTime   `json:"birthdate"`
+//	AvatarUrl  string         `json:"avatar_url"`
+//	AvatarName string         `json:"avatar_name"`
+//	Avatar     multipart.File `json:"avatar"`
+//	Sex        sql.NullString `json:"sex"`
+//}
+
 type User struct {
-	Id         int            `json:"id"`
-	Email      string         `json:"email"`
-	Username   string         `json:"username"`
-	Password   string         `json:"password"`
-	Birthdate  sql.NullTime   `json:"birthdate"`
-	AvatarUrl  string         `json:"avatar_url"`
-	AvatarName string         `json:"avatar_name"`
-	Avatar     multipart.File `json:"avatar"`
-	Sex        sql.NullString `json:"sex"`
+	ID         int
+	Email      string
+	Username   string
+	Password   string
+	AvatarURL  string
+	AvatarName string
+	AvatarFile multipart.File
 }
 
 type SessionRespData struct {
-	UserData   User `json:"user_data"`
-	StatusCode int  `json:"status_code"`
+	UserData User `json:"user_data"`
 }
 
 type ErrorRespData struct {
 	StatusCode int
-	Errors     []errVals.ErrorObj
+	Errors     []errVals.RepoError
 }

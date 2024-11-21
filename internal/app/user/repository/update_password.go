@@ -2,22 +2,29 @@ package repository
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/user"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/userdb"
 )
 
-func (u *UserRepo) UpdatePassword(ctx context.Context, usrId int, password string) (*errVals.ErrorObj, int) {
-	err := user.UpdatePassword(ctx, usrId, password, u.Database)
+func (u *UserRepo) UpdatePassword(ctx context.Context, usrID int, pass string) *errVals.RepoError {
+	hashedPasswd, err := password.HashAndSalt(ctx, pass)
 	if err != nil {
-		return &errVals.ErrorObj{
-			Code: "update_password_error",
-			Error: errVals.CustomError{
-				Err: err,
-			},
-		}, http.StatusInternalServerError
+		return errVals.NewRepoError(
+			errVals.ErrServerCode,
+			errVals.NewCustomError(fmt.Sprintf("error hashing password: %v", err)),
+		)
 	}
 
-	return nil, http.StatusOK
+	err = userdb.UpdatePassword(ctx, usrID, hashedPasswd, u.Database)
+	if err != nil {
+		return errVals.NewRepoError(
+			errVals.ErrUpdatePasswordCode,
+			errVals.NewCustomError(fmt.Sprintf("error updating password: %v", err)),
+		)
+	}
+
+	return nil
 }

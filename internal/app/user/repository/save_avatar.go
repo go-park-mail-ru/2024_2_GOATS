@@ -3,32 +3,24 @@ package repository
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (u *UserRepo) SaveAvatar(ctx context.Context, usrData *models.User) (string, *errVals.ErrorObj) {
-	path := fmt.Sprintf("static/user_avatars/%s", usrData.AvatarName)
-	outFile, osErr := os.Create(path)
-	if osErr != nil {
-		return "", &errVals.ErrorObj{
-			Code:  "file_upload_err",
-			Error: errVals.CustomError{Err: fmt.Errorf("cannot find or create nginx static folder: %w", osErr)},
-		}
+func (u *UserRepo) SaveUserAvatar(ctx context.Context, avatarName string) (string, *os.File, *errVals.RepoError) {
+	lclStrg := config.FromLocalStorageContext(ctx)
+	fullPath := lclStrg.UserAvatarsFullURL + avatarName
+	relativePath := lclStrg.UserAvatarsRelativeURL + avatarName
+
+	outFile, fileErr := os.Create(fullPath)
+	if fileErr != nil {
+		return "", nil, errVals.NewRepoError(
+			errVals.ErrFileUploadCode,
+			errVals.NewCustomError(fmt.Sprintf("cannot find or create nginx static folder: %v", fileErr)),
+		)
 	}
 
-	defer outFile.Close()
-
-	_, osErr = io.Copy(outFile, usrData.Avatar)
-	if osErr != nil {
-		return "", &errVals.ErrorObj{
-			Code:  "file_upload_err",
-			Error: errVals.CustomError{Err: fmt.Errorf("cannot save file into nginx static folder: %w", osErr)},
-		}
-	}
-
-	return path, nil
+	return relativePath, outFile, nil
 }

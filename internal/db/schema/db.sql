@@ -1,15 +1,17 @@
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS movies CASCADE;
-DROP TABLE IF EXISTS movie_staff CASCADE;
-DROP TABLE IF EXISTS staff_members CASCADE;
+DROP TABLE IF EXISTS actors CASCADE;
+DROP TABLE IF EXISTS directors CASCADE;
+DROP TABLE IF EXISTS movie_actors CASCADE;
 DROP TABLE IF EXISTS collections CASCADE;
 DROP TABLE IF EXISTS movie_collections CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS movie_genres CASCADE;
 DROP TABLE IF EXISTS countries CASCADE;
+DROP TABLE IF EXISTS favorites CASCADE;
+DROP TABLE IF EXISTS seasons CASCADE;
+DROP TABLE IF EXISTS episodes CASCADE;
 DROP TYPE IF EXISTS movie_type_enum;
-DROP TYPE IF EXISTS movie_staff_type_enum;
-DROP TYPE IF EXISTS sex_enum;
 
 CREATE TABLE public.genres(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -20,14 +22,18 @@ CREATE TABLE public.genres(
 
 CREATE INDEX idx_genres_title ON public.genres(title);
 
-CREATE TYPE public.sex_enum AS ENUM ('male', 'female', 'other', 'secret');
+CREATE TABLE public.directors(
+  id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  first_name text NOT NULL,
+  second_name text NOT NULL
+);
+
 CREATE TABLE public.users(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   username text UNIQUE,
   email text NOT NULL UNIQUE,
   avatar_url text DEFAULT '/static/user_avatars/default.jpg',
   password_hash text NOT NULL,
-  sex SEX_ENUM,
   birthdate date,
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -62,6 +68,7 @@ CREATE TABLE public.movies(
   movie_type MOVIE_TYPE_ENUM,
   video_url text DEFAULT '',
   country_id int REFERENCES public.countries(id),
+  director_id int REFERENCES public.directors(id),
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -71,31 +78,27 @@ CREATE INDEX idx_movies_movie_type ON public.movies(movie_type);
 CREATE INDEX idx_movies_release_date ON public.movies(release_date);
 CREATE INDEX idx_movies_country_id ON public.movies(country_id);
 
-CREATE TYPE public.movie_staff_type_enum AS ENUM ('actor', 'director');
-CREATE TABLE public.movie_staff(
+CREATE TABLE public.actors(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   first_name text NOT NULL,
   second_name text NOT NULL,
-  patronymic text,
   country_id int REFERENCES public.countries(id),
   small_photo_url text DEFAULT '',
   big_photo_url text DEFAULT '',
   birthdate date,
-  post movie_staff_type_enum,
   biography text DEFAULT ''
 );
 
-CREATE INDEX idx_movie_staff_country_id ON public.movie_staff(country_id);
-CREATE INDEX idx_movie_staff_post ON public.movie_staff(post);
+CREATE INDEX idx_actors_country_id ON public.actors(country_id);
 
-CREATE TABLE public.staff_members(
+CREATE TABLE public.movie_actors(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   movie_id int REFERENCES public.movies(id),
-  movie_staff_id int REFERENCES public.movie_staff(id)
+  actor_id int REFERENCES public.actors(id)
 );
 
-CREATE INDEX idx_staff_members_movie_id ON public.staff_members(movie_id);
-CREATE INDEX idx_staff_members_movie_staff_id ON public.staff_members(movie_staff_id);
+CREATE INDEX idx_movie_actors_movie_id ON public.movie_actors(movie_id);
+CREATE INDEX idx_movie_actors_actor_id ON public.movie_actors(actor_id);
 
 CREATE TABLE public.movie_genres(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -129,3 +132,51 @@ CREATE TABLE public.movie_collections(
 
 CREATE INDEX idx_movie_collections_movie_id ON public.movie_collections(movie_id);
 CREATE INDEX idx_movie_collections_collection_id ON public.movie_collections(collection_id);
+
+CREATE TABLE public.favorites(
+  id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  movie_id int REFERENCES public.movies(id),
+  user_id int REFERENCES public.collections(id),
+  created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (movie_id, user_id)
+);
+
+CREATE INDEX idx_favorites_movie_id ON public.favorites(movie_id);
+CREATE INDEX idx_favorites_user_id ON public.favorites(user_id);
+
+CREATE TABLE public.seasons (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  movie_id BIGINT NOT NULL REFERENCES public.movies(id) ON DELETE CASCADE,
+  season_number INT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  rating DECIMAL(10, 2) NOT NULL DEFAULT '0.0',
+  preview_url TEXT DEFAULT '/static/serials/default.png',
+  release_date DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (movie_id, season_number)
+);
+
+CREATE INDEX idx_seasons_movie_id ON public.seasons(movie_id);
+
+CREATE TABLE public.episodes (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  season_id INT NOT NULL REFERENCES public.seasons(id) ON DELETE CASCADE,
+  episode_number INT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  rating DECIMAL(10, 2) NOT NULL DEFAULT '0.0',
+  preview_url TEXT DEFAULT '/static/serials/default.png',
+  video_url TEXT DEFAULT '/static/serials/default.mp4',
+  release_date DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (season_id, episode_number)
+);
+
+CREATE INDEX idx_episodes_season_id ON public.episodes(season_id);

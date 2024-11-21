@@ -2,31 +2,39 @@ package service
 
 import (
 	"context"
-	"net/http"
+	"fmt"
+	"io"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/converter"
+	"github.com/rs/zerolog/log"
 )
 
-func (u *UserService) UpdateProfile(ctx context.Context, usrData *models.User) (*models.UpdateUserRespData, *models.ErrorRespData) {
-	avatarUrl, err := u.userRepo.SaveAvatar(ctx, usrData)
-	if err != nil {
-		return nil, &models.ErrorRespData{
-			StatusCode: http.StatusInternalServerError,
-			Errors:     []errVals.ErrorObj{*err},
+func (u *UserService) UpdateProfile(ctx context.Context, usrData *models.User) *errVals.ServiceError {
+	if usrData.AvatarName != "" {
+		avatarURL, avatarFile, err := u.userRepo.SaveUserAvatar(ctx, usrData.AvatarName)
+		defer func() {
+			if err := avatarFile.Close(); err != nil {
+				log.Ctx(ctx).Err(fmt.Errorf("failed to close outFile: %w", err))
+			}
+		}()
+
+		if err != nil {
+			return errVals.ToServiceErrorFromRepo(err)
 		}
+		_, fileErr := io.Copy(avatarFile, usrData.AvatarFile)
+		if fileErr != nil {
+			return errVals.NewServiceError(errVals.ErrSaveFileCode, errVals.ErrSaveFile)
+		}
+
+		usrData.AvatarURL = avatarURL
 	}
 
-	usrData.AvatarUrl = avatarUrl
-	err, status := u.userRepo.UpdateProfileData(ctx, usrData)
+	err := u.userRepo.UpdateProfileData(ctx, converter.ToRepoUserFromUser(usrData))
 	if err != nil {
-		return nil, &models.ErrorRespData{
-			StatusCode: status,
-			Errors:     []errVals.ErrorObj{*err},
-		}
+		return errVals.ToServiceErrorFromRepo(err)
 	}
 
-	return &models.UpdateUserRespData{
-		StatusCode: status,
-	}, nil
+	return nil
 }

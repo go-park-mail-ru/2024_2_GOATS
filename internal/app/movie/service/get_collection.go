@@ -7,21 +7,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (s *MovieService) GetCollection(ctx context.Context) (*models.CollectionsRespData, *models.ErrorRespData) {
-	collections, err, code := s.movieRepository.GetCollection(ctx)
+func (s *MovieService) GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError) {
+	collections, err := s.movieRepository.GetCollection(ctx, filter)
 
 	if err != nil {
-		errors := make([]errVals.ErrorObj, 1)
-		errors[0] = *err
-
-		return nil, &models.ErrorRespData{
-			StatusCode: code,
-			Errors:     errors,
-		}
+		return nil, errVals.ToServiceErrorFromRepo(err)
 	}
 
-	return &models.CollectionsRespData{
-		Collections: collections,
-		StatusCode:  code,
-	}, nil
+	return &models.CollectionsRespData{Collections: collections}, nil
 }

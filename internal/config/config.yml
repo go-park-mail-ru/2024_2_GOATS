@@ -18,3 +18,7 @@ databases:
     cookie:
       maxAge: 84400s
       name: session_id
+
+  localStorage:
+    userAvatarsFullURL: /home/ubuntu/images/user_avatars/
+    userAvatarsRelativeURL: /images/user_avatars/
