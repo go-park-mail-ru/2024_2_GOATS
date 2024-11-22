@@ -2,16 +2,16 @@ package service
 
 import (
 	"context"
+	"fmt"
 
-	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
 func (s *AuthService) Logout(ctx context.Context, cookie string) *errVals.ServiceError {
-	_, err := s.authMS.DestroySession(ctx, &auth.DestroySessionRequest{Cookie: cookie})
+	err := s.authClient.DestroySession(ctx, cookie)
 
 	if err != nil {
-		// return errVals.ToServiceErrorFromRepo(err)
+		return errVals.NewServiceError(errVals.ErrDestroySessionCode, fmt.Errorf("failed to logout: %w", err))
 	}
 
 	return nil

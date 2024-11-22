@@ -3,15 +3,13 @@ package delivery
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/delivery/converter"
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/rs/zerolog/log"
 )
-
-// "google.golang.org/grpc/codes"
-//     "google.golang.org/grpc/status"
 
 type AuthManager struct {
 	auth.UnimplementedSessionRPCServer
@@ -34,11 +32,13 @@ func (am *AuthManager) CreateSession(ctx context.Context, createCookieReq *auth.
 		return nil, errors.New("bad_request")
 	}
 
-	srvResp, srvErr := am.SessionSrv.CreateSession(ctx, srvData)
+	srvResp, err := am.SessionSrv.CreateSession(ctx, srvData)
+	fmt.Println("SERVICE RESPONSE", srvResp)
 	resp := converter.ToDescCreateCookieRespFromSrv(srvResp)
-	if srvErr != nil {
-		logger.Error().Interface("createSessionError", srvErr).Msg("failed_to_create_session")
-		return nil, srvErr.Error.Err
+	fmt.Println("DEL RESPONSE", resp)
+	if err != nil {
+		logger.Error().Interface("createSessionError", err).Msg("failed_to_create_session")
+		return nil, err
 	}
 
 	logger.Info().Interface("createSessionSuccess", resp).Msg("successfully_create_session")
@@ -47,10 +47,10 @@ func (am *AuthManager) CreateSession(ctx context.Context, createCookieReq *auth.
 
 func (am *AuthManager) DestroySession(ctx context.Context, deleteCookieReq *auth.DestroySessionRequest) (*auth.Nothing, error) {
 	logger := log.Ctx(ctx)
-	srvResp, srvErr := am.SessionSrv.DestroySession(ctx, deleteCookieReq.Cookie)
-	if srvErr != nil {
-		logger.Error().Interface("destroySessionError", srvErr).Msg("failed_to_destroy_session")
-		return nil, srvErr.Error.Err
+	srvResp, err := am.SessionSrv.DestroySession(ctx, deleteCookieReq.Cookie)
+	if err != nil {
+		logger.Error().Interface("destroySessionError", err).Msg("failed_to_destroy_session")
+		return nil, err
 	}
 
 	logger.Info().Msg("successfully_destroy_session")
@@ -59,10 +59,10 @@ func (am *AuthManager) DestroySession(ctx context.Context, deleteCookieReq *auth
 
 func (am *AuthManager) Session(ctx context.Context, checkCookieReq *auth.GetSessionRequest) (*auth.GetSessionResponse, error) {
 	logger := log.Ctx(ctx)
-	srvResp, srvErr := am.SessionSrv.GetSessionData(ctx, checkCookieReq.Cookie)
-	if srvErr != nil {
-		logger.Error().Interface("getSessionDataError", srvErr).Msg("failed_to_get_session_data")
-		return nil, srvErr.Error.Err
+	srvResp, err := am.SessionSrv.GetSessionData(ctx, checkCookieReq.Cookie)
+	if err != nil {
+		logger.Error().Interface("getSessionDataError", err).Msg("failed_to_get_session_data")
+		return nil, err
 	}
 
 	logger.Info().Interface("getSessionDataSuccess", srvResp).Msg("successfully_get_session_data")

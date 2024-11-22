@@ -8,11 +8,12 @@ import (
 )
 
 func (s *MovieService) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errVals.ServiceError) {
-	actor, err := s.movieRepository.GetActor(ctx, actorID)
+	// actor, err := s.movieRepository.GetActor(ctx, actorID)
 
-	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
-	}
+	// if err != nil {
+	// 	return nil, errVals.ToServiceErrorFromRepo(err)
+	// }
 
-	return actor, nil
+	// return actor, nil
+	return nil, nil
 }

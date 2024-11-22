@@ -8,10 +8,13 @@ import (
 )
 
 func (u *UserService) GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.ServiceError) {
-	repResp, err := u.userRepo.GetFavorites(ctx, usrID)
-	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
-	}
+	// mvIDs, err := u.userClient.GetFavorites(ctx, usrID)
+	// if err != nil {
+	// 	return nil, errVals.NewServiceError("failed_to_get_user_favorites", err)
+	// }
 
-	return repResp, nil
+	// request to movie microservice
+
+	// return repResp, nil
+	return nil, nil
 }

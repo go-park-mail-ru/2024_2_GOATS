@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -49,7 +50,7 @@ func TestDelivery_GetCollection(t *testing.T) {
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
@@ -110,7 +111,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
@@ -178,7 +179,7 @@ func TestDelivery_GetActor(t *testing.T) {
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},

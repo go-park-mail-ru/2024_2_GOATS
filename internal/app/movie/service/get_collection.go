@@ -8,11 +8,12 @@ import (
 )
 
 func (s *MovieService) GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError) {
-	collections, err := s.movieRepository.GetCollection(ctx, filter)
+	// collections, err := s.movieRepository.GetCollection(ctx, filter)
 
-	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
-	}
+	// if err != nil {
+	// 	return nil, errVals.ToServiceErrorFromRepo(err)
+	// }
 
-	return &models.CollectionsRespData{Collections: collections}, nil
+	// return &models.CollectionsRespData{Collections: collections}, nil
+	return nil, nil
 }

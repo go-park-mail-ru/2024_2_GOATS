@@ -3,11 +3,11 @@ listener:
 
 databases:
   postgres:
-    host: db
+    host: user_db
     port: 5432
     user: test
     password: test
-    name: cassette-world
+    name: user_db
 
   localStorage:
     userAvatarsFullURL: /home/ubuntu/images/user_avatars/

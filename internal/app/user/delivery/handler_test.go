@@ -3,6 +3,7 @@ package delivery
 import (
 	"bytes"
 	"context"
+	"errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -52,7 +53,7 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 		{
 			name:       "Service error",
 			reqBody:    `{"password": "newpass123", "passwordConfirmation": "newpass123"}`,
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
@@ -142,7 +143,7 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 				"username": "testuser",
 			},
 			fileData:   []byte("fake image data"),
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},

@@ -41,6 +41,7 @@ func ToDescCreateCookieRespFromSrv(cookie *dto.Cookie) *auth.CreateSessionRespon
 	}
 
 	return &auth.CreateSessionResponse{
+		Name:   cookie.Name,
 		Cookie: cookie.TokenID,
 		MaxAge: cookie.Expiry.Unix(),
 	}

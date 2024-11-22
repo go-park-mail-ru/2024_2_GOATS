@@ -5,20 +5,21 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/errors"
 	"github.com/rs/zerolog/log"
 )
 
-func (as *AuthService) GetSessionData(ctx context.Context, cookie string) (uint64, *errors.SrvErrorObj) {
+func (as *AuthService) GetSessionData(ctx context.Context, cookie string) (uint64, error) {
 	strUserID, err := as.authRepository.GetSessionData(ctx, cookie)
 	if err != nil || strUserID == "" {
-		return 0, nil
+		return 0, fmt.Errorf("failed to getSessionData: %w", err)
 	}
 
-	usrID, convErr := strconv.ParseUint(strUserID, 10, 64)
-	if convErr != nil {
-		errMsg := fmt.Errorf("session service: failed to convert string into integer: %w", convErr)
+	usrID, err := strconv.ParseUint(strUserID, 10, 64)
+	if err != nil {
+		errMsg := fmt.Errorf("failed to getSessionData: failed to convert string into integer: %w", err)
 		log.Ctx(ctx).Error().Err(errMsg).Msg("covertion_error")
+
+		return 0, errMsg
 	}
 
 	return usrID, nil

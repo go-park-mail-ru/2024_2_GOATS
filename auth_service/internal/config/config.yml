@@ -3,7 +3,7 @@ listener:
 
 databases:
   redis:
-    host: localhost
+    host: redis
     port: 6379
     cookie:
       maxAge: 84400s

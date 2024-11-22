@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
@@ -26,11 +27,11 @@ type UserRepositoryInterface interface {
 }
 
 type UserService struct {
-	userRepo UserRepositoryInterface
+	userClient client.UserClientInterface
 }
 
-func NewUserService(userRepo UserRepositoryInterface) delivery.UserServiceInterface {
+func NewUserService(usrClient client.UserClientInterface) delivery.UserServiceInterface {
 	return &UserService{
-		userRepo: userRepo,
+		userClient: usrClient,
 	}
 }

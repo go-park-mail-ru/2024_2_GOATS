@@ -22,16 +22,11 @@ import (
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
-	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
-	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
-	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
-	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
-	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
@@ -54,35 +49,30 @@ func New(isTest bool) (*App, error) {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
 
-	ctx := config.WrapContext(context.Background(), cfg)
-	ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
+	// ctx := config.WrapContext(context.Background(), cfg)
+	// ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	// defer cancel()
 
-	database, err := db.SetupDatabase(ctxDBTimeout, cancel)
-	if err != nil {
-		return nil, fmt.Errorf("error initialize database: %w", err)
-	}
+	// database, err := db.SetupDatabase(ctxDBTimeout, cancel)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("error initialize database: %w", err)
+	// }
 
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
 	return &App{
-		Database: database,
-		Redis:    rdb,
-		Config:   cfg,
-		Logger:   &logger,
+		// Database: database,
+		Redis:  rdb,
+		Config: cfg,
+		Logger: &logger,
 	}, nil
 }
 
 func (a *App) Run() {
 	ctx := config.WrapContext(context.Background(), a.Config)
-
-	repoUser := userRepo.NewUserRepository(a.Database)
-	srvUser := userServ.NewUserService(repoUser)
-	delUser := userApi.NewUserHandler(ctx, srvUser)
-
 	aGrpcConn, err := grpc.NewClient(
-		"127.0.0.1:8081",
+		"auth_app:8081",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -92,7 +82,7 @@ func (a *App) Run() {
 	defer aGrpcConn.Close()
 
 	uGrpcConn, err := grpc.NewClient(
-		"127.0.0.1:8082",
+		"user_app:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -101,22 +91,24 @@ func (a *App) Run() {
 
 	defer uGrpcConn.Close()
 
-	sessManager := auth.NewSessionRPCClient(aGrpcConn)
-	usrManager := user.NewUserRPCClient(uGrpcConn)
+	sessManager := client.NewAuthClient(auth.NewSessionRPCClient(aGrpcConn))
+	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
 
-	repoAuth := authRepo.NewAuthRepository(a.Database, a.Redis)
-	srvAuth := authServ.NewAuthService(repoAuth, repoUser, sessManager, usrManager)
+	srvUser := userServ.NewUserService(usrManager)
+	delUser := userApi.NewUserHandler(ctx, srvUser)
+
+	srvAuth := authServ.NewAuthService(sessManager, usrManager)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	repoMov := movieRepo.NewMovieRepository(a.Database)
-	srvMov := movieServ.NewMovieService(repoMov)
-	delMov := movieApi.NewMovieHandler(srvMov)
+	// repoMov := movieRepo.NewMovieRepository(a.Database)
+	// srvMov := movieServ.NewMovieService(repoMov)
+	// delMov := movieApi.NewMovieHandler(srvMov)
 
 	mx := mux.NewRouter()
 	router.UseCommonMiddlewares(mx)
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
-	router.SetupMovie(delMov, mx)
+	// router.SetupMovie(delMov, mx)
 
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)

@@ -1,0 +1,26 @@
+volumes:
+  redis:
+
+services:
+  auth_app:
+    build:
+      context: ..
+      dockerfile: auth_service/Dockerfile
+    restart: always
+    # volumes:
+    #   - /home/ubuntu/images:/home/ubuntu/images
+    ports:
+      - 8081:8081
+    networks:
+      - cassette-world
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    container_name: redis
+    volumes:
+      - redis:/data
+    networks:
+      - cassette-world
+networks:
+  cassette-world:
+    external: true

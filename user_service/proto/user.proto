@@ -18,17 +18,22 @@ message UserData {
   string Password = 4;
   string AvatarURL = 5;
   string AvatarName = 6;
-  // AvatarFile
+  bytes AvatarFile = 7;
 }
 
 message UpdatePasswordRequest {
-  string OldPassword = 1;
-  string Password = 2;
-  string PasswordConfirmation = 3;
+  uint64 UserID = 1;
+  string OldPassword = 2;
+  string Password = 3;
+  string PasswordConfirmation = 4;
 }
 
-message GetFavorites {
+message GetFavoritesRequest {
   uint64 UserID = 1;
+}
+
+message GetFavoritesResponse {
+  repeated uint64 MovieIDs = 1;
 }
 
 message HandleFavorite {
@@ -50,12 +55,12 @@ message Nothing {
 
 service UserRPC {
   rpc Create(CreateUserRequest) returns (ID);
-  rpc UpdateProfile(Nothing) returns (Nothing);
+  rpc UpdateProfile(UserData) returns (Nothing);
 	rpc UpdatePassword(UpdatePasswordRequest) returns (Nothing);
-	rpc GetFavorites(Nothing) returns (Nothing);
-	rpc SetFavorite(Nothing) returns (Nothing);
-	rpc ResetFavorite(Nothing) returns (Nothing);
-	rpc CheckFavorite(Nothing) returns (Nothing);
+	rpc GetFavorites(ID) returns (GetFavoritesResponse);
+	rpc SetFavorite(HandleFavorite) returns (Nothing);
+	rpc ResetFavorite(HandleFavorite) returns (Nothing);
+	rpc CheckFavorite(HandleFavorite) returns (Nothing);
 	rpc FindByID(ID) returns (UserData);
 	rpc FindByEmail(Email) returns (UserData);
 }

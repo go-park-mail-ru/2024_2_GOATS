@@ -5,13 +5,12 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/converter"
 )
 
 func (u *UserService) ResetFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError {
-	err := u.userRepo.DestroyFavorite(ctx, converter.ToRepoFavoriteFromFavorite(favData))
+	err := u.userClient.ResetFavorite(ctx, favData)
 	if err != nil {
-		return errVals.ToServiceErrorFromRepo(err)
+		return errVals.NewServiceError("failed_to_reset_favorite", err)
 	}
 
 	return nil

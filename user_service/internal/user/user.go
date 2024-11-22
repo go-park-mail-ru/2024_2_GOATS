@@ -11,9 +11,10 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/db"
+	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service"
-	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/interceptors"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
@@ -46,7 +47,13 @@ func New(isTest bool) (*UserApp, error) {
 		return nil, fmt.Errorf("error initialize user_app database: %w", err)
 	}
 
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptors.ChainUnaryInterceptors(
+			interceptors.WithLogger,
+			interceptors.AccessLogInterceptor,
+		)),
+	)
+
 	reflection.Register(srv)
 
 	usrRepo := repository.NewUserRepository(db)

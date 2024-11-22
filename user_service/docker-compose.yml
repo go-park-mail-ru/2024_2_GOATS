@@ -1,0 +1,40 @@
+services:
+  user_app:
+    build:
+      context: ..
+      dockerfile: user_service/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - DATABASE_HOST=user_db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=test
+      - DATABASE_PASSWORD=test
+      - DATABASE_NAME=user_db
+    depends_on:
+      - user_db
+    networks:
+      - cassette-world
+
+  user_db:
+    image: postgres:latest
+    container_name: user_db
+    environment:
+      - POSTGRES_DB=user_db
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+    volumes:
+      - ./dev/SQL:/docker-entrypoint-initdb.d/
+      - postgres_volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - cassette-world
+
+networks:
+  cassette-world:
+    external: true
+
+volumes:
+  postgres_volume:

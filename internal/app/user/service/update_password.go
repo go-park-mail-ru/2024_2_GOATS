@@ -11,22 +11,20 @@ import (
 
 func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errVals.ServiceError {
 	logger := log.Ctx(ctx)
-	usr, err := u.userRepo.UserByID(ctx, passwordData.UserID)
+	usr, err := u.userClient.FindByID(ctx, uint64(passwordData.UserID))
 	if err != nil {
-		return errVals.ToServiceErrorFromRepo(err)
+		return errVals.NewServiceError("failed_to_update_password", err)
 	}
 
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(passwordData.OldPassword))
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
-
-		return errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidOldPassword)
+		return errVals.NewServiceError("failed_to_update_password", errVals.ErrInvalidOldPassword.Err)
 	}
 
-	err = u.userRepo.UpdatePassword(ctx, passwordData.UserID, passwordData.Password)
-
+	err = u.userClient.UpdatePassword(ctx, passwordData)
 	if err != nil {
-		return errVals.ToServiceErrorFromRepo(err)
+		return errVals.NewServiceError("failed_to_update_password", err)
 	}
 
 	return nil

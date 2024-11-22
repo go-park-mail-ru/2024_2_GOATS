@@ -163,13 +163,6 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// usrID, err := a.authMS.Session(r.Context(), &auth.GetSessionRequest{Cookie: ck.Value})
-	// if err != nil {
-	// 	return
-	// }
-
-	// usrData, err := a.userMS.GetUserInfo(ctx, usrID)
-
 	sessionSrvResp, errSrvResp := a.authService.Session(r.Context(), ck.Value)
 
 	sessionResp, errResp := converter.ToApiSessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)

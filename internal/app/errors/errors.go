@@ -33,6 +33,10 @@ const (
 	ErrCreateFavorite      = "create_favorite_error"
 	ErrResetFavorite       = "destroy_favorite_error"
 	ErrGetFavorites        = "get_favorite_error"
+	ErrGetUserCode         = "cannot_find_user_by_given_params"
+	ErrCreateSessionCode   = "failed_to_create_session"
+	ErrDestroySessionCode  = "failed_to_destroy_session"
+	ErrCheckSessionCode    = "failed_to_get_session_data"
 )
 
 var ErrorCodeToHTTPStatus = map[string]int{
@@ -85,7 +89,7 @@ type DeliveryError struct {
 
 type ServiceError struct {
 	Code  string
-	Error CustomError
+	Error error
 }
 
 type RepoError struct {
@@ -114,7 +118,7 @@ func NewRepoError(code string, err CustomError) *RepoError {
 	}
 }
 
-func NewServiceError(code string, err CustomError) *ServiceError {
+func NewServiceError(code string, err error) *ServiceError {
 	return &ServiceError{
 		Code:  code,
 		Error: err,
@@ -142,22 +146,12 @@ func matchStatus(code string) int {
 	return http.StatusInternalServerError
 }
 
-func ToServiceErrorFromRepo(re *RepoError) *ServiceError {
-	if re == nil {
-		return nil
-	}
-	return &ServiceError{
-		Code:  re.Code,
-		Error: re.Error,
-	}
-}
-
 func ToDeliveryErrorFromService(se *ServiceError) *DeliveryError {
 	if se == nil {
 		return nil
 	}
 	return &DeliveryError{
 		HTTPStatus: matchStatus(se.Code),
-		Errors:     []ErrorItem{NewErrorItem(se.Code, se.Error)},
+		Errors:     []ErrorItem{NewErrorItem(se.Code, NewCustomError(se.Error.Error()))},
 	}
 }
