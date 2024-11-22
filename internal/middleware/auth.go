@@ -27,7 +27,7 @@ func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddle
 
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/api/auth") {
+		if strings.HasPrefix(r.URL.Path, "/api/auth") || strings.HasPrefix(r.URL.Path, "/api/csrf-token") {
 			next.ServeHTTP(w, r)
 			return
 		}
