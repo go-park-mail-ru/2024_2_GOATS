@@ -23,6 +23,7 @@ type UserRepositoryInterface interface {
 	CreateFavorite(ctx context.Context, favData *dto.RepoFavorite) *errVals.RepoError
 	DestroyFavorite(ctx context.Context, favData *dto.RepoFavorite) *errVals.RepoError
 	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.RepoError)
+	CheckFavorite(ctx context.Context, favData *dto.RepoFavorite) (bool, *errVals.RepoError)
 }
 
 type UserService struct {

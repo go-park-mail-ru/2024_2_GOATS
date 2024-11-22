@@ -116,6 +116,7 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		Country:          mv.Country,
 		VideoURL:         mv.VideoURL,
 		Director:         mv.Director.FullName(),
+		IsFavorite:       mv.IsFavorite,
 		Seasons:          mv.Seasons,
 	}
 

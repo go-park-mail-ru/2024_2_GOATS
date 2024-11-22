@@ -26,6 +26,11 @@ const (
 		JOIN countries on countries.id = movies.country_id
 		WHERE user_id = $1
 	`
+
+	favCheckSQL = `
+		SELECT id FROM favorites
+		WHERE user_id = $1 and movie_id = $2
+	`
 )
 
 func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
@@ -84,4 +89,25 @@ func FindByUserID(ctx context.Context, userID int, db *sql.DB) (*sql.Rows, error
 	logger.Info().Msgf("postgres: favorites with id %d found", userID)
 
 	return rows, nil
+}
+
+func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, error) {
+	logger := log.Ctx(ctx)
+
+	rows, err := db.QueryContext(ctx, favCheckSQL, favData.UserID, favData.MovieID)
+	if err != nil {
+		errMsg := fmt.Errorf("postgres: error while checking favorite existence - %w", err)
+		logger.Error().Err(errMsg).Msg("pg_error")
+
+		return false, errMsg
+	}
+
+	var present bool
+	if rows.Next() {
+		present = true
+	}
+
+	logger.Info().Msgf("postgres: check favorite completed with status: %v", present)
+
+	return present, nil
 }
