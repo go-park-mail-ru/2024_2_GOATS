@@ -21,10 +21,10 @@ import (
 )
 
 const (
-	registerPath = "/api/auth/signup"
-	loginPath    = "/api/auth/login"
-	logoutPath   = "/api/auth/logout"
-	sessionPath  = "/api/auth/session"
+	registerPath = "/api/review/signup"
+	loginPath    = "/api/review/login"
+	logoutPath   = "/api/review/logout"
+	sessionPath  = "/api/review/session"
 )
 
 func TestDelivery_Register(t *testing.T) {
@@ -322,7 +322,7 @@ func testContext(t *testing.T) context.Context {
 	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
 
 	cfg, err := config.New(true)
-	require.NoError(t, err, "failed to read config from auth handler_test")
+	require.NoError(t, err, "failed to read config from review handler_test")
 
 	return config.WrapContext(context.Background(), cfg)
 }
