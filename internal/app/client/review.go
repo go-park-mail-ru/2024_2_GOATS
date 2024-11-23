@@ -82,6 +82,7 @@ func (rc *ReviewClient) GetQuestions(ctx context.Context) ([]*dto.ReviewData, er
 			ID:      int(q.QuestionId),
 			Title:   q.Question,
 			Answers: ans,
+			Type:    q.Type,
 		}
 
 		rd = append(rd, curr)
