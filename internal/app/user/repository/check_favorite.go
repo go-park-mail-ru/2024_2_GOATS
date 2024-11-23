@@ -9,7 +9,7 @@ import (
 )
 
 func (r *UserRepo) CheckFavorite(ctx context.Context, favData *dto.RepoFavorite) (bool, *errVals.RepoError) {
-	present, err := favoritedb.Check(ctx, favData, r.Database)
+	present, err := favoritedb.CheckFavoriteExists(ctx, favData, r.Database)
 	if err != nil {
 		return false, errVals.NewRepoError(errVals.ErrCreateFavorite, errVals.NewCustomError(err.Error()))
 	}

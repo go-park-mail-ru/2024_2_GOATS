@@ -91,10 +91,18 @@ func FindByUserID(ctx context.Context, userID int, db *sql.DB) (*sql.Rows, error
 	return rows, nil
 }
 
-func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, error) {
+func CheckFavoriteExists(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, error) {
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, favCheckSQL, favData.UserID, favData.MovieID)
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			errMsg := fmt.Errorf("cannot close rows while checking favorite existence: %w", err)
+			log.Error().Err(errMsg).Msg("pg_error")
+		}
+	}()
+
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while checking favorite existence - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
@@ -102,11 +110,7 @@ func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, er
 		return false, errMsg
 	}
 
-	var present bool
-	if rows.Next() {
-		present = true
-	}
-
+	present := rows.Next()
 	logger.Info().Msgf("postgres: check favorite completed with status: %v", present)
 
 	return present, nil
