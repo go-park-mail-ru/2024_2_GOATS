@@ -5,6 +5,8 @@ services:
       dockerfile: user_service/Dockerfile
     ports:
       - "8082:8082"
+    volumes:
+      - /home/ubuntu/images:/home/ubuntu/images
     environment:
       - PORT=8082
       - DATABASE_HOST=user_db
@@ -34,7 +36,8 @@ services:
 
 networks:
   cassette-world:
-    external: true
+    external:
+      name: cassette-world
 
 volumes:
   postgres_volume:

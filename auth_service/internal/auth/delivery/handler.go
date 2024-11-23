@@ -3,7 +3,6 @@ package delivery
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/delivery/converter"
@@ -33,9 +32,7 @@ func (am *AuthManager) CreateSession(ctx context.Context, createCookieReq *auth.
 	}
 
 	srvResp, err := am.SessionSrv.CreateSession(ctx, srvData)
-	fmt.Println("SERVICE RESPONSE", srvResp)
 	resp := converter.ToDescCreateCookieRespFromSrv(srvResp)
-	fmt.Println("DEL RESPONSE", resp)
 	if err != nil {
 		logger.Error().Interface("createSessionError", err).Msg("failed_to_create_session")
 		return nil, err

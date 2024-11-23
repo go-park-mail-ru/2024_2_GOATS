@@ -36,7 +36,7 @@ func (cl *AuthClient) CreateSession(ctx context.Context, usrID int) (*models.Coo
 		Token: &models.Token{
 			UserID:  usrID,
 			TokenID: resp.Cookie,
-			Expiry:  time.Unix(0, resp.MaxAge),
+			Expiry:  time.Unix(resp.MaxAge, 0),
 		},
 	}, nil
 }
