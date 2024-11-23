@@ -26,3 +26,10 @@ type UserHandlerInterface interface {
 	SetFavorite(w http.ResponseWriter, r *http.Request)
 	ResetFavorite(w http.ResponseWriter, r *http.Request)
 }
+
+type ReviewHandlerInterface interface {
+	GetQuestions(w http.ResponseWriter, r *http.Request)
+	CreateCSAT(w http.ResponseWriter, r *http.Request)
+	CheckReview(w http.ResponseWriter, r *http.Request)
+	GetStatistics(w http.ResponseWriter, r *http.Request)
+}

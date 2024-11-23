@@ -46,6 +46,17 @@ func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.Sessio
 	userRouter.Use(authMW.AuthMiddleware)
 }
 
+func SetupReview(delLayer handlers.ReviewHandlerInterface, authMW *middleware.SessionMiddleware, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	reviewRouter := apiMux.PathPrefix("/reviews").Subrouter()
+
+	reviewRouter.HandleFunc("/", delLayer.CreateCSAT).Methods(http.MethodPost, http.MethodOptions)
+	reviewRouter.HandleFunc("/check", delLayer.CheckReview).Methods(http.MethodGet, http.MethodOptions)
+	reviewRouter.HandleFunc("/csat", delLayer.GetQuestions).Methods(http.MethodGet, http.MethodOptions)
+
+	reviewRouter.Use(authMW.AuthMiddleware)
+}
+
 func UseCommonMiddlewares(mx *mux.Router) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.WithLogger)
