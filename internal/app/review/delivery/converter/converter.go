@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"sort"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/review/service/dto"
 )
@@ -39,10 +41,15 @@ func ConvertReviewDataToAPI(data []*dto.ReviewData) *api.GetReviewResponse {
 			ID:      rd.ID,
 			Title:   rd.Title,
 			Answers: answers,
+			Type:    rd.Type,
 		}
 
 		resp.Questions = append(resp.Questions, review)
 	}
+
+	sort.Slice(resp.Questions, func(i, j int) bool {
+		return resp.Questions[i].ID < resp.Questions[j].ID
+	})
 
 	return &resp
 }

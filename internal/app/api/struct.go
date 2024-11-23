@@ -123,6 +123,7 @@ type ReviewData struct {
 	ID      int      `json:"id"`
 	Title   string   `json:"title"`
 	Answers []Answer `json:"answers"`
+	Type    string   `json:"type"`
 }
 
 type Answer struct {
@@ -131,6 +132,7 @@ type Answer struct {
 }
 
 type CreateReviewRequest struct {
+	Type      string     `json:"type"`
 	Questions []Question `json:"questions"`
 }
 

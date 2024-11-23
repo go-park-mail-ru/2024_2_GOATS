@@ -16,6 +16,7 @@ type ReviewData struct {
 	ID      int
 	Title   string
 	Answers []Answer
+	Type    string
 }
 
 type Answer struct {
