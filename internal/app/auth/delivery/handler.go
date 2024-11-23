@@ -180,6 +180,35 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, sessionResp)
 }
 
+func (a *AuthHandler) SetActiveSessionTime(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+	ck, err := r.Cookie("session_id")
+	if errors.Is(err, http.ErrNoCookie) {
+		errMsg := fmt.Errorf("session action: No cookie err - %w", err)
+		api.RequestError(r.Context(), w, rParseErr, http.StatusForbidden, errMsg)
+
+		return
+	}
+
+	time := &api.Time{}
+
+	api.DecodeBody(w, r, time)
+
+	errSrvResp := a.authService.SetActiveSessionTime(r.Context(), ck.Value, time.Time)
+	if errSrvResp != nil {
+		errResp := errVals.ToDeliveryErrorFromService(errSrvResp)
+		errMsg := errors.New("failed to set active session time")
+		logger.Error().Err(errMsg).Interface("sessionResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Msg("setActiveSessionTime success")
+
+	api.Response(r.Context(), w, http.StatusOK, nil)
+}
+
 func preparedCookie(ck *models.CookieData) *http.Cookie {
 	return &http.Cookie{
 		Name:     ck.Name,

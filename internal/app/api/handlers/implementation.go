@@ -17,6 +17,7 @@ type AuthHandlerInterface interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	Session(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
+	SetActiveSessionTime(w http.ResponseWriter, r *http.Request)
 }
 
 type UserHandlerInterface interface {
@@ -25,4 +26,11 @@ type UserHandlerInterface interface {
 	GetFavorites(w http.ResponseWriter, r *http.Request)
 	SetFavorite(w http.ResponseWriter, r *http.Request)
 	ResetFavorite(w http.ResponseWriter, r *http.Request)
+}
+
+type ReviewHandlerInterface interface {
+	GetQuestions(w http.ResponseWriter, r *http.Request)
+	CreateCSAT(w http.ResponseWriter, r *http.Request)
+	CheckReview(w http.ResponseWriter, r *http.Request)
+	GetStatistics(w http.ResponseWriter, r *http.Request)
 }

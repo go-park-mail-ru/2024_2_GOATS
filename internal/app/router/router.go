@@ -17,6 +17,7 @@ func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.HandleFunc("/signup", delLayer.Register).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
+	authRouter.HandleFunc("/time", delLayer.SetActiveSessionTime).Methods(http.MethodPost, http.MethodOptions)
 }
 
 func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
@@ -44,6 +45,18 @@ func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.Sessio
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
 
 	userRouter.Use(authMW.AuthMiddleware)
+}
+
+func SetupReview(delLayer handlers.ReviewHandlerInterface, authMW *middleware.SessionMiddleware, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	reviewRouter := apiMux.PathPrefix("/reviews").Subrouter()
+
+	reviewRouter.HandleFunc("/", delLayer.CreateCSAT).Methods(http.MethodPost, http.MethodOptions)
+	reviewRouter.HandleFunc("/check", delLayer.CheckReview).Methods(http.MethodGet, http.MethodOptions)
+	reviewRouter.HandleFunc("/csat", delLayer.GetQuestions).Methods(http.MethodGet, http.MethodOptions)
+	reviewRouter.HandleFunc("/stats", delLayer.GetStatistics).Methods(http.MethodGet, http.MethodOptions)
+
+	reviewRouter.Use(authMW.AuthMiddleware)
 }
 
 func UseCommonMiddlewares(mx *mux.Router) {

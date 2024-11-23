@@ -5,12 +5,15 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
@@ -20,9 +23,13 @@ import (
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
+	review "github.com/go-park-mail-ru/2024_2_GOATS/review_service/pkg/review_v1"
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	reviewApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/review/delivery"
+	reviewServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/review/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
@@ -37,6 +44,7 @@ type App struct {
 	Server            *http.Server
 	Mux               *mux.Router
 	Logger            *zerolog.Logger
+	Cfg               *config.Config
 	AcceptConnections bool
 }
 
@@ -61,15 +69,26 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
-	repoUser := userRepo.NewUserRepository(database)
+	return &App{
+		Database: database,
+		Redis:    rdb,
+		Logger:   &logger,
+		Cfg:      cfg,
+	}, nil
+}
+
+func (a *App) Run() {
+	ctx := config.WrapContext(context.Background(), a.Cfg)
+
+	repoUser := userRepo.NewUserRepository(a.Database)
 	srvUser := userServ.NewUserService(repoUser)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
 
-	repoAuth := authRepo.NewAuthRepository(database, rdb)
+	repoAuth := authRepo.NewAuthRepository(a.Database, a.Redis)
 	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	repoMov := movieRepo.NewMovieRepository(database)
+	repoMov := movieRepo.NewMovieRepository(a.Database)
 	srvMov := movieServ.NewMovieService(repoMov)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
@@ -82,25 +101,33 @@ func New(isTest bool) (*App, error) {
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
-		Handler:      mx,
-		ReadTimeout:  cfg.Listener.Timeout,
-		WriteTimeout: cfg.Listener.Timeout,
-		IdleTimeout:  cfg.Listener.IdleTimeout,
+	reviewGrpcConn, err := grpc.NewClient(
+		"review_app:8082",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
 	}
 
-	return &App{
-		Database: database,
-		Redis:    rdb,
-		Server:   srv,
-		Logger:   &logger,
-		Mux:      mx,
-	}, nil
-}
+	defer reviewGrpcConn.Close()
 
-func (a *App) Run() {
-	a.Mux.Use(a.AppReadyMiddleware)
+	reviewClient := client.NewReviewClient(review.NewReviewClient(reviewGrpcConn))
+	reviewSrv := reviewServ.NewReviewService(reviewClient)
+	reviewDel := reviewApi.NewReviewHandler(reviewSrv)
+
+	router.SetupReview(reviewDel, authMW, mx)
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", a.Cfg.Listener.Port),
+		Handler:      mx,
+		ReadTimeout:  a.Cfg.Listener.Timeout,
+		WriteTimeout: a.Cfg.Listener.Timeout,
+		IdleTimeout:  a.Cfg.Listener.IdleTimeout,
+	}
+
+	a.Server = srv
+
+	mx.Use(a.AppReadyMiddleware)
 
 	a.Logger.Info().Msgf("Server is listening: %s", a.Server.Addr)
 
