@@ -25,7 +25,7 @@ type LocalStorage struct {
 
 type Postgres struct {
 	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
+	Port     int `yaml:"port"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	Name     string `yaml:"name"`
@@ -44,7 +44,7 @@ type Cookie struct {
 
 type Listener struct {
 	Address     string        `yaml:"address"`
-	Port        int           `yaml:"port"`
+	Port        string           `yaml:"port"`
 	Timeout     time.Duration `yaml:"timeout"`
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
