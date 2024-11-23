@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/review/config"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )

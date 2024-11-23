@@ -5,7 +5,7 @@ services:
   review_app:
     build:
       context: ..
-      dockerfile: review_service/Dockerfile
+      dockerfile: review/Dockerfile
     restart: always
     # volumes:
     #   - /home/ubuntu/images:/home/ubuntu/images

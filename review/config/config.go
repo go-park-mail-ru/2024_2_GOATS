@@ -13,7 +13,22 @@ type Config struct {
 }
 
 type Databases struct {
-	Redis Redis `yaml:"redis"`
+	Postgres     Postgres     `yaml:"postgres"`
+	Redis        Redis        `yaml:"redis"`
+	LocalStorage LocalStorage `yaml:"localStorage"`
+}
+
+type LocalStorage struct {
+	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
+	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
+}
+
+type Postgres struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Name     string `yaml:"name"`
 }
 
 type Redis struct {
@@ -28,7 +43,10 @@ type Cookie struct {
 }
 
 type Listener struct {
-	Port string `yaml:"port"`
+	Address     string        `yaml:"address"`
+	Port        int           `yaml:"port"`
+	Timeout     time.Duration `yaml:"timeout"`
+	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
 func New(isTest bool) (*Config, error) {

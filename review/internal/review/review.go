@@ -69,7 +69,7 @@ func New(isTest bool) (*AuthApp, error) {
 }
 
 func (a *AuthApp) Run() {
-	lis, err := net.Listen("tcp", a.cfg.Listener.Port)
+	lis, err := net.Listen("tcp", ":8081")
 	if err != nil {
 		a.logger.Fatal().Msgf("failed to setup listener: %v", err)
 	}
