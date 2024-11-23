@@ -13,4 +13,5 @@ type AuthServiceInterface interface {
 	Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *errVals.ServiceError)
 	Session(ctx context.Context, cookie string) (*models.SessionRespData, *errVals.ServiceError)
 	Logout(ctx context.Context, cookie string) (*models.AuthRespData, *errVals.ServiceError)
+	SetActiveSessionTime(ctx context.Context, cookie string, seconds int) *errVals.ServiceError
 }

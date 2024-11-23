@@ -65,6 +65,20 @@ func (mr *MockAuthRepositoryInterfaceMockRecorder) GetFromCookie(ctx, cookie int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFromCookie", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).GetFromCookie), ctx, cookie)
 }
 
+// SetActiveSessionTime mocks base method.
+func (m *MockAuthRepositoryInterface) SetActiveSessionTime(ctx context.Context, usrID string, seconds int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetActiveSessionTime", ctx, usrID, seconds)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetActiveSessionTime indicates an expected call of SetActiveSessionTime.
+func (mr *MockAuthRepositoryInterfaceMockRecorder) SetActiveSessionTime(ctx, usrID, seconds interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetActiveSessionTime", reflect.TypeOf((*MockAuthRepositoryInterface)(nil).SetActiveSessionTime), ctx, usrID, seconds)
+}
+
 // SetCookie mocks base method.
 func (m *MockAuthRepositoryInterface) SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errors.RepoError) {
 	m.ctrl.T.Helper()

@@ -108,3 +108,46 @@ type FavReq struct {
 	UserID  int `json:"user_id"`
 	MovieID int `json:"movie_id"`
 }
+
+type CheckReviewData struct {
+	CSAT bool `json:"csat_status"`
+	NPS  bool `json:"nps_status"`
+	CSI  bool `json:"csi_status"`
+}
+
+type GetReviewResponse struct {
+	Questions []*ReviewData `json:"questions"`
+}
+
+type ReviewData struct {
+	ID      int      `json:"id"`
+	Title   string   `json:"title"`
+	Answers []Answer `json:"answers"`
+	Type    string   `json:"type"`
+}
+
+type Answer struct {
+	ID      int    `json:"id"`
+	Content string `json:"content"`
+}
+
+type CreateReviewRequest struct {
+	Type      string     `json:"type"`
+	Questions []Question `json:"questions"`
+}
+
+type Question struct {
+	ID         int    `json:"id"`
+	AnswerID   int    `json:"answer_id"`
+	AnswerText string `json:"answer_text"`
+}
+
+type Statistic struct {
+	Rating   float64  `json:"rating"`
+	Type     string   `json:"type"`
+	Comments []string `json:"comments"`
+}
+
+type Time struct {
+	Time int `json:"time"`
+}
