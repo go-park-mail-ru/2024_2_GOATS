@@ -8,8 +8,8 @@ services:
       context: ./
       dockerfile: Dockerfile
     restart: always
-    volumes:
-      - /home/ubuntu/images:/home/ubuntu/images
+    # volumes:
+    #   - /home/ubuntu/images:/home/ubuntu/images
     ports:
       - 8080:8080
     networks:
@@ -36,11 +36,11 @@ services:
       - cassette-world
   nginx:
     build: ./nginx
-    volumes:
-      - ../frontend/2024_2_GOATS/dist:/var/www/dist
-      - ../disk:/usr/share/nginx/html/static
-      - ../images:/usr/share/nginx/html/images
-      - ../frontend/2024_2_GOATS/public/assets:/usr/share/nginx/html/assets
+    # volumes:
+    #   - ../frontend/2024_2_GOATS/dist:/var/www/dist
+    #   - ../disk:/usr/share/nginx/html/static
+    #   - ../images:/usr/share/nginx/html/images
+    #   - ../frontend/2024_2_GOATS/public/assets:/usr/share/nginx/html/assets
     ports:
       - 80:80
     depends_on:
