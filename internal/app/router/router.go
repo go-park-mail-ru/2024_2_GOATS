@@ -53,6 +53,7 @@ func SetupReview(delLayer handlers.ReviewHandlerInterface, authMW *middleware.Se
 	reviewRouter.HandleFunc("/", delLayer.CreateCSAT).Methods(http.MethodPost, http.MethodOptions)
 	reviewRouter.HandleFunc("/check", delLayer.CheckReview).Methods(http.MethodGet, http.MethodOptions)
 	reviewRouter.HandleFunc("/csat", delLayer.GetQuestions).Methods(http.MethodGet, http.MethodOptions)
+	reviewRouter.HandleFunc("/stats", delLayer.GetStatistics).Methods(http.MethodGet, http.MethodOptions)
 
 	reviewRouter.Use(authMW.AuthMiddleware)
 }
