@@ -4,8 +4,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY auth_service/ ./auth_service
-WORKDIR /app/auth_service
+COPY review/ ./review
+WORKDIR /app/review
 
 RUN go build cmd/main.go
 EXPOSE 8081

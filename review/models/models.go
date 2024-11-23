@@ -10,5 +10,10 @@ type Question struct {
 	IsActive   bool
 	QuestionID int64
 	Question   string
-	Answers    []string
+	Answers    []Answer
+}
+
+type Answer struct {
+	ID      int64
+	Content string
 }

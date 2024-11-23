@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/review/service/dto"
-	review "github.com/go-park-mail-ru/2024_2_GOATS/review_service/pkg/review_v1"
+	review "github.com/go-park-mail-ru/2024_2_GOATS/review/pkg/review_v1"
 )
 
 type ReviewClientInterface interface {
@@ -71,8 +71,8 @@ func (rc *ReviewClient) GetQuestions(ctx context.Context) ([]*dto.ReviewData, er
 		var ans []dto.Answer
 		for _, a := range q.Answers {
 			curr := dto.Answer{
-				ID:      int(a.AnswerId),
-				Content: a.Content,
+				ID:      int(a.AnswersId),
+				Content: a.Answers,
 			}
 
 			ans = append(ans, curr)
@@ -82,7 +82,7 @@ func (rc *ReviewClient) GetQuestions(ctx context.Context) ([]*dto.ReviewData, er
 			ID:      int(q.QuestionId),
 			Title:   q.Question,
 			Answers: ans,
-			Type:    q.Type,
+			// Type:    q.Type,
 		}
 
 		rd = append(rd, curr)
@@ -97,9 +97,16 @@ func (rc *ReviewClient) GetStatistics(ctx context.Context) (*dto.Statistic, erro
 		return nil, fmt.Errorf("cannot get statistics: %w", err)
 	}
 
+	var comments []string
+	var rating float32
+	for _, d := range resp.Data {
+		comments = append(comments, d.Answer)
+		rating = d.Rating
+	}
+
 	return &dto.Statistic{
-		Rating:   float64(resp.Rating),
+		Rating:   float64(rating),
 		Type:     "csat",
-		Comments: resp.Comments,
+		Comments: comments,
 	}, nil
 }

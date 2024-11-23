@@ -51,6 +51,4 @@ services:
 
 networks:
   cassette-world:
-  default:
-    external:
-      name: cassette-world # Не забыть создать сеть перед деплоем
+    external: true

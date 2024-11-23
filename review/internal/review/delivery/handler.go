@@ -42,8 +42,8 @@ func (rm *ReviewHandler) Create(ctx context.Context, createReq *review.CreateReq
 
 func (rm *ReviewHandler) GetQuestionData(ctx context.Context, getQuestionDataReq *review.GetQuestionDataRequest) (*review.GetQuestionDataResponse, error) {
 	logger := log.Ctx(ctx)
-	srvResp, err := rm.ReviewService.GetQuestionData(ctx)
-	dataSrvResp := converter.ToGRPCDataSlice(srvResp)
+	srvResp, rating, err := rm.ReviewService.GetQuestionData(ctx)
+	dataSrvResp := converter.ToGRPCDataSlice(srvResp, rating)
 
 	if err != nil {
 		logger.Error().Interface("destroySessionError", err).Msg("failed_to_destroy_session")

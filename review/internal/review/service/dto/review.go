@@ -11,5 +11,10 @@ type QuestionDTO struct {
 	IsActive   bool
 	QuestionID int64
 	Question   string
-	Answers    []string
+	Answers    []AnswerDTO
+}
+
+type AnswerDTO struct {
+	ID      int
+	Content string
 }

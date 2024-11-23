@@ -28,7 +28,7 @@ func ToSrvDataSlice(grpcData []*review.Data) []*dto.DataDTO {
 }
 
 // Convert Service DTO slice to gRPC Data slice
-func ToGRPCDataSlice(srvData []*dto.DataDTO) []*review.Data {
+func ToGRPCDataSlice(srvData []*dto.DataDTO, rating float64) []*review.Data {
 	if srvData == nil {
 		return nil
 	}
@@ -42,6 +42,7 @@ func ToGRPCDataSlice(srvData []*dto.DataDTO) []*review.Data {
 			QuestionId: d.QuestionID,
 			AnswerId:   d.AnswerID,
 			Answer:     d.Answer,
+			Rating:     float32(rating),
 		})
 	}
 	return grpcDataSlice
@@ -58,11 +59,22 @@ func ToGRPCQuestionsSlice(srvData []*dto.QuestionDTO) []*review.Question {
 		if d == nil {
 			continue
 		}
+
+		var ans []*review.Answer
+		for _, a := range d.Answers {
+			curr := &review.Answer{
+				AnswersId: int64(a.ID),
+				Answers:   a.Content,
+			}
+
+			ans = append(ans, curr)
+		}
+
 		grpcQuestionsSlice = append(grpcQuestionsSlice, &review.Question{
 			IsActive:   d.IsActive,
 			QuestionId: d.QuestionID,
 			Question:   d.Question,
-			Answer:     d.Answers,
+			Answers:    ans,
 		})
 	}
 	return grpcQuestionsSlice
@@ -100,11 +112,21 @@ func ToSrvQuestion(modelQuestion *models.Question) *dto.QuestionDTO {
 		return nil
 	}
 
+	var ans []dto.AnswerDTO
+	for _, a := range modelQuestion.Answers {
+		cur := dto.AnswerDTO{
+			ID:      int(a.ID),
+			Content: a.Content,
+		}
+
+		ans = append(ans, cur)
+	}
+
 	return &dto.QuestionDTO{
 		IsActive:   modelQuestion.IsActive,
 		QuestionID: modelQuestion.QuestionID,
 		Question:   modelQuestion.Question,
-		Answers:    modelQuestion.Answers,
+		Answers:    ans,
 	}
 }
 
@@ -114,10 +136,20 @@ func ToModelQuestion(srvQuestion *dto.QuestionDTO) *models.Question {
 		return nil
 	}
 
+	var ans []models.Answer
+	for _, a := range srvQuestion.Answers {
+		cur := models.Answer{
+			ID:      int64(a.ID),
+			Content: a.Content,
+		}
+
+		ans = append(ans, cur)
+	}
+
 	return &models.Question{
 		IsActive:   srvQuestion.IsActive,
 		QuestionID: srvQuestion.QuestionID,
 		Question:   srvQuestion.Question,
-		Answers:    srvQuestion.Answers,
+		Answers:    ans,
 	}
 }

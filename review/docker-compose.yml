@@ -1,5 +1,5 @@
 volumes:
-  redis:
+  postgres_volume:
 
 services:
   review_app:
@@ -13,19 +13,11 @@ services:
       - 8081:8081
     networks:
       - cassette-world
-  redis:
-    image: 'redis:latest'
-    command: redis-server
-    container_name: redis
-    volumes:
-      - redis:/data
-    networks:
-      - cassette-world
-  db:
+  review_db:
     image: postgres:latest
-    container_name: db_review
+    container_name: review_db
     environment:
-      - "POSTGRES_DB=cassette-world-review"
+      - "POSTGRES_DB=review_db"
       - "POSTGRES_USER=test"
       - "POSTGRES_PASSWORD=test"
     volumes:

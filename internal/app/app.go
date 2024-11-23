@@ -24,7 +24,7 @@ import (
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
-	review "github.com/go-park-mail-ru/2024_2_GOATS/review_service/pkg/review_v1"
+	review "github.com/go-park-mail-ru/2024_2_GOATS/review/pkg/review_v1"
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
@@ -102,7 +102,7 @@ func (a *App) Run() {
 	router.SetupUser(delUser, authMW, mx)
 
 	reviewGrpcConn, err := grpc.NewClient(
-		"review_app:8082",
+		"review_app:8081",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

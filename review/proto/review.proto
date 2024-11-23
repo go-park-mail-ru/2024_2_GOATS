@@ -45,7 +45,7 @@ message Question {
   bool isActive = 1;
   int64 question_id = 2;
   string question = 3;
-  repeated string Answer = 4;
+  repeated Answer answers = 4;
 }
 
 message Answer {

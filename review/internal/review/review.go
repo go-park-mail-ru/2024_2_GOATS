@@ -45,8 +45,6 @@ func New(isTest bool) (*AuthApp, error) {
 	)
 
 	reflection.Register(srv)
-	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
-	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
 	ctx := config.WrapContext(context.Background(), cfg)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
@@ -64,7 +62,6 @@ func New(isTest bool) (*AuthApp, error) {
 	review.RegisterReviewServer(srv, delivery.NewReviewHandler(ctx, sessServ))
 
 	return &AuthApp{
-		rdb:    rdb,
 		srv:    srv,
 		logger: &logger,
 		cfg:    cfg,
