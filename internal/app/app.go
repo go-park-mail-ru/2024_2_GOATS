@@ -5,21 +5,25 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
+	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
+	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
+	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
@@ -73,6 +77,13 @@ func New(isTest bool) (*App, error) {
 	srvMov := movieServ.NewMovieService(repoMov)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
+	repoRoom := roomRepo.NewRepository(database, rdb)
+	srvRoom := roomServ.NewService(repoRoom, srvMov)
+	roomHub := ws.NewRoomHub()
+	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+
+	go roomHub.Run() // Запуск обработчика Hub'a
+
 	mx := mux.NewRouter()
 	router.UseCommonMiddlewares(mx)
 	router.SetupCsrf(mx)
@@ -81,6 +92,8 @@ func New(isTest bool) (*App, error) {
 
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)
+
+	router.SetupRoom(roomHub, delRoom, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
