@@ -4,6 +4,7 @@ type DataDTO struct {
 	QuestionID int64
 	AnswerID   int64
 	Answer     string
+	Rating     int64
 }
 
 type QuestionDTO struct {

@@ -21,6 +21,7 @@ func ToSrvDataSlice(grpcData []*review.Data) []*dto.DataDTO {
 			QuestionID: d.QuestionId,
 			AnswerID:   d.AnswerId,
 			Answer:     d.Answer,
+			Rating:     int64(d.Rating),
 		})
 	}
 	return srvDataSlice

@@ -15,6 +15,7 @@ message Data {
   int64 question_id = 1;
   int64 answer_id = 2;
   string answer = 3;
+  float rating = 4;
 }
 
 message CreateRequest {

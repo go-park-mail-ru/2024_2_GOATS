@@ -22,14 +22,14 @@ func NewReviewHandler(ctx context.Context, srv ReviewServiceInterface) review.Re
 	}
 }
 
-func (rm *ReviewManager) Create(ctx context.Context, createReq *review.CreateRequest) (*review.CreateResponse, error) {
+func (rm *ReviewHandler) Create(ctx context.Context, createReq *review.CreateRequest) (*review.CreateResponse, error) {
 	logger := log.Ctx(ctx)
 	ctx = config.WrapRedisContext(ctx, rm.redisCfg)
 	srvData := converter.ToSrvDataSlice(createReq.Data)
-	srvUserData := createReq.UserId
 	if srvData == nil {
 		return nil, errors.New("bad_request")
 	}
+	srvUserData := createReq.UserId
 
 	err := rm.ReviewService.Create(ctx, srvUserData, srvData)
 	if err != nil {
@@ -40,7 +40,7 @@ func (rm *ReviewManager) Create(ctx context.Context, createReq *review.CreateReq
 	return &review.CreateResponse{Status: "1"}, nil
 }
 
-func (rm *ReviewManager) GetQuestionData(ctx context.Context, getQuestionDataReq *review.GetQuestionDataRequest) (*review.GetQuestionDataResponse, error) {
+func (rm *ReviewHandler) GetQuestionData(ctx context.Context, getQuestionDataReq *review.GetQuestionDataRequest) (*review.GetQuestionDataResponse, error) {
 	logger := log.Ctx(ctx)
 	srvResp, err := rm.ReviewService.GetQuestionData(ctx)
 	dataSrvResp := converter.ToGRPCDataSlice(srvResp)
@@ -54,7 +54,7 @@ func (rm *ReviewManager) GetQuestionData(ctx context.Context, getQuestionDataReq
 	return &review.GetQuestionDataResponse{Data: dataSrvResp}, nil
 }
 
-func (rm *ReviewManager) CheckPass(ctx context.Context, checkPassRequest *review.CheckPassRequest) (*review.CheckPassResponse, error) {
+func (rm *ReviewHandler) CheckPass(ctx context.Context, checkPassRequest *review.CheckPassRequest) (*review.CheckPassResponse, error) {
 	logger := log.Ctx(ctx)
 	srvUserData := checkPassRequest.UserId
 	srvResp, err := rm.ReviewService.CheckPass(ctx, srvUserData)
@@ -67,7 +67,7 @@ func (rm *ReviewManager) CheckPass(ctx context.Context, checkPassRequest *review
 	return &review.CheckPassResponse{Passed: srvResp}, nil
 }
 
-func (rm *ReviewManager) CreateFront(ctx context.Context, createFrontReq *review.CreateFrontRequest) (*review.CreateFrontResponse, error) {
+func (rm *ReviewHandler) CreateFront(ctx context.Context, createFrontReq *review.CreateFrontRequest) (*review.CreateFrontResponse, error) {
 	logger := log.Ctx(ctx)
 	srvResp, err := rm.ReviewService.CreateFront(ctx)
 	dataSrvResp := converter.ToGRPCQuestionsSlice(srvResp)
