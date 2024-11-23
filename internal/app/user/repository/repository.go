@@ -12,7 +12,7 @@ type UserRepo struct {
 	Database *sql.DB
 }
 
-func NewRepository(db *sql.DB) service.UserRepositoryInterface {
+func NewUserRepository(db *sql.DB) service.UserRepositoryInterface {
 	return &UserRepo{
 		Database: db,
 	}

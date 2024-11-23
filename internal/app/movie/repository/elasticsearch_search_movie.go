@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (r *Repo) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
+func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
 	// Создаём запрос ElasticSearch
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{

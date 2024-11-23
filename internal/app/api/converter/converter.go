@@ -1,14 +1,9 @@
 package converter
 
 import (
-	"database/sql"
-	"fmt"
-	"strings"
-	"time"
-
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/rs/zerolog/log"
 	roomsModel "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 )
 
@@ -39,7 +34,7 @@ func ToServRegisterData(rg *api.RegisterRequest) *models.RegisterData {
 
 func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 	return &models.PasswordData{
-		UserId:               rp.UserId,
+		UserID:               rp.UserID,
 		OldPassword:          rp.OldPassword,
 		Password:             rp.Password,
 		PasswordConfirmation: rp.PasswordConfirmation,
@@ -47,19 +42,19 @@ func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 }
 
 func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
-	birthdate, err := StringToNullTime(pr.Birthdate)
-	if err != nil {
-		return nil
-	}
-
 	return &models.User{
-		Id:         pr.UserId,
+		ID:         pr.UserID,
 		Email:      pr.Email,
 		Username:   pr.Username,
-		Birthdate:  birthdate,
-		Sex:        StringToNullString(pr.Sex),
 		AvatarName: pr.AvatarName,
-		Avatar:     pr.Avatar,
+		AvatarFile: pr.AvatarFile,
+	}
+}
+
+func ToServFavData(fr *api.FavReq) *models.Favorite {
+	return &models.Favorite{
+		UserID:  fr.UserID,
+		MovieID: fr.MovieID,
 	}
 }
 
@@ -69,20 +64,7 @@ func ToApiAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
 	}
 
 	return &api.AuthResponse{
-		Success:    true,
-		NewCookie:  ld.NewCookie,
-		StatusCode: ld.StatusCode,
-	}
-}
-
-func ToApiUpdateUserResponse(ud *models.UpdateUserRespData) *api.UpdateUserResponse {
-	if ud == nil {
-		return nil
-	}
-
-	return &api.UpdateUserResponse{
-		Success:    true,
-		StatusCode: ud.StatusCode,
+		NewCookie: ld.NewCookie,
 	}
 }
 
@@ -91,30 +73,14 @@ func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 		return nil
 	}
 
-	resp := &api.SessionResponse{
-		Success: true,
+	return &api.SessionResponse{
 		UserData: api.User{
-			Id:        sr.UserData.Id,
+			ID:        sr.UserData.ID,
 			Email:     sr.UserData.Email,
 			Username:  sr.UserData.Username,
-			AvatarUrl: sr.UserData.AvatarUrl,
+			AvatarURL: sr.UserData.AvatarURL,
 		},
-		StatusCode: sr.StatusCode,
 	}
-
-	if sr.UserData.Birthdate.Valid {
-		resp.UserData.Birthdate = sr.UserData.Birthdate.Time.Format("2006-01-02")
-	} else {
-		resp.UserData.Birthdate = ""
-	}
-
-	if sr.UserData.Sex.Valid {
-		resp.UserData.Sex = sr.UserData.Sex.String
-	} else {
-		resp.UserData.Sex = ""
-	}
-
-	return resp
 }
 
 func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsResponse {
@@ -122,31 +88,14 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 		return nil
 	}
 
-	colls := []api.Collection{}
+	var colls = make([]api.Collection, 0, len(cl.Collections))
 	for _, coll := range cl.Collections {
-		tempCol := api.Collection{Id: coll.Id, Title: coll.Title, Movies: &[]api.CollectionMovie{}}
-		for _, movie := range coll.Movies {
-			tempMv := api.CollectionMovie{
-				Id:          movie.Id,
-				Title:       movie.Title,
-				CardUrl:     movie.CardUrl,
-				AlbumUrl:    movie.AlbumUrl,
-				Rating:      movie.Rating,
-				ReleaseDate: movie.ReleaseDate,
-				MovieType:   movie.MovieType,
-				Country:     movie.Country,
-			}
-
-			*tempCol.Movies = append(*tempCol.Movies, tempMv)
-		}
-
+		tempCol := api.Collection{ID: coll.ID, Title: coll.Title, Movies: coll.Movies}
 		colls = append(colls, tempCol)
 	}
 
 	return &api.CollectionsResponse{
-		Success:     true,
 		Collections: colls,
-		StatusCode:  cl.StatusCode,
 	}
 }
 
@@ -156,109 +105,72 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 
 	mvInfo := &api.MovieInfo{
-		Id:               mv.Id,
+		ID:               mv.ID,
 		Title:            mv.Title,
 		FullDescription:  mv.FullDescription,
 		ShortDescription: mv.ShortDescription,
-		CardUrl:          mv.CardUrl,
-		AlbumUrl:         mv.AlbumUrl,
-		TitleUrl:         mv.TitleUrl,
+		CardURL:          mv.CardURL,
+		AlbumURL:         mv.AlbumURL,
+		TitleURL:         mv.TitleURL,
 		Rating:           mv.Rating,
 		ReleaseDate:      mv.ReleaseDate,
 		MovieType:        mv.MovieType,
 		Country:          mv.Country,
-		VideoUrl:         mv.VideoUrl,
+		VideoURL:         mv.VideoURL,
+		Director:         mv.Director.FullName(),
+		Seasons:          mv.Seasons,
 	}
 
-	actors := []*api.StaffShortInfo{}
-	directors := []*api.StaffShortInfo{}
-	staffs := mv.Actors
-	staffs = append(staffs, mv.Directors...)
-
-	for _, staff := range staffs {
-		tempSt := &api.StaffShortInfo{
-			Id:       staff.Id,
-			FullName: strings.TrimSpace(fmt.Sprintf("%s %s %s", staff.Name, staff.Surname, staff.Patronymic)),
-			PhotoUrl: staff.SmallPhotoUrl,
-			Country:  staff.Country,
+	var actors = make([]*api.ActorInfo, 0, len(mv.Actors))
+	for _, actor := range mv.Actors {
+		tempSt := &api.ActorInfo{
+			ID:       actor.ID,
+			FullName: actor.FullName(),
+			PhotoURL: actor.SmallPhotoURL,
+			Country:  actor.Country,
 		}
 
-		if staff.Post == "actor" {
-			actors = append(actors, tempSt)
-		}
-
-		if staff.Post == "director" {
-			directors = append(directors, tempSt)
-		}
+		actors = append(actors, tempSt)
 	}
 
 	mvInfo.Actors = actors
-	mvInfo.Directors = directors
 
 	return &api.MovieResponse{
-		Success:   true,
 		MovieInfo: mvInfo,
 	}
 }
 
-func ToApiGetActorResponse(ac *models.StaffInfo) *api.ActorResponse {
+func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 	if ac == nil {
 		return nil
 	}
 
 	actor := &api.Actor{
-		Id:        ac.Id,
-		FullName:  strings.TrimSpace(fmt.Sprintf("%s %s %s", ac.Name, ac.Surname, ac.Patronymic)),
+		ID:        ac.ID,
+		FullName:  ac.FullName(),
 		Biography: ac.Biography,
-		PhotoUrl:  ac.BigPhotoUrl,
+		PhotoURL:  ac.BigPhotoURL,
 		Country:   ac.Country,
+		Movies:    ac.Movies,
 	}
 
 	if ac.Birthdate.Valid {
-		actor.Birthdate = ac.Birthdate.Time.Format("2006-01-02")
+		actor.Birthdate = ac.Birthdate.String
 	} else {
 		actor.Birthdate = ""
 	}
 
 	return &api.ActorResponse{
-		Success:   true,
 		ActorInfo: actor,
 	}
 }
 
-func ToApiErrorResponse(e *models.ErrorRespData) *api.ErrorResponse {
-	if e == nil {
-		return nil
+func ToApiMovieShortInfos(mvs []models.MovieShortInfo) api.MovieShortInfos {
+	if mvs == nil {
+		return api.MovieShortInfos{}
 	}
 
-	return &api.ErrorResponse{
-		Success:    false,
-		StatusCode: e.StatusCode,
-		Errors:     e.Errors,
-	}
-}
-
-func StringToNullString(s string) sql.NullString {
-	if s == "" {
-		return sql.NullString{Valid: false}
-	}
-	return sql.NullString{String: s, Valid: true}
-}
-
-func StringToNullTime(s string) (sql.NullTime, error) {
-	if s == "" {
-		return sql.NullTime{Valid: false}, nil
-	}
-
-	t, err := time.Parse("2006-01-02", s)
-	if err != nil {
-		errMsg := fmt.Errorf("cannot parse given string to date: %w", err)
-		log.Err(errMsg)
-
-		return sql.NullTime{}, errMsg
-	}
-
-	return sql.NullTime{Time: t, Valid: true}, nil
+	return api.MovieShortInfos{Movies: mvs}
 }
 
 func ToApiSessionResponseForRoom(sr *roomsModel.SessionRespData) *api.SessionResponse {
@@ -267,24 +179,23 @@ func ToApiSessionResponseForRoom(sr *roomsModel.SessionRespData) *api.SessionRes
 	}
 
 	return &api.SessionResponse{
-		Success: true,
 		UserData: api.User{
-			Id:       sr.UserData.Id,
+			ID:       sr.UserData.ID,
 			Email:    sr.UserData.Email,
 			Username: sr.UserData.Username,
 		},
-		StatusCode: sr.StatusCode,
 	}
 }
 
-func ToApiErrorResponseForRoom(e *roomsModel.ErrorRespData) *api.ErrorResponse {
+func ToApiErrorResponseForRoom(e *roomsModel.ErrorRespData) *errors.DeliveryError {
 	if e == nil {
 		return nil
 	}
 
-	return &api.ErrorResponse{
-		Success:    false,
-		StatusCode: e.StatusCode,
-		Errors:     e.Errors,
+	return &errors.DeliveryError{
+		HTTPStatus: 200,
+		//Errors:     []ErrorItem{NewErrorItem(se.Code, se.Error)},
+		//HTTPStatus: e.StatusCode,
+		//Errors:     e.Errors,
 	}
 }

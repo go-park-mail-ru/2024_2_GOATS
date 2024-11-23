@@ -11,18 +11,18 @@ import (
 	"strconv"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/user"
+	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/userdb"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )
 
 type RoomRepositoryInterface interface {
-	CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error)
-	UpdateRoomState(ctx context.Context, roomID string, state *models.RoomState) error
-	GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error)
-	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int)
-	UserById(ctx context.Context, userId string) (*models.User, *errVals.ErrorObj, int)
+	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
+	UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error
+	GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error)
+	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int)
+	UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int)
 }
 
 type Repo struct {
@@ -37,7 +37,7 @@ func NewRepository(db *sql.DB, rdb *redis.Client) RoomRepositoryInterface {
 	}
 }
 
-func (r *Repo) CreateRoom(ctx context.Context, room *models.RoomState) (*models.RoomState, error) {
+func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
 	room.Id = uuid.New().String() // Генерация уникального ID для комнаты
 	data, err := json.Marshal(room)
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *Repo) CreateRoom(ctx context.Context, room *models.RoomState) (*models.
 	return room, nil
 }
 
-func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *models.RoomState) error {
+func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error {
 	data, err := json.Marshal(state)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *models
 	return r.Redis.Set(ctx, "room_state:"+roomID, data, 0).Err()
 }
 
-func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomState, error) {
+func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error) {
 	data, err := r.Redis.Get(ctx, "room_state:"+roomID).Result()
 	if err == redis.Nil {
 		return nil, errors.New("room state not found")
@@ -67,7 +67,7 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomSta
 		return nil, err
 	}
 
-	var state models.RoomState
+	var state model.RoomState
 	err = json.Unmarshal([]byte(data), &state)
 	log.Println("state =", state)
 	if err != nil {
@@ -76,12 +76,12 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*models.RoomSta
 	return &state, nil
 }
 
-func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
+func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int) {
 	var userID string
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)
 	log.Println("err =", err)
 	if err != nil {
-		return "", errVals.NewErrorObj(
+		return "", errVals.NewRepoError(
 			errVals.ErrCreateUserCode,
 			errVals.CustomError{Err: fmt.Errorf("cannot get cookie from redis: %w", err)},
 		), http.StatusForbidden
@@ -90,19 +90,26 @@ func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVa
 	return userID, nil, http.StatusOK
 }
 
-func (r *Repo) UserById(ctx context.Context, userId string) (*models.User, *errVals.ErrorObj, int) {
+func (r *Repo) UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int) {
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
 		log.Println("Ошибка перевода str в int", err)
 	}
-	usr, err := user.FindById(ctx, userIdInt, r.Database)
+	usr, err := user.FindByID(ctx, userIdInt, r.Database)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errVals.NewErrorObj(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFoundText), http.StatusNotFound
+			return nil, errVals.NewRepoError(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFound), http.StatusNotFound
 		}
 
-		return nil, errVals.NewErrorObj(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
+		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
 	}
 
-	return (*models.User)(usr), nil, http.StatusOK
+	return &model.User{
+		ID:        usr.ID,
+		Email:     usr.Email,
+		Username:  usr.Username,
+		Password:  usr.Password,
+		AvatarURL: usr.AvatarURL,
+	}, nil, http.StatusOK
+	//return *model.User(usr), nil, http.StatusOK
 }

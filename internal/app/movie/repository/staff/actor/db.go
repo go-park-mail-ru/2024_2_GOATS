@@ -10,9 +10,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func FindById(ctx context.Context, staffId int, post string, db *sql.DB) (*models.StaffInfo, error) {
+func FindById(ctx context.Context, staffId int, post string, db *sql.DB) (*models.ActorInfo, error) {
 	logger := log.Ctx(ctx)
-	actorInfo := &models.StaffInfo{}
+	actorInfo := &models.ActorInfo{}
 
 	row := staff.FindById(ctx, staffId, post, db)
 

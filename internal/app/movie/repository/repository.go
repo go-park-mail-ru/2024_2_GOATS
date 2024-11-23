@@ -8,14 +8,14 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type Repo struct {
+type MovieRepo struct {
 	Database      *sql.DB
 	Redis         *redis.Client
 	Elasticsearch *elasticsearch.Client
 }
 
-func NewRepository(db *sql.DB, rdb *redis.Client, es *elasticsearch.Client) service.MovieRepositoryInterface {
-	return &Repo{
+func NewMovieRepository(db *sql.DB, rdb *redis.Client, es *elasticsearch.Client) service.MovieRepositoryInterface {
+	return &MovieRepo{
 		Database:      db,
 		Redis:         rdb,
 		Elasticsearch: es,

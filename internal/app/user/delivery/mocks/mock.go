@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errors "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,13 +36,55 @@ func (m *MockUserServiceInterface) EXPECT() *MockUserServiceInterfaceMockRecorde
 	return m.recorder
 }
 
+// AddFavorite mocks base method.
+func (m *MockUserServiceInterface) AddFavorite(ctx context.Context, favData *models.Favorite) *errors.ServiceError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFavorite", ctx, favData)
+	ret0, _ := ret[0].(*errors.ServiceError)
+	return ret0
+}
+
+// AddFavorite indicates an expected call of AddFavorite.
+func (mr *MockUserServiceInterfaceMockRecorder) AddFavorite(ctx, favData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFavorite", reflect.TypeOf((*MockUserServiceInterface)(nil).AddFavorite), ctx, favData)
+}
+
+// GetFavorites mocks base method.
+func (m *MockUserServiceInterface) GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errors.ServiceError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFavorites", ctx, usrID)
+	ret0, _ := ret[0].([]models.MovieShortInfo)
+	ret1, _ := ret[1].(*errors.ServiceError)
+	return ret0, ret1
+}
+
+// GetFavorites indicates an expected call of GetFavorites.
+func (mr *MockUserServiceInterfaceMockRecorder) GetFavorites(ctx, usrID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockUserServiceInterface)(nil).GetFavorites), ctx, usrID)
+}
+
+// ResetFavorite mocks base method.
+func (m *MockUserServiceInterface) ResetFavorite(ctx context.Context, favData *models.Favorite) *errors.ServiceError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetFavorite", ctx, favData)
+	ret0, _ := ret[0].(*errors.ServiceError)
+	return ret0
+}
+
+// ResetFavorite indicates an expected call of ResetFavorite.
+func (mr *MockUserServiceInterfaceMockRecorder) ResetFavorite(ctx, favData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetFavorite", reflect.TypeOf((*MockUserServiceInterface)(nil).ResetFavorite), ctx, favData)
+}
+
 // UpdatePassword mocks base method.
-func (m *MockUserServiceInterface) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) (*models.UpdateUserRespData, *models.ErrorRespData) {
+func (m *MockUserServiceInterface) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errors.ServiceError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePassword", ctx, passwordData)
-	ret0, _ := ret[0].(*models.UpdateUserRespData)
-	ret1, _ := ret[1].(*models.ErrorRespData)
-	return ret0, ret1
+	ret0, _ := ret[0].(*errors.ServiceError)
+	return ret0
 }
 
 // UpdatePassword indicates an expected call of UpdatePassword.
@@ -51,12 +94,11 @@ func (mr *MockUserServiceInterfaceMockRecorder) UpdatePassword(ctx, passwordData
 }
 
 // UpdateProfile mocks base method.
-func (m *MockUserServiceInterface) UpdateProfile(ctx context.Context, profileData *models.User) (*models.UpdateUserRespData, *models.ErrorRespData) {
+func (m *MockUserServiceInterface) UpdateProfile(ctx context.Context, profileData *models.User) *errors.ServiceError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateProfile", ctx, profileData)
-	ret0, _ := ret[0].(*models.UpdateUserRespData)
-	ret1, _ := ret[1].(*models.ErrorRespData)
-	return ret0, ret1
+	ret0, _ := ret[0].(*errors.ServiceError)
+	return ret0
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.

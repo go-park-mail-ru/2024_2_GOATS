@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-func (r *Repo) SearchActors(ctx context.Context, query string) ([]models.StaffInfo, error) {
+func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
 	// Создаём запрос ElasticSearch
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{
@@ -43,7 +43,7 @@ func (r *Repo) SearchActors(ctx context.Context, query string) ([]models.StaffIn
 	var esResponse struct {
 		Hits struct {
 			Hits []struct {
-				Source models.StaffInfo `json:"_source"`
+				Source models.ActorInfo `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
 	}
@@ -52,7 +52,7 @@ func (r *Repo) SearchActors(ctx context.Context, query string) ([]models.StaffIn
 	}
 
 	// Собираем результаты
-	actors := make([]models.StaffInfo, len(esResponse.Hits.Hits))
+	actors := make([]models.ActorInfo, len(esResponse.Hits.Hits))
 	for i, hit := range esResponse.Hits.Hits {
 		actors[i] = hit.Source
 	}

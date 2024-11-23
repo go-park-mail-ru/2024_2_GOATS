@@ -3,27 +3,26 @@ package repository
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/rs/zerolog/log"
 )
 
-func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.ErrorObj, int) {
+func (r *AuthRepo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError) {
 	var userID string
 	logger := log.Ctx(ctx)
 
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)
 	if err != nil {
 		errMsg := fmt.Errorf("redis: cannot get cookie from redis - %w", err)
-		logger.Error().Msg(errMsg.Error())
+		logger.Error().Err(errMsg).Msg("redis_get_error")
 
-		return "", errVals.NewErrorObj(
-			"no_cookie_matches",
-			errVals.CustomError{Err: errMsg},
-		), http.StatusForbidden
+		return "", errVals.NewRepoError(
+			errVals.ErrRedisGetCode,
+			errVals.NewCustomError(errMsg.Error()),
+		)
 	}
 
-	logger.Info().Msg(fmt.Sprintf("redis: successfully get info from cookie - %s", cookie))
-	return userID, nil, http.StatusOK
+	logger.Info().Msg("redis: successfully get info from cookie")
+	return userID, nil
 }

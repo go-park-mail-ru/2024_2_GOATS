@@ -4,14 +4,10 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
@@ -21,15 +17,24 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+const (
+	registerPath = "/api/auth/signup"
+	loginPath    = "/api/auth/login"
+	logoutPath   = "/api/auth/logout"
+	sessionPath  = "/api/auth/session"
 )
 
 func TestDelivery_Register(t *testing.T) {
+	ctx := testContext(t)
 	tests := []struct {
 		name         string
 		req          string
 		resp         string
 		mockReturn   *models.AuthRespData
-		mockErr      *models.ErrorRespData
+		mockErr      *errVals.ServiceError
 		statusCode   int
 		isValidation bool
 	}{
@@ -44,75 +49,58 @@ func TestDelivery_Register(t *testing.T) {
 						UserID:  1,
 					},
 				},
-				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true}`,
+			resp:       `{}`,
 			statusCode: http.StatusOK,
 		},
 		{
-			name: "Service Error",
-			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "123456789"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errors.New("some token error")})},
-			},
+			name:       "Service Error",
+			req:        `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "123456789"}`,
+			mockErr:    errVals.NewServiceError(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errors.New("some token error")}),
 			statusCode: http.StatusInternalServerError,
-			resp:       `{"success":false,"errors":[{"Code":"auth_token_generation_error","Error":"some token error"}]}`,
+			resp:       `{"errors":[{"code":"auth_token_generation_error","error":"some token error"}]}`,
 		},
 		{
-			name: "Validation Error",
-			req:  `{"email": "invalid", "username": "tester", "password": "short", "passwordConfirmation": "short"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusBadRequest,
-				Errors: []errVals.ErrorObj{
-					{
-						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordText.Err},
-					},
-					{
-						Code: errVals.ErrInvalidEmailCode, Error: errVals.CustomError{Err: errVals.ErrInvalidEmailText.Err},
-					},
-				},
-			},
+			name:         "Validation Error",
+			req:          `{"email": "invalid", "username": "tester", "password": "short", "passwordConfirmation": "short"}`,
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
-			resp:         `{"success":false,"errors":[{"Code":"invalid_password","Error":"password is too short. The minimal len is 8"},{"Code":"invalid_email","Error":"email is incorrect"}]}`,
+			resp:         `{"errors":[{"code":"invalid_password","error":"password is too short. The minimal len is 8"},{"code":"invalid_email","error":"email is incorrect"}]}`,
 		},
 		{
 			name: "Password mismatch",
 			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "12345678910"}`,
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusBadRequest,
-				Errors: []errVals.ErrorObj{
-					{
-						Code: errVals.ErrInvalidPasswordCode, Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatchText.Err},
-					},
-				},
+			mockErr: &errVals.ServiceError{
+				Code:  errVals.ErrInvalidPasswordCode,
+				Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatch.Err},
 			},
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
-			resp:         `{"success":false,"errors":[{"Code":"invalid_password","Error":"password doesnt match with passwordConfirmation"}]}`,
+			resp:         `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/signup"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
 			if !test.isValidation {
-				authSrv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Register)
+			r.HandleFunc(registerPath, handler.Register)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", path, bytes.NewBufferString(test.req))
+			req := httptest.NewRequest("POST", registerPath, bytes.NewBufferString(test.req))
 
 			r.ServeHTTP(w, req)
 
@@ -123,12 +111,14 @@ func TestDelivery_Register(t *testing.T) {
 }
 
 func TestDelivery_Login(t *testing.T) {
+	ctx := testContext(t)
+
 	tests := []struct {
 		name       string
 		req        string
 		resp       string
 		mockReturn *models.AuthRespData
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		statusCode int
 	}{
 		{
@@ -142,40 +132,38 @@ func TestDelivery_Login(t *testing.T) {
 						UserID:  1,
 					},
 				},
-				StatusCode: http.StatusOK,
 			},
 			statusCode: http.StatusOK,
-			resp:       `{"success": true}`,
+			resp:       `{}`,
 		},
 		{
-			req:  `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatchText)},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"invalid_password","Error":"password doesnt match with passwordConfirmation"}]}`,
-			statusCode: http.StatusInternalServerError,
+			req:        `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, (errVals.NewCustomError(errVals.ErrInvalidPasswordsMatch.Err.Error()))),
+			resp:       `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
+			statusCode: http.StatusBadRequest,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/login"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
-			authSrv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+			mAuthSrv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Login)
+			r.HandleFunc(loginPath, handler.Login)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", path, bytes.NewBufferString(test.req))
+			req := httptest.NewRequest("POST", loginPath, bytes.NewBufferString(test.req))
 
 			r.ServeHTTP(w, req)
 
@@ -186,72 +174,67 @@ func TestDelivery_Login(t *testing.T) {
 }
 
 func TestDelivery_Logout(t *testing.T) {
+	ctx := testContext(t)
+
 	tests := []struct {
 		name         string
 		resp         string
 		mockReturn   *models.AuthRespData
-		mockErr      *models.ErrorRespData
+		mockErr      *errVals.ServiceError
 		statusCode   int
 		isValidation bool
 		emptyCookie  bool
 		noCookie     bool
 	}{
 		{
-			name: "Success",
-			mockReturn: &models.AuthRespData{
-				StatusCode: http.StatusOK,
-			},
+			name:       "Success",
+			mockReturn: &models.AuthRespData{},
 			statusCode: http.StatusOK,
-			resp:       `{"success": true}`,
+			resp:       `{}`,
 		},
 		{
-			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors:     []errVals.ErrorObj{*errVals.NewErrorObj(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some redis error")})},
-			},
+			name:       "Service Error",
+			mockErr:    errVals.NewServiceError(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some redis error")}),
 			statusCode: http.StatusInternalServerError,
-			resp:       `{"success":false,"errors":[{"Code":"failed_delete_from_redis","Error":"some redis error"}]}`,
+			resp:       `{"errors":[{"code":"failed_delete_from_redis","error":"some redis error"}]}`,
 		},
 		{
-			name: "Validation Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusBadRequest,
-				Errors:     []errVals.ErrorObj{{Code: errVals.ErrBrokenCookieCode, Error: errVals.CustomError{Err: errVals.ErrBrokenCookieText.Err}}},
-			},
+			name:         "Validation Error",
+			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.CustomError{Err: errVals.ErrBrokenCookie.Err}),
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,
-			resp:         `{"success":false,"errors":[{"Code":"cookie_validation_error","Error":"Logout action: Invalid cookie err - broken cookie was given"}]}`,
+			resp:         `{"errors":[{"code":"auth_validation_error","error":"logout action: Invalid cookie err - broken cookie was given"}]}`,
 		},
 		{
 			name:         "No cookie provided",
-			statusCode:   http.StatusForbidden,
+			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			noCookie:     true,
-			resp:         `{"success":false,"errors":[{"Code":"no_cookie_provided","Error":"Logout action: No cookie err - http: named cookie not present"}]}`,
+			resp:         `{"errors":[{"code":"auth_request_parse_error","error":"logout action: No cookie err - http: named cookie not present"}]}`,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/logout"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Logout)
+			r.HandleFunc(logoutPath, handler.Logout)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", path, bytes.NewBufferString(""))
+			req := httptest.NewRequest("POST", logoutPath, bytes.NewBufferString(""))
 
 			if !test.isValidation {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				authSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			} else if test.emptyCookie {
 				req.Header.Set("Cookie", "session_id=")
 			}
@@ -265,10 +248,12 @@ func TestDelivery_Logout(t *testing.T) {
 }
 
 func TestDelivery_Session(t *testing.T) {
+	ctx := testContext(t)
+
 	tests := []struct {
 		name       string
 		mockReturn *models.SessionRespData
-		mockErr    *models.ErrorRespData
+		mockErr    *errVals.ServiceError
 		resp       string
 		statusCode int
 		noCookie   bool
@@ -277,54 +262,52 @@ func TestDelivery_Session(t *testing.T) {
 			name: "Success",
 			mockReturn: &models.SessionRespData{
 				UserData: models.User{
-					Id:       1,
+					ID:       1,
 					Email:    "test@mail.ru",
 					Username: "Tester",
 				},
-				StatusCode: http.StatusOK,
 			},
-			resp:       `{"success":true,"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","birthdate":"","sex":"","avatar_url":""}}`,
+			resp:       `{"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
 			statusCode: http.StatusOK,
 		},
 		{
 			name: "Service Error",
-			mockErr: &models.ErrorRespData{
-				StatusCode: http.StatusInternalServerError,
-				Errors: []errVals.ErrorObj{*errVals.NewErrorObj(
-					errVals.ErrCreateUserCode,
-					errVals.CustomError{Err: errors.New("cannot get cookie from redis")},
-				)},
-			},
-			resp:       `{"success":false,"errors":[{"Code":"create_user_error","Error":"cannot get cookie from redis"}]}`,
+			mockErr: errVals.NewServiceError(
+				errVals.ErrCreateUserCode,
+				errVals.CustomError{Err: errors.New("cannot get cookie from redis")},
+			),
+			resp:       `{"errors":[{"code":"create_user_error","error":"cannot get cookie from redis"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name:       "Forbidden",
-			resp:       `{"success":false,"errors":[{"Code":"no_cookie_provided","Error":"Session action: No cookie err - http: named cookie not present"}]}`,
+			resp:       `{"errors":[{"code":"auth_request_parse_error","error":"session action: No cookie err - http: named cookie not present"}]}`,
 			statusCode: http.StatusForbidden,
 			noCookie:   true,
 		},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			path := "/api/auth/session"
-			authSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
-			usrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(testContext(), authSrv, usrSrv)
+			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
+			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
+			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
 
 			r := mux.NewRouter()
-			r.HandleFunc(path, handler.Session)
+			r.HandleFunc(sessionPath, handler.Session)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", path, bytes.NewBufferString(""))
+			req := httptest.NewRequest("GET", sessionPath, bytes.NewBufferString(""))
 
 			if !test.noCookie {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				authSrv.EXPECT().Session(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Session(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 			}
 
 			r.ServeHTTP(w, req)
@@ -335,18 +318,11 @@ func TestDelivery_Session(t *testing.T) {
 	}
 }
 
-func testContext() context.Context {
-	err := os.Chdir("../../../..")
-	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to change directory: %v", err))
-	}
+func testContext(t *testing.T) context.Context {
+	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
 
-	cfg, err := config.New(zerolog.Logger{}, false, nil)
-	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("failed to read config: %v", err))
-	}
+	cfg, err := config.New(true)
+	require.NoError(t, err, "failed to read config from auth handler_test")
 
-	ctx := config.WrapContext(context.Background(), cfg)
-
-	return ctx
+	return config.WrapContext(context.Background(), cfg)
 }

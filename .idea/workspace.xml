@@ -5,9 +5,120 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
+      <change afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/auth/service/converter/converter.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/actordb/db.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/converter/converter.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/dto/dto.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/get_movie_actors.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/get_movie_by_genre.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/movie_collectiondb/db.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/movie_collectiondb/scanner.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/moviedb/db.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/moviedb/scanner.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/repository/repository_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/movie/service/get_movie_by_genre.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/delivery/handler_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/converter/converter.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/create_favorite.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/destroy_favorite.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/dto/dto.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/favoritedb/db.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/favoritedb/scanner.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/get_favorites.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/repository_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/userdb/db.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/service/add_favorite.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/service/converter/converter.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/service/get_favorites.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/service/reset_favorite.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/service/service_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/validation/validation.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/middleware/auth.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/middleware/log.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/context.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/context.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exclude_from_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/exclude_from_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filter_coverage.sh" beforeDir="false" afterPath="$PROJECT_DIR$/filter_coverage.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/converter/converter.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/converter/converter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/handlers/implementation.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/handlers/implementation.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/json.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/json.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/struct.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/struct.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/app_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/delivery/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/delivery/delivery.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/delivery/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/delivery/handler_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/delivery/handler_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/delivery/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/delivery/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/repository/destroy_session.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/repository/destroy_session.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/repository/get_from_cookie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/repository/get_from_cookie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/repository/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/repository/set_cookie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/repository/set_cookie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/cookie/cookie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/cookie/cookie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/login.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/login.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/logout.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/logout.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/register.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/register.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/service_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/auth/service/session.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/auth/service/session.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/errors/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/errors/errors.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/middleware.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/models/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/models/models.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/delivery.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/handler_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/handler_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/get_actor.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/get_actor.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/get_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/get_collection.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/get_movie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/get_movie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/movie_collection/db.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/movie_collection/scanner.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/get_actor.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/get_actor.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/get_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/get_collection.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/get_movie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/get_movie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/service_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/model/model.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/model/model.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/repository/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/room_handler/delivery.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/room/service/service_mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/room/service/service_mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/secur/csrf/handlers/csrf.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/secur/csrf/handlers/csrf.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/secur/csrf/token/token.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/secur/csrf/token/token.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/delivery/delivery.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/delivery/delivery.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/delivery/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/delivery/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/delivery/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/create_user.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/create_user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/password/password.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/password/password.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/save_avatar.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/save_avatar.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/update_password.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/update_password.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/update_profile_data.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/update_profile_data.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/user/db.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/user_by_email.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/user_by_email.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/user_by_id.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/user_by_id.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/update_password.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/update_password.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/update_profile.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/update_profile.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/validation/auth.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/config/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/config/config_test.yml" beforeDir="false" afterPath="$PROJECT_DIR$/internal/config/config_test.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/db/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/db/db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/db/schema/db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/internal/db/schema/db.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/db/seeds.sql" beforeDir="false" afterPath="$PROJECT_DIR$/internal/db/seeds.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/middleware/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/middleware/middleware.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nginx/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/nginx/nginx.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,50 +155,50 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
-    &quot;Go Test.TestNewExampleService in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_GetRoomState in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_GetRoomState/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestRoomService_HandleAction/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor&quot;: &quot;Debug&quot;,
-    &quot;Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor&quot;: &quot;Run&quot;,
-    &quot;Go Test.go test 2024_2_GOATS.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.go test internal.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.go test room.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.go test service (1).executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.go test service.executor&quot;: &quot;Coverage&quot;,
-    &quot;Go Test.login_test.go.executor&quot;: &quot;Coverage&quot;,
-    &quot;Makefile Target.generate.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;release/search&quot;,
-    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
-    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.goide.configuration.GoLibrariesConfigurableProvider&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
+    "Go Test.TestNewExampleService in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_GetRoomState in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_GetRoomState/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Run",
+    "Go Test.TestRoomService_HandleAction/успех in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service.executor": "Debug",
+    "Go Test.TestService_GetCollection in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_GetCollection/false in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_GetCollection/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_Login/login_success in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_Login1/error in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.TestService_Login1/ok in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/service.executor": "Run",
+    "Go Test.go test 2024_2_GOATS.executor": "Coverage",
+    "Go Test.go test internal.executor": "Coverage",
+    "Go Test.go test room.executor": "Coverage",
+    "Go Test.go test service (1).executor": "Coverage",
+    "Go Test.go test service.executor": "Coverage",
+    "Go Test.login_test.go.executor": "Coverage",
+    "Makefile Target.generate.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "Merging joint__viewing",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.goide.configuration.GoLibrariesConfigurableProvider"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/internal/app/room/service" />

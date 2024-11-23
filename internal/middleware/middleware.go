@@ -1,11 +1,15 @@
 package middleware
 
 import (
-	"fmt"
-	"github.com/microcosm-cc/bluemonday"
+	"bytes"
+	"context"
+	"crypto/subtle"
+	"github.com/gorilla/sessions"
+	"io"
 	"net/http"
 	"time"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -13,10 +17,16 @@ import (
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		reqID := r.Header.Get("Req-ID")
+		if reqID == "" {
+			reqID = generateRequestID()
+		}
 
-		logRequest(r, start, "accessLogMiddleware: END")
+		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
+		w.Header().Set("Req-ID", reqID)
+		logRequest(r, start, "accessLogMiddleware", reqID)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -24,20 +34,16 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token")
+		w.Header().Set("Access-Control-Expose-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
-			log.Info().Msg("corsMiddleware: PREFLIGHT END")
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		if r.Method == http.MethodGet || r.Method == http.MethodPost {
-			w.Header().Set("Content-Type", "application/json")
-		}
-
-		log.Info().Msg("corsMiddleware: END")
+		w.Header().Set("Content-Type", "application/json")
 
 		next.ServeHTTP(w, r)
 	})
@@ -45,25 +51,34 @@ func CorsMiddleware(next http.Handler) http.Handler {
 
 func PanicMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		defer func() {
 			if err := recover(); err != nil {
-				log.Error().Msg(fmt.Sprintf("panicMiddleware: Fail to recover err: %v", err))
+				logger := log.Ctx(r.Context())
+				logger.Error().Msgf("panicMiddleware: Panic happend: %v", err)
 				http.Error(w, "Internal server error", 500)
 			}
 		}()
-
-		log.Info().Msg("panicMiddleware: END")
 
 		next.ServeHTTP(w, r)
 	})
 }
 
-func logRequest(r *http.Request, start time.Time, msg string) {
+func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
+	var bodyCopy bytes.Buffer
+
+	tee := io.TeeReader(r.Body, &bodyCopy)
+	r.Body = io.NopCloser(&bodyCopy)
+	bodyBytes, err := io.ReadAll(tee)
+	if err != nil {
+		log.Error().Err(err).Msg("invalid-request-body")
+	}
+
 	log.Info().
 		Str("method", r.Method).
 		Str("remote_addr", r.RemoteAddr).
 		Str("url", r.URL.Path).
+		Str("request-id", requestID).
+		Bytes("body", bodyBytes).
 		Dur("work_time", time.Since(start)).
 		Msg(msg)
 }
@@ -75,7 +90,11 @@ func sanitizeInput(input string) string {
 
 func XssMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Invalid form data", http.StatusBadRequest)
+			return
+		}
+
 		for key, values := range r.Form {
 			for i, v := range values {
 				r.Form[key][i] = sanitizeInput(v)
@@ -85,23 +104,35 @@ func XssMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Проверяем CSRF-токен для защищенных маршрутов
-func CsrfMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Пропускаем GET-запросы и маршрут генерации CSRF-токена
-			if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
-				next.ServeHTTP(w, r)
-				return
-			}
+var store = sessions.NewCookieStore([]byte("secret-key"))
 
-			cookie, err := r.Cookie("csrf_token")
-			if err != nil || r.Header.Get("X-CSRF-Token") != cookie.Value {
-				http.Error(w, "Forbidden - CSRF token invalid", http.StatusForbidden)
-				return
-			}
-
+// CsrfMiddleware проверяет CSRF токен из сессии и заголовка запроса
+func CsrfMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
 			next.ServeHTTP(w, r)
-		})
-	}
+			return
+		}
+
+		session, err := store.Get(r, "session-name")
+		if err != nil {
+			http.Error(w, "Failed to get session", http.StatusInternalServerError)
+			return
+		}
+
+		token, ok := session.Values["csrf_token"].(string)
+
+		if !ok {
+			http.Error(w, "Forbidden - CSRF token missing", http.StatusForbidden)
+			return
+		}
+
+		csrfHeaderToken := r.Header.Get("X-CSRF-Token")
+		if subtle.ConstantTimeCompare([]byte(csrfHeaderToken), []byte(token)) != 1 {
+			http.Error(w, "Forbidden - CSRF token invalid", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
