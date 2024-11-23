@@ -17,6 +17,7 @@ type AuthHandlerInterface interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	Session(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
+	SetActiveSessionTime(w http.ResponseWriter, r *http.Request)
 }
 
 type UserHandlerInterface interface {

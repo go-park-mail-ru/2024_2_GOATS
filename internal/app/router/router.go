@@ -17,6 +17,7 @@ func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.HandleFunc("/signup", delLayer.Register).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
+	authRouter.HandleFunc("/time", delLayer.SetActiveSessionTime).Methods(http.MethodPost, http.MethodOptions)
 }
 
 func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {

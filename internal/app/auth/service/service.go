@@ -16,6 +16,7 @@ type AuthRepositoryInterface interface {
 	DestroySession(ctx context.Context, cookie string) *errVals.RepoError
 	SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.RepoError)
 	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError)
+	SetActiveSessionTime(ctx context.Context, usrID string, seconds int) error
 }
 
 type AuthService struct {

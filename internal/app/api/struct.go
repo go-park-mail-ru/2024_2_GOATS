@@ -145,3 +145,7 @@ type Statistic struct {
 	Type     string   `json:"type"`
 	Comments []string `json:"comments"`
 }
+
+type Time struct {
+	Time int `json:"time"`
+}
