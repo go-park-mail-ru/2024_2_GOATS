@@ -509,7 +509,7 @@ func testContext(t *testing.T) context.Context {
 	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
 
 	cfg, err := config.New(true)
-	require.NoError(t, err, "failed to read config from auth service_test")
+	require.NoError(t, err, "failed to read config from review service_test")
 
 	return config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
 }

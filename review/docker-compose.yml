@@ -1,0 +1,38 @@
+volumes:
+  redis:
+
+services:
+  review_app:
+    build:
+      context: ..
+      dockerfile: review_service/Dockerfile
+    restart: always
+    # volumes:
+    #   - /home/ubuntu/images:/home/ubuntu/images
+    ports:
+      - 8081:8081
+    networks:
+      - cassette-world
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    container_name: redis
+    volumes:
+      - redis:/data
+    networks:
+      - cassette-world
+  db:
+    image: postgres:latest
+    container_name: db_review
+    environment:
+      - "POSTGRES_DB=cassette-world-review"
+      - "POSTGRES_USER=test"
+      - "POSTGRES_PASSWORD=test"
+    volumes:
+      - ./dev/SQL:/docker-entrypoint-initdb.d/
+      - "postgres_volume:/var/lib/postgresql/data"
+    networks:
+      - cassette-world
+networks:
+  cassette-world:
+    external: true

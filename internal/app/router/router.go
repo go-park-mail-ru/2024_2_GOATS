@@ -11,7 +11,7 @@ import (
 
 func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
-	authRouter := apiMux.PathPrefix("/auth").Subrouter()
+	authRouter := apiMux.PathPrefix("/review").Subrouter()
 
 	authRouter.HandleFunc("/login", delLayer.Login).Methods(http.MethodPost, http.MethodOptions)
 	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions)
