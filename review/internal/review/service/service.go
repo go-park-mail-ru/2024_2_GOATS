@@ -29,8 +29,19 @@ func (s *ReviewService) Create(ctx context.Context, userID int64, data []*dto.Da
 	return s.repo.SaveSurveyData(ctx, userID, data)
 }
 
-func (s *ReviewService) GetQuestionData(ctx context.Context) ([]*dto.DataDTO, error) {
-	return s.repo.FetchSurveyStatistics(ctx)
+func (s *ReviewService) GetQuestionData(ctx context.Context) ([]*dto.DataDTO, float64, error) {
+	resp, err := s.repo.FetchSurveyStatistics(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+	var sum int64
+	num := len(resp)
+	for _, v := range resp {
+		sum += v.Rating
+	}
+	averageRating := sum / int64(num)
+
+	return resp, float64(averageRating), nil
 }
 
 func (s *ReviewService) CheckPass(ctx context.Context, userID int64) (bool, error) {
