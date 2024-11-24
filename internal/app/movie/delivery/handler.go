@@ -15,8 +15,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var _ handlers.MovieHandlerInterface = (*MovieHandler)(nil)
-
 const (
 	genresFilter = "genres"
 )
@@ -159,8 +157,22 @@ func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var movieResponses []map[string]interface{}
+	for _, movie := range movies {
+		movieResponses = append(movieResponses, map[string]interface{}{
+			"id":           movie.ID,
+			"title":        movie.Title,
+			"card_url":     movie.CardURL,
+			"album_url":    movie.AlbumURL,
+			"rating":       movie.Rating,
+			"release_date": movie.ReleaseDate,
+			"movie_type":   movie.MovieType,
+			"country":      movie.Country,
+		})
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(movies); err != nil {
+	if err := json.NewEncoder(w).Encode(movieResponses); err != nil {
 		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -172,14 +184,24 @@ func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movies, err := h.movieService.SearchActors(r.Context(), query)
+	actors, err := h.movieService.SearchActors(r.Context(), query)
 	if err != nil {
 		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	var actorResponses []map[string]interface{}
+	for _, actor := range actors {
+		actorResponses = append(actorResponses, map[string]interface{}{
+			"id":        actor.ID,
+			"full_name": actor.FullName,
+			"photo_url": actor.BigPhotoURL,
+			"country":   actor.Country,
+		})
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(movies); err != nil {
+	if err := json.NewEncoder(w).Encode(actorResponses); err != nil {
 		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
 	}
 }
