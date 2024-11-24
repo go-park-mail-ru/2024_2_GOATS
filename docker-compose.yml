@@ -68,10 +68,19 @@ services:
     networks:
       - cassette-world
 
+  elastic-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - elasticsearch
+    entrypoint: ["sh", "-c", "while ! curl -s http://elasticsearch:9200; do sleep 2; done; go run internal/db/script_elastic/script.go"]
+    networks:
+      - cassette-world
+
+
 networks:
   cassette-world:
   default:
     external:
       name: cassette-world # Не забыть создать сеть перед деплоем
-
-мне нужно заполнить базу эластика
