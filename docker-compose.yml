@@ -67,20 +67,30 @@ services:
       - "9200:9200"
     networks:
       - cassette-world
+    healthcheck:
+      test: ["CMD", "curl", "-s", "http://localhost:9200/_cluster/health?wait_for_status=yellow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   elastic-init:
     build:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - elasticsearch
-    entrypoint: ["sh", "-c", "while ! curl -s http://elasticsearch:9200; do sleep 2; done; go run internal/db/script_elastic/script.go"]
+      elasticsearch:
+        condition: service_healthy
+    entrypoint: ["sh", "-c", "go run internal/db/script_elastic/script.go"]
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
     networks:
       - cassette-world
-
 
 networks:
   cassette-world:
   default:
     external:
       name: cassette-world # Не забыть создать сеть перед деплоем
+
+
