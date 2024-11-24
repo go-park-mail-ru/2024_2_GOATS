@@ -30,6 +30,28 @@ type Actor struct {
 	BirthDate   string `json:"birth_date"`
 }
 
+func delIndex(indexName string) {
+	url := fmt.Sprintf("http://localhost:9200/%s", indexName)
+	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer([]byte("")))
+	if err != nil {
+		log.Fatalf("Error creating request for index %s: %v", indexName, err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Error sending HTTP request to create index %s: %v", indexName, err)
+	}
+	defer resp.Body.Close()
+
+	body := make([]byte, 1024)
+	resp.Body.Read(body)
+	fmt.Printf("Index %s creation status: %s\n", indexName, resp.Status)
+	fmt.Printf("Response body: %s\n", body)
+}
+
 func createIndex(indexName, mapping string) {
 	url := fmt.Sprintf("http://localhost:9200/%s", indexName)
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer([]byte(mapping)))
@@ -91,6 +113,10 @@ func addActor(id int, actor Actor) {
 }
 
 func main() {
+	delIndex("movies")
+	delIndex("actors")
+	time.Sleep(2 * time.Second)
+
 	// Индекс для актеров
 	actorMapping := `{
 		"mappings": {
