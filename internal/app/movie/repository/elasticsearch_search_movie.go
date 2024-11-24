@@ -36,7 +36,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 	}
 	defer res.Body.Close()
 
-	// Логирование ответа
 	bodyBytes, _ := io.ReadAll(res.Body)
 	log.Println("ElasticSearch Response:", string(bodyBytes))
 

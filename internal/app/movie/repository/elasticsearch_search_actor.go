@@ -12,7 +12,6 @@ import (
 )
 
 func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
-	// Создаём запрос ElasticSearch
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match_phrase_prefix": map[string]interface{}{
@@ -37,7 +36,6 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 	}
 	defer res.Body.Close()
 
-	// Логируем тело ответа от Elasticsearch
 	bodyBytes, _ := io.ReadAll(res.Body)
 	log.Println("ElasticSearch Response:", string(bodyBytes))
 
@@ -45,7 +43,6 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 		return nil, fmt.Errorf("search error: %s", res.String())
 	}
 
-	// Обрабатываем ответ
 	var esResponse struct {
 		Hits struct {
 			Hits []struct {
@@ -58,16 +55,14 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 		} `json:"hits"`
 	}
 
-	// Декодируем ответ
 	if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&esResponse); err != nil {
 		return nil, fmt.Errorf("error decoding search response: %w", err)
 	}
 
 	log.Println("Hits:", esResponse.Hits.Hits)
 
-	// Если нет результатов, возвращаем пустой список
 	if len(esResponse.Hits.Hits) == 0 {
-		return nil, fmt.Errorf("no actors found for query: %s", query)
+		return []models.ActorInfo{}, nil
 	}
 
 	actors := make([]models.ActorInfo, len(esResponse.Hits.Hits))

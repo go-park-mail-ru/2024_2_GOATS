@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service" />
+    <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/elasticsearch_search_actor.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/elasticsearch_search_actor.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/repository/elasticsearch_search_movie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/repository/elasticsearch_search_movie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/elastic_service_movie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/elastic_service_movie.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

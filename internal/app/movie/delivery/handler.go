@@ -158,6 +158,18 @@ func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var movieResponses []map[string]interface{}
+	if len(movies) == 0 {
+		movieResponses = append(movieResponses, map[string]interface{}{
+			"id":           0,
+			"title":        "",
+			"card_url":     "",
+			"album_url":    "",
+			"rating":       0.0,
+			"release_date": "",
+			"movie_type":   "",
+			"country":      "",
+		})
+	}
 	for _, movie := range movies {
 		movieResponses = append(movieResponses, map[string]interface{}{
 			"id":           movie.ID,
@@ -191,6 +203,14 @@ func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var actorResponses []map[string]interface{}
+	if len(actors) == 0 {
+		actorResponses = append(actorResponses, map[string]interface{}{
+			"id":        0,
+			"full_name": "",
+			"photo_url": "",
+			"country":   "",
+		})
+	}
 	for _, actor := range actors {
 		actorResponses = append(actorResponses, map[string]interface{}{
 			"id":        actor.ID,
