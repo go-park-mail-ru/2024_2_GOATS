@@ -194,9 +194,11 @@ func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var actorResponses []map[string]interface{}
+
 	if len(actors) == 0 {
 		actorResponses = append(actorResponses, map[string]interface{}{})
 	}
+
 	for _, actor := range actors {
 		actorResponses = append(actorResponses, map[string]interface{}{
 			"id":        actor.ID,
