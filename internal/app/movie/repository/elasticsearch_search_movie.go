@@ -65,7 +65,7 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 	log.Println("Hits:", esResponse.Hits.Hits)
 
 	if len(esResponse.Hits.Hits) == 0 {
-		return nil, fmt.Errorf("no movies found for query: %s", query)
+		return []models.MovieInfo{}, nil
 	}
 
 	movies := make([]models.MovieInfo, len(esResponse.Hits.Hits))
