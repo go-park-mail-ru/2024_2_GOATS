@@ -75,6 +75,7 @@ type MovieInfo struct {
 	Director         string           `json:"director"`
 	Actors           []*ActorInfo     `json:"actors_info"`
 	Seasons          []*models.Season `json:"seasons"`
+	IsFavorite       bool             `json:"is_favorite"`
 }
 
 type ActorResponse struct {

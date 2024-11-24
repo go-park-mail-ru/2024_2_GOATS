@@ -34,7 +34,7 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.SessionMiddleware, router *mux.Router) {
+func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
@@ -43,8 +43,6 @@ func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.Sessio
 	userRouter.HandleFunc("/{id:[0-9]+}/favorites", delLayer.GetFavorites).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc("/favorites", delLayer.SetFavorite).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
-
-	userRouter.Use(authMW.AuthMiddleware)
 }
 
 func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
@@ -54,13 +52,14 @@ func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationIn
 	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
 }
 
-func UseCommonMiddlewares(mx *mux.Router) {
+func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.WithLogger)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
 	mx.Use(middleware.CsrfMiddleware)
 	mx.Use(middleware.XssMiddleware)
+	mx.Use(authMW.AuthMiddleware)
 }
 
 func SetupCsrf(router *mux.Router) {

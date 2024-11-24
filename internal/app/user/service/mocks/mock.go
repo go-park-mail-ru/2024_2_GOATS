@@ -38,6 +38,21 @@ func (m *MockUserRepositoryInterface) EXPECT() *MockUserRepositoryInterfaceMockR
 	return m.recorder
 }
 
+// CheckFavorite mocks base method.
+func (m *MockUserRepositoryInterface) CheckFavorite(ctx context.Context, favData *dto.RepoFavorite) (bool, *errors.RepoError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckFavorite", ctx, favData)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(*errors.RepoError)
+	return ret0, ret1
+}
+
+// CheckFavorite indicates an expected call of CheckFavorite.
+func (mr *MockUserRepositoryInterfaceMockRecorder) CheckFavorite(ctx, favData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFavorite", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CheckFavorite), ctx, favData)
+}
+
 // CreateFavorite mocks base method.
 func (m *MockUserRepositoryInterface) CreateFavorite(ctx context.Context, favData *dto.RepoFavorite) *errors.RepoError {
 	m.ctrl.T.Helper()
