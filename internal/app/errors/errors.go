@@ -60,6 +60,13 @@ var ErrorCodeToHTTPStatus = map[string]int{
 	ErrInvalidUsernameCode: http.StatusBadRequest,
 	ErrGenCSRFCode:         http.StatusInternalServerError,
 	ErrSaveFileCode:        http.StatusInternalServerError,
+	ErrCreateFavorite:      http.StatusInternalServerError,
+	ErrResetFavorite:       http.StatusInternalServerError,
+	ErrGetFavorites:        http.StatusInternalServerError,
+	ErrGetUserCode:         http.StatusNotFound,
+	ErrCreateSessionCode:   http.StatusInternalServerError,
+	ErrDestroySessionCode:  http.StatusInternalServerError,
+	ErrCheckSessionCode:    http.StatusInternalServerError,
 }
 
 var (

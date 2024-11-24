@@ -8,11 +8,6 @@ import (
 )
 
 func (u *UserService) AddFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError {
-	// err := u.userRepo.CreateFavorite(ctx, converter.ToRepoFavoriteFromFavorite(favData))
-	// if err != nil {
-	// 	return errVals.ToServiceErrorFromRepo(err)
-	// }
-
 	err := u.userClient.SetFavorite(ctx, favData)
 	if err != nil {
 		return errVals.NewServiceError("failed_to_set_favorite", err)

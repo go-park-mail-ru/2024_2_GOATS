@@ -2,9 +2,9 @@ package delivery
 
 import (
 	"context"
-	"errors"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/errs"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/delivery/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/validation"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
@@ -37,7 +37,7 @@ func (uh *UserHandler) Create(ctx context.Context, createUsrReq *user.CreateUser
 	srvData := converter.ConvertToSrvCreateUser(createUsrReq)
 	if srvData == nil {
 		logger.Error().Msgf("convert error")
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	usrID, err := uh.userService.Create(ctx, srvData)
@@ -74,7 +74,7 @@ func (uh *UserHandler) UpdatePassword(ctx context.Context, updatePasswdReq *user
 
 	srvData := converter.ConvertToSrvUpdatePassword(updatePasswdReq)
 	if srvData == nil {
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	err = uh.userService.UpdatePassword(ctx, srvData)
@@ -90,7 +90,7 @@ func (uh *UserHandler) UpdatePassword(ctx context.Context, updatePasswdReq *user
 func (uh *UserHandler) GetFavorites(ctx context.Context, getFavReq *user.ID) (*user.GetFavoritesResponse, error) {
 	logger := log.Ctx(ctx)
 	if getFavReq.ID == 0 {
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	mvIDs, err := uh.userService.GetFavorites(ctx, getFavReq.ID)
@@ -121,7 +121,7 @@ func (uh *UserHandler) toggleFavorite(ctx context.Context, req *user.HandleFavor
 
 	srvData := converter.ConvertToSrvFavorite(req)
 	if srvData == nil {
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	if op == "set" {
@@ -149,7 +149,7 @@ func (uh *UserHandler) CheckFavorite(ctx context.Context, checkFavReq *user.Hand
 
 	srvData := converter.ConvertToSrvFavorite(checkFavReq)
 	if srvData == nil {
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	present, err := uh.userService.CheckFavorite(ctx, srvData)
@@ -165,7 +165,7 @@ func (uh *UserHandler) CheckFavorite(ctx context.Context, checkFavReq *user.Hand
 func (uh *UserHandler) FindByID(ctx context.Context, usrID *user.ID) (*user.UserData, error) {
 	logger := log.Ctx(ctx)
 	if usrID.ID == 0 {
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	usrData, err := uh.userService.FindByID(ctx, usrID.ID)
@@ -181,7 +181,7 @@ func (uh *UserHandler) FindByID(ctx context.Context, usrID *user.ID) (*user.User
 func (uh *UserHandler) FindByEmail(ctx context.Context, usrEmail *user.Email) (*user.UserData, error) {
 	logger := log.Ctx(ctx)
 	if usrEmail.Email == "" {
-		return nil, errors.New("bad_request")
+		return nil, errs.ErrBadRequest
 	}
 
 	usrData, err := uh.userService.FindByEmail(ctx, usrEmail.Email)
