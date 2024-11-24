@@ -70,17 +70,16 @@ func New(isTest bool) (*App, error) {
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
 	repoMov := movieRepo.NewMovieRepository(database)
-	srvMov := movieServ.NewMovieService(repoMov)
+	srvMov := movieServ.NewMovieService(repoMov, repoUser)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
 	mx := mux.NewRouter()
-	router.UseCommonMiddlewares(mx)
+	authMW := middleware.NewSessionMiddleware(srvAuth)
+	router.UseCommonMiddlewares(mx, authMW)
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
-
-	authMW := middleware.NewSessionMiddleware(srvAuth)
-	router.SetupUser(delUser, authMW, mx)
+	router.SetupUser(delUser, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
