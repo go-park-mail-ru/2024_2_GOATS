@@ -6,6 +6,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	api "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	usrSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
@@ -21,10 +22,12 @@ type MovieRepositoryInterface interface {
 
 type MovieService struct {
 	movieRepository MovieRepositoryInterface
+	userRepository  usrSrv.UserRepositoryInterface
 }
 
-func NewMovieService(repo MovieRepositoryInterface) api.MovieServiceInterface {
+func NewMovieService(repo MovieRepositoryInterface, urepo usrSrv.UserRepositoryInterface) api.MovieServiceInterface {
 	return &MovieService{
 		movieRepository: repo,
+		userRepository:  urepo,
 	}
 }

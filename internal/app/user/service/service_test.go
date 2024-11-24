@@ -11,9 +11,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/converter"
 	mockRep "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func TestUserService_UpdatePassword(t *testing.T) {

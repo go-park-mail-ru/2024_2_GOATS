@@ -10,8 +10,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 )
 
-var _ delivery.UserServiceInterface = (*UserService)(nil)
-
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type UserRepositoryInterface interface {
 	UserByEmail(ctx context.Context, email string) (*models.User, *errVals.RepoError)
@@ -23,6 +21,7 @@ type UserRepositoryInterface interface {
 	CreateFavorite(ctx context.Context, favData *dto.RepoFavorite) *errVals.RepoError
 	DestroyFavorite(ctx context.Context, favData *dto.RepoFavorite) *errVals.RepoError
 	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.RepoError)
+	CheckFavorite(ctx context.Context, favData *dto.RepoFavorite) (bool, *errVals.RepoError)
 }
 
 type UserService struct {

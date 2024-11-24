@@ -5,9 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f09b7994-db03-4995-aa45-c5987ebb8523" name="Changes" comment="[GOATS-auth] add auth service">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/6a6e03df-60d6-48fd-8747-e3c7f034fdc1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/6a6e03df-60d6-48fd-8747-e3c7f034fdc1.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/delivery/handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/user/repository/check_favorite.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/converter/converter.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/converter/converter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/api/struct.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/api/struct.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/app.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/app.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/models/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/models/models.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/get_movie.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/get_movie.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/movie/service/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/movie/service/service_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/router/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/repository/favoritedb/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/repository/favoritedb/db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/mocks/mock.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/mocks/mock.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/app/user/service/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/app/user/service/service_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/db/seeds.sql" beforeDir="false" afterPath="$PROJECT_DIR$/internal/db/seeds.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/middleware/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/middleware/auth.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,13 +79,14 @@
     "Go Test.go test service (1).executor": "Coverage",
     "Go Test.go test service.executor": "Coverage",
     "Go Test.login_test.go.executor": "Coverage",
+    "Go Test.service_test.go.executor": "Run",
     "Makefile Target.generate.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "release/search",
+    "git-widget-placeholder": "Merging release/search",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "/Users/rugarov/GolandProjects/Technop/Project/2024_2_GOATS/internal/app/room/service",
@@ -104,19 +117,7 @@
       <recent name="$PROJECT_DIR$/internal/app/room" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Test.go test room">
-    <configuration name="TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="2024_2_GOATS" />
-      <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <pattern value="^\QTestRoomService_HandleAction\E$/^\Qошибка\E$" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Go Test.service_test.go">
     <configuration name="TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="2024_2_GOATS" />
       <working_directory value="$PROJECT_DIR$/internal/app/room/service" />
@@ -182,6 +183,7 @@
       <working_directory value="$PROJECT_DIR$/internal/app/room" />
       <root_directory value="$PROJECT_DIR$" />
       <kind value="DIRECTORY" />
+      <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room" />
       <directory value="$PROJECT_DIR$/internal/app/room" />
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
@@ -216,16 +218,26 @@
       <package value="github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       <directory value="$PROJECT_DIR$/internal/app/room/service" />
       <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+    <configuration name="service_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="2024_2_GOATS" />
+      <working_directory value="$PROJECT_DIR$/internal/app/user/service" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/internal/app/user/service/service_test.go" />
       <framework value="gotest" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.service_test.go" />
         <item itemvalue="Go Test.go test room" />
         <item itemvalue="Go Test.go test service (1)" />
         <item itemvalue="Go Test.TestRoomService_HandleAction/case_pause in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
         <item itemvalue="Go Test.TestRoomService_HandleAction/ошибка2 in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
-        <item itemvalue="Go Test.TestRoomService_HandleAction/ошибка in github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service" />
       </list>
     </recent_temporary>
   </component>

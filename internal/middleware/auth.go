@@ -27,13 +27,18 @@ func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddle
 
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/api/users") && !strings.HasPrefix(r.URL.Path, "/api/favorites") {
+		if !strings.HasPrefix(r.URL.Path, "/api/users") && !strings.HasPrefix(r.URL.Path, "/api/movies") {
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		logger := log.Ctx(r.Context())
 		ck, err := r.Cookie("session_id")
+
+		if strings.HasPrefix(r.URL.Path, "/api/movies") && err == http.ErrNoCookie {
+			ctx := context.WithValue(r.Context(), config.CurrentUserKey{}, 0)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		}
 
 		if err == http.ErrNoCookie {
 			logger.Error().Err(fmt.Errorf("sessionMiddleware: no cookie %w", err)).Msg("no_cookie_err")
