@@ -19,6 +19,8 @@ services:
     image: 'redis:latest'
     command: redis-server
     container_name: redis
+    ports:
+      - 6379:6379
     volumes:
       - redis:/data
     networks:

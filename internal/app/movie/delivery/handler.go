@@ -164,7 +164,7 @@ func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 			"title":        movie.Title,
 			"card_url":     movie.CardURL,
 			"album_url":    movie.AlbumURL,
-			"rating":       movie.Rating,
+			"rating":       strconv.FormatFloat(float64(movie.Rating), 'f', -1, 32),
 			"release_date": movie.ReleaseDate,
 			"movie_type":   movie.MovieType,
 			"country":      movie.Country,
@@ -194,7 +194,7 @@ func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	for _, actor := range actors {
 		actorResponses = append(actorResponses, map[string]interface{}{
 			"id":        actor.ID,
-			"full_name": actor.FullName,
+			"full_name": actor.Name,
 			"photo_url": actor.BigPhotoURL,
 			"country":   actor.Country,
 		})

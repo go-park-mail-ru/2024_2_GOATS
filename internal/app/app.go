@@ -70,7 +70,7 @@ func New(isTest bool) (*App, error) {
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
 	cfgEl := elasticsearch.Config{
-		Addresses: []string{"http://localhost:9200"},
+		Addresses: []string{"http://elasticsearch:9200"},
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost:   10,
 			ResponseHeaderTimeout: time.Second,

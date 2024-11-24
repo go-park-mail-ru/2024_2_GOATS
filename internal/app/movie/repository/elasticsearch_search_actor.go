@@ -6,15 +6,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"io"
+	"log"
+	"strconv"
 )
 
 func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
 	// Создаём запрос ElasticSearch
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{
-			"multi_match": map[string]interface{}{
-				"query":  query,
-				"fields": []string{"title^2", "description"},
+			"match_phrase_prefix": map[string]interface{}{
+				"full_name": query,
 			},
 		},
 	}
@@ -35,6 +37,10 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 	}
 	defer res.Body.Close()
 
+	// Логируем тело ответа от Elasticsearch
+	bodyBytes, _ := io.ReadAll(res.Body)
+	log.Println("ElasticSearch Response:", string(bodyBytes))
+
 	if res.IsError() {
 		return nil, fmt.Errorf("search error: %s", res.String())
 	}
@@ -43,18 +49,40 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 	var esResponse struct {
 		Hits struct {
 			Hits []struct {
-				Source models.ActorInfo `json:"_source"`
+				Source struct {
+					ID          string `json:"id"`
+					Name        string `json:"full_name"`
+					PhotoBigUrl string `json:"photo_big_url"`
+				} `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
 	}
-	if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
+
+	// Декодируем ответ
+	if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&esResponse); err != nil {
 		return nil, fmt.Errorf("error decoding search response: %w", err)
 	}
 
-	// Собираем результаты
+	log.Println("Hits:", esResponse.Hits.Hits)
+
+	// Если нет результатов, возвращаем пустой список
+	if len(esResponse.Hits.Hits) == 0 {
+		return nil, fmt.Errorf("no actors found for query: %s", query)
+	}
+
 	actors := make([]models.ActorInfo, len(esResponse.Hits.Hits))
 	for i, hit := range esResponse.Hits.Hits {
-		actors[i] = hit.Source
+		id, err := strconv.Atoi(hit.Source.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error converting id to int: %w", err)
+		}
+		actors[i] = models.ActorInfo{
+			ID:          id,
+			BigPhotoURL: hit.Source.PhotoBigUrl,
+			Person: models.Person{
+				Name: hit.Source.Name,
+			},
+		}
 	}
 
 	return actors, nil
