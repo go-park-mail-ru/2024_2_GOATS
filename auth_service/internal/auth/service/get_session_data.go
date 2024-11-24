@@ -10,7 +10,7 @@ import (
 
 func (as *AuthService) GetSessionData(ctx context.Context, cookie string) (uint64, error) {
 	strUserID, err := as.authRepository.GetSessionData(ctx, cookie)
-	if err != nil || strUserID == "" {
+	if err != nil {
 		return 0, fmt.Errorf("failed to getSessionData: %w", err)
 	}
 

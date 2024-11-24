@@ -15,26 +15,6 @@ func ToSrvCreateCookieFromDesc(createCookieReq *auth.CreateSessionRequest) *dto.
 	}
 }
 
-func ToSrvDeleteCookieFromDesc(deleteCookieReq *auth.DestroySessionRequest) *dto.SrvDeleteCookie {
-	if deleteCookieReq == nil {
-		return nil
-	}
-
-	return &dto.SrvDeleteCookie{
-		Token: deleteCookieReq.Cookie,
-	}
-}
-
-func ToSrvCheckCookieFromDesc(checkCookieReq *auth.GetSessionRequest) *dto.SrvCheckCookie {
-	if checkCookieReq == nil {
-		return nil
-	}
-
-	return &dto.SrvCheckCookie{
-		Token: checkCookieReq.Cookie,
-	}
-}
-
 func ToDescCreateCookieRespFromSrv(cookie *dto.Cookie) *auth.CreateSessionResponse {
 	if cookie == nil {
 		return nil

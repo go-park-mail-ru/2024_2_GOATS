@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/service/dto"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
 type AuthRepositoryInterface interface {
 	SetCookie(ctx context.Context, token *repoDTO.TokenData) (*dto.Cookie, error)
 	DestroySession(ctx context.Context, cookie string) error

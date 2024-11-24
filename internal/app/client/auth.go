@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+//go:generate mockgen -source=auth.go -destination=../auth/service/mocks/mock.go
 type AuthClientInterface interface {
 	CreateSession(ctx context.Context, usrID int) (*models.CookieData, error)
 	DestroySession(ctx context.Context, cookie string) error

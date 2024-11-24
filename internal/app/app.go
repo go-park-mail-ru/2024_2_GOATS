@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -122,6 +121,7 @@ func (a *App) Run() {
 		IdleTimeout:  ctxValues.Listener.IdleTimeout,
 	}
 
+	a.Server = srv
 	mx.Use(a.AppReadyMiddleware)
 
 	a.Logger.Info().Msgf("Server is listening: %s", srv.Addr)
@@ -147,38 +147,38 @@ func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
 	a.Logger.Info().Msg("Starting graceful shutdown")
 
-	var wg sync.WaitGroup
-	errChan := make(chan error, 2)
+	// var wg sync.WaitGroup
+	// errChan := make(chan error, 2)
 
-	shutdownFuncs := []func() error{
-		a.Database.Close,
-		a.Redis.Close,
-	}
+	// shutdownFuncs := []func() error{
+	// 	a.Database.Close,
+	// 	a.Redis.Close,
+	// }
 
-	wg.Add(len(shutdownFuncs))
+	// wg.Add(len(shutdownFuncs))
 
-	for _, shutdownFunc := range shutdownFuncs {
-		go func(shutdownFunc func() error) {
-			defer wg.Done()
-			if err := shutdownFunc(); err != nil {
-				errChan <- err
-			}
-		}(shutdownFunc)
-	}
+	// for _, shutdownFunc := range shutdownFuncs {
+	// 	go func(shutdownFunc func() error) {
+	// 		defer wg.Done()
+	// 		if err := shutdownFunc(); err != nil {
+	// 			errChan <- err
+	// 		}
+	// 	}(shutdownFunc)
+	// }
 
-	wg.Wait()
-	close(errChan)
+	// wg.Wait()
+	// close(errChan)
 
-	var errs []error
-	for err := range errChan {
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
+	// var errs []error
+	// for err := range errChan {
+	// 	if err != nil {
+	// 		errs = append(errs, err)
+	// 	}
+	// }
 
-	if len(errs) > 0 {
-		return fmt.Errorf("shutdown errors: %v", errs)
-	}
+	// if len(errs) > 0 {
+	// 	return fmt.Errorf("shutdown errors: %v", errs)
+	// }
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

@@ -17,7 +17,7 @@ func (u *UserRepo) UserByEmail(ctx context.Context, email string) (*srvDTO.User,
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New(fmt.Sprintf(errVals.ErrUserNotFoundCode, err))
+			return nil, errors.New(fmt.Sprint(errVals.ErrUserNotFoundCode, err))
 		}
 
 		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)

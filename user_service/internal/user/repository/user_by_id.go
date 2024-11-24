@@ -16,7 +16,7 @@ func (u *UserRepo) UserByID(ctx context.Context, userID uint64) (*srvDTO.User, e
 	usr, err := userdb.FindByID(ctx, userID, u.Database)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New(fmt.Sprintf(errVals.ErrUserNotFoundCode, err))
+			return nil, errors.New(fmt.Sprint(errVals.ErrUserNotFoundCode, err))
 		}
 
 		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)

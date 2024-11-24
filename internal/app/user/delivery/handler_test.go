@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	mockSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks"
 )
 
@@ -190,6 +191,173 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
+			if test.resp == "" {
+				assert.Equal(t, test.resp, w.Body.String())
+			} else {
+				assert.JSONEq(t, test.resp, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestUserHandler_SetFavorite(t *testing.T) {
+	ctx := testContext(t)
+	tests := []struct {
+		name       string
+		reqBody    string
+		mockErr    *errVals.ServiceError
+		statusCode int
+		resp       string
+	}{
+		{
+			name:       "Success",
+			reqBody:    `{"movieID": 101}`,
+			resp:       "",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "Service error",
+			reqBody:    `{"movieID": 101}`,
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			req := httptest.NewRequest(http.MethodPost, "/favorites", bytes.NewBufferString(test.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			ms := mockSrv.NewMockUserServiceInterface(ctrl)
+			handler := NewUserHandler(ctx, ms)
+
+			ms.EXPECT().AddFavorite(gomock.Any(), gomock.Any()).Return(test.mockErr)
+
+			w := httptest.NewRecorder()
+
+			handler.SetFavorite(w, req)
+			res := w.Result()
+			defer res.Body.Close()
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
+			if test.resp == "" {
+				assert.Equal(t, test.resp, w.Body.String())
+			} else {
+				assert.JSONEq(t, test.resp, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestUserHandler_ResetFavorite(t *testing.T) {
+	ctx := testContext(t)
+	tests := []struct {
+		name       string
+		reqBody    string
+		mockErr    *errVals.ServiceError
+		statusCode int
+		resp       string
+	}{
+		{
+			name:       "Success",
+			reqBody:    `{"movieID": 101}`,
+			resp:       "",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "Service error",
+			reqBody:    `{"movieID": 101}`,
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			req := httptest.NewRequest(http.MethodDelete, "/favorites", bytes.NewBufferString(test.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			ms := mockSrv.NewMockUserServiceInterface(ctrl)
+			handler := NewUserHandler(ctx, ms)
+
+			ms.EXPECT().ResetFavorite(gomock.Any(), gomock.Any()).Return(test.mockErr)
+
+			w := httptest.NewRecorder()
+
+			handler.ResetFavorite(w, req)
+			res := w.Result()
+			defer res.Body.Close()
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
+			if test.resp == "" {
+				assert.Equal(t, test.resp, w.Body.String())
+			} else {
+				assert.JSONEq(t, test.resp, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestUserHandler_GetFavorites(t *testing.T) {
+	ctx := testContext(t)
+	tests := []struct {
+		name       string
+		usrID      string
+		mockResp   []models.MovieShortInfo
+		mockErr    *errVals.ServiceError
+		statusCode int
+		resp       string
+	}{
+		{
+			name:       "Success",
+			usrID:      "1",
+			mockResp:   []models.MovieShortInfo{{ID: 1, Title: "Test"}},
+			resp:       `{"movies":[{"id":1,"title":"Test","card_url":"","album_url":"","rating":0,"release_date":"","movie_type":"","country":""}]}`,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "Service error",
+			usrID:      "1",
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("database error")),
+			resp:       `{"errors":[{"code":"something_went_wrong","error":"database error"}]}`,
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			req := httptest.NewRequest(http.MethodGet, "/users/1/favorites", nil)
+			req = mux.SetURLVars(req, map[string]string{"id": test.usrID})
+
+			ms := mockSrv.NewMockUserServiceInterface(ctrl)
+			handler := NewUserHandler(ctx, ms)
+
+			ms.EXPECT().GetFavorites(gomock.Any(), gomock.Any()).Return(test.mockResp, test.mockErr)
+
+			w := httptest.NewRecorder()
+
+			handler.GetFavorites(w, req)
+			res := w.Result()
+			defer res.Body.Close()
+
+			assert.Equal(t, test.statusCode, w.Result().StatusCode)
 			if test.resp == "" {
 				assert.Equal(t, test.resp, w.Body.String())
 			} else {

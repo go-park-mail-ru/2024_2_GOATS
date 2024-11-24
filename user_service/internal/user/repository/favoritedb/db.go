@@ -92,7 +92,7 @@ func FindByUserID(ctx context.Context, userID uint64, db *sql.DB) (*sql.Rows, er
 func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, error) {
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, favCheckSQL, favData)
+	rows, err := db.QueryContext(ctx, favCheckSQL, favData.UserID, favData.MovieID)
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: failed to check favorite existence: %w", err)
 		logger.Error().Err(errMsg).Msg("database query error")
@@ -101,10 +101,10 @@ func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, er
 	defer rows.Close()
 
 	if rows.Next() {
-		logger.Info().Msgf("postgres: favorite pair for user %d and movie found", favData.UserID, favData.MovieID)
+		logger.Info().Msgf("postgres: favorite pair for user %d and movie %d found", favData.UserID, favData.MovieID)
 		return true, nil
 	}
 
-	logger.Info().Msgf("postgres: favorite pair for user %d and movie not found", favData.UserID, favData.MovieID)
+	logger.Info().Msgf("postgres: favorite pair for user %d and movie %d not found", favData.UserID, favData.MovieID)
 	return false, nil
 }

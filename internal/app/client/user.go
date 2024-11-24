@@ -9,6 +9,7 @@ import (
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
 
+//go:generate mockgen -source=user.go -destination=../user/service/mocks/mock.go
 type UserClientInterface interface {
 	Create(ctx context.Context, regData *models.RegisterData) (int, error)
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
