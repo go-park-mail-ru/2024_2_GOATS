@@ -56,7 +56,7 @@ func AccessLogInterceptor(
 				Interface("request_body", req).
 				Dur("work_time", time.Since(start)).
 				Interface("panic", r).
-				Msg("panic occured")
+				Msg("panic occurred")
 
 			err = status.Errorf(codes.Internal, "panic occurred: %v", r)
 		}

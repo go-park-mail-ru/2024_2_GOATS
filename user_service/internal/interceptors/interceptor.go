@@ -6,7 +6,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type ctxKey int
@@ -47,18 +49,18 @@ func AccessLogInterceptor(
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		logger.Info().
-	// 			Str("method", info.FullMethod).
-	// 			Interface("request_body", req).
-	// 			Dur("work_time", time.Since(start)).
-	// 			Interface("panic", r).
-	// 			Msg("panic occured")
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Info().
+				Str("method", info.FullMethod).
+				Interface("request_body", req).
+				Dur("work_time", time.Since(start)).
+				Interface("panic", r).
+				Msg("panic occurred")
 
-	// 		err = status.Errorf(codes.Internal, "panic occurred: %v", r)
-	// 	}
-	// }()
+			err = status.Errorf(codes.Internal, "panic occurred: %v", r)
+		}
+	}()
 
 	resp, err = handler(ctx, req)
 

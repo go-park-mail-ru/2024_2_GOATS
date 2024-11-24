@@ -1,5 +1,5 @@
 services:
-  fascade_app:
+  facade_app:
     build:
       context: ./
       dockerfile: Dockerfile
@@ -21,7 +21,7 @@ services:
     ports:
       - 80:80
     depends_on:
-      - fascade_app
+      - facade_app
     restart: "always"
     networks:
       - cassette-world

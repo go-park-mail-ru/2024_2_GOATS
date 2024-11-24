@@ -9,8 +9,6 @@ services:
     restart: always
     volumes:
       - /home/ubuntu/images:/home/ubuntu/images
-    ports:
-      - 8081:8081
     networks:
       - cassette-world
   redis:

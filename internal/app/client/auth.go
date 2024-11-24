@@ -51,7 +51,7 @@ func (cl *AuthClient) DestroySession(ctx context.Context, cookie string) error {
 	return nil
 }
 
-func (cl AuthClient) Session(ctx context.Context, cookie string) (uint64, error) {
+func (cl *AuthClient) Session(ctx context.Context, cookie string) (uint64, error) {
 	resp, err := cl.authMS.Session(ctx, &auth.GetSessionRequest{Cookie: cookie})
 
 	if err != nil {

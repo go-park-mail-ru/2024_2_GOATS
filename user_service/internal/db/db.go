@@ -50,7 +50,7 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 		return nil, errMsg
 	}
 
-	log.Printf("Database connection opened successfully")
+	log.Info().Msg("Database connection opened successfully")
 	time.Sleep(5 * time.Second)
 
 	err = DB.Ping()

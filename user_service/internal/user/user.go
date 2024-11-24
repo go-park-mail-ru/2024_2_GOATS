@@ -11,15 +11,14 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/db"
+	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/interceptors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service"
-	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/interceptors"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 type UserApp struct {
@@ -53,8 +52,6 @@ func New(isTest bool) (*UserApp, error) {
 			interceptors.AccessLogInterceptor,
 		)),
 	)
-
-	reflection.Register(srv)
 
 	usrRepo := repository.NewUserRepository(db)
 	usrServ := service.NewUserService(usrRepo)

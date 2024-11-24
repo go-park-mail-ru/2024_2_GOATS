@@ -16,7 +16,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 type AuthApp struct {
@@ -42,7 +41,6 @@ func New(isTest bool) (*AuthApp, error) {
 		)),
 	)
 
-	reflection.Register(srv)
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 	ctx := config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
