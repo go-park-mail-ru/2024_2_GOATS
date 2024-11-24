@@ -47,11 +47,11 @@ func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.WithLogger)
-	mx.Use(authMW.AuthMiddleware)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
 	mx.Use(middleware.CsrfMiddleware)
 	mx.Use(middleware.XssMiddleware)
+	mx.Use(authMW.AuthMiddleware)
 }
 
 func SetupCsrf(router *mux.Router) {
