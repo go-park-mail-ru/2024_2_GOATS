@@ -356,8 +356,8 @@ VALUES
 
 INSERT INTO public.seasons (movie_id, season_number, title, description, release_date)
 VALUES
-  (1, 1, 'Кухня 1', 'Описание первого сезона', '2024-09-25'),
-  (1, 2, 'Кухня 2', 'Описание второго сезона', '2024-01-25');
+  (3, 1, 'Кухня 1', 'Описание первого сезона', '2024-09-25'),
+  (3, 2, 'Кухня 2', 'Описание второго сезона', '2024-01-25');
 
 INSERT INTO public.episodes (season_id, episode_number, title, description, release_date, rating, preview_url, video_url)
 VALUES
@@ -366,8 +366,8 @@ VALUES
   (1, 3, 'Кухня 1 сезон 3 серия', 'Описание серии 1.3', '2024-09-25', 8.1, '/static/movies/kitcnen/season_1/images/kitchen-1-3_preview.png', '/static/movies/kitcnen/season_1/kitchen-1-3.mp4'),
   (1, 4, 'Кухня 1 сезон 4 серия', 'Описание серии 1.4', '2024-09-25', 8.3, '/static/movies/kitcnen/season_1/images/kitchen-1-4_preview.png', '/static/movies/kitcnen/season_1/kitchen-1-4.mp4'),
   (1, 5, 'Кухня 1 сезон 5 серия', 'Описание серии 1.5', '2024-09-25', 6.1, '/static/movies/kitcnen/season_1/images/kitchen-1-5_preview.png', '/static/movies/kitcnen/season_1/kitchen-1-5.mp4'),
-  (2, 1, 'Кухня 2 сезон 1 серия', 'Описание серии 2.1', '2024-09-25', 10.0, '/static/movies/kitcnen/season_2/images/kitchen-2-1_preview.png', '/static/movies/kitcnen/season_1/kitchen-2-1.mp4'),
-  (2, 2, 'Кухня 2 сезон 2 серия', 'Описание серии 2.2', '2024-01-25', 9.4, '/static/movies/kitcnen/season_2/images/kitchen-2-2_preview.png', '/static/movies/kitcnen/season_1/kitchen-2-2.mp4'),
-  (2, 3, 'Кухня 2 сезон 3 серия', 'Описание серии 2.3', '2024-01-25', 8.7, '/static/movies/kitcnen/season_2/images/kitchen-2-3_preview.png', '/static/movies/kitcnen/season_1/kitchen-2-3.mp4'),
-  (2, 4, 'Кухня 2 сезон 4 серия', 'Описание серии 2.4', '2024-01-25', 8.6, '/static/movies/kitcnen/season_2/images/kitchen-2-4_preview.png', '/static/movies/kitcnen/season_1/kitchen-2-4.mp4'),
-  (2, 5, 'Кухня 2 сезон 5 серия', 'Описание серии 2.5', '2024-01-25', 7.8, '/static/movies/kitcnen/season_2/images/kitchen-2-5_preview.png', '/static/movies/kitcnen/season_1/kitchen-2-5.mp4');
+  (2, 1, 'Кухня 2 сезон 1 серия', 'Описание серии 2.1', '2024-09-25', 10.0, '/static/movies/kitcnen/season_2/images/kitchen-2-1_preview.png', '/static/movies/kitcnen/season_2/kitchen-2-1.mp4'),
+  (2, 2, 'Кухня 2 сезон 2 серия', 'Описание серии 2.2', '2024-01-25', 9.4, '/static/movies/kitcnen/season_2/images/kitchen-2-2_preview.png', '/static/movies/kitcnen/season_2/kitchen-2-2.mp4'),
+  (2, 3, 'Кухня 2 сезон 3 серия', 'Описание серии 2.3', '2024-01-25', 8.7, '/static/movies/kitcnen/season_2/images/kitchen-2-3_preview.png', '/static/movies/kitcnen/season_2/kitchen-2-3.mp4'),
+  (2, 4, 'Кухня 2 сезон 4 серия', 'Описание серии 2.4', '2024-01-25', 8.6, '/static/movies/kitcnen/season_2/images/kitchen-2-4_preview.png', '/static/movies/kitcnen/season_2/kitchen-2-4.mp4'),
+  (2, 5, 'Кухня 2 сезон 5 серия', 'Описание серии 2.5', '2024-01-25', 7.8, '/static/movies/kitcnen/season_2/images/kitchen-2-5_preview.png', '/static/movies/kitcnen/season_2/kitchen-2-5.mp4');
