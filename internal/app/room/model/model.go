@@ -60,6 +60,13 @@ type StaffInfo struct {
 	Country       string       `json:"country"`
 }
 
+type ActorInfo struct {
+	ID       int    `json:"id"`
+	FullName string `json:"full_name"`
+	PhotoURL string `json:"photo_url"`
+	Country  string `json:"country"`
+}
+
 type RoomState struct {
 	Id       string    `json:"id"`
 	Status   string    `json:"status"` // paused, playing

@@ -18,7 +18,7 @@ func TestGetActor_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	actorID := 1
 	expectedActor := &models.ActorInfo{
@@ -93,7 +93,7 @@ func TestGetActor_FindByIDError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	actorID := 1
 	mock.ExpectQuery(`
@@ -125,7 +125,7 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	actorID := 1
 	mock.ExpectQuery(`
@@ -193,7 +193,7 @@ func TestGetCollection_Success(t *testing.T) {
 		},
 	}}
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	mock.ExpectQuery(`
 		SELECT
@@ -267,7 +267,7 @@ func TestGetCollection_ObtainError(t *testing.T) {
 		JOIN countries ON countries.id = movies.country_id
 	`).WillReturnError(fmt.Errorf("some_error"))
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	colls, errObj := r.GetCollection(context.Background(), "")
 	assert.Nil(t, colls)
@@ -387,7 +387,7 @@ func TestGetMovie_Success(t *testing.T) {
 	),
 	)
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	movie, errObj := r.GetMovie(context.Background(), movieID)
 
@@ -437,7 +437,7 @@ func TestGetMovie_FindByIDError(t *testing.T) {
 		WHERE movies.id = \$1
 	`).WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	movie, errObj := r.GetMovie(context.Background(), movieID)
 
@@ -483,7 +483,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 			"small_photo_url",
 		}).AddRow(1, "Test", "Tester", "some bio", "some_small_photo_link"))
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	actors, errObj := r.GetMovieActors(context.Background(), movieID)
 
@@ -513,7 +513,7 @@ func TestGetMovieActors_DbError(t *testing.T) {
 		WHERE movies.id = \$1
 	`).WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
 
-	r := NewMovieRepository(db)
+	r := NewMovieRepository(db, nil, nil)
 
 	actors, errObj := r.GetMovieActors(context.Background(), movieID)
 

@@ -2,13 +2,17 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v7"
+
 	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
 	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
 	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
+	"net"
 	"net/http"
 	"os"
 	"sync"
@@ -65,6 +69,20 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
+	cfgEl := elasticsearch.Config{
+		Addresses: []string{"http://elasticsearch:9200"},
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost:   10,
+			ResponseHeaderTimeout: time.Second,
+			DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
+			TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
+
+	esClient, err := elasticsearch.NewClient(cfgEl)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Elasticsearch client: %w", err)
+	}
+
 	repoUser := userRepo.NewUserRepository(database)
 	srvUser := userServ.NewUserService(repoUser)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
@@ -73,8 +91,8 @@ func New(isTest bool) (*App, error) {
 	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	repoMov := movieRepo.NewMovieRepository(database)
-	srvMov := movieServ.NewMovieService(repoMov)
+	repoMov := movieRepo.NewMovieRepository(database, rdb, esClient)
+	srvMov := movieServ.NewMovieService(repoMov, repoUser)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
 	repoRoom := roomRepo.NewRepository(database, rdb)
@@ -85,13 +103,12 @@ func New(isTest bool) (*App, error) {
 	go roomHub.Run() // Запуск обработчика Hub'a
 
 	mx := mux.NewRouter()
-	router.UseCommonMiddlewares(mx)
+	authMW := middleware.NewSessionMiddleware(srvAuth)
+	router.UseCommonMiddlewares(mx, authMW)
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupMovie(delMov, mx)
-
-	authMW := middleware.NewSessionMiddleware(srvAuth)
-	router.SetupUser(delUser, authMW, mx)
+	router.SetupUser(delUser, mx)
 
 	router.SetupRoom(roomHub, delRoom, mx)
 

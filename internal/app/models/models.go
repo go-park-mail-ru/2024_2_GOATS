@@ -26,7 +26,7 @@ type SessionRespData struct {
 }
 
 type AuthRespData struct {
-	NewCookie  *CookieData
+	NewCookie *CookieData
 }
 
 type CollectionsRespData struct {
@@ -65,6 +65,7 @@ type MovieInfo struct {
 	Actors           []*ActorInfo  `json:"actors_info"`
 	Director         *DirectorInfo `json:"director_info"`
 	Seasons          []*Season     `json:"seasons"`
+	IsFavorite       bool          `json:"is_favorite"`
 }
 
 type Season struct {
