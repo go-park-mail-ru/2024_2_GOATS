@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+option go_package = ".";
+
+package movie;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+message Person {
+  string name = 1;
+  string surname = 2;
+}
+
+message ActorInfo {
+  Person person = 1;
+  int32 id = 2;
+  string biography = 3;
+  string post = 4;
+  string birthdate = 5;
+  string small_photo_url = 6;
+  string big_photo_url = 7;
+  string country = 8;
+  repeated MovieInfo movies = 9;
+}
+
+message DirectorInfo {
+  Person person = 1;
+  int32 id = 2;
+  string biography = 3;
+  string birthdate = 4;
+  string small_photo_url = 5;
+  string big_photo_url = 6;
+  string country = 7;
+}
+
+message Season {
+  int32 season_number = 1;
+  repeated Episode episodes = 2;
+}
+
+message Episode {
+  int64 id = 1;
+  string title = 2;
+  string Description = 3;
+  int64 EpisodeNumber = 4;
+  string ReleaseDate = 5;
+  float Rating = 6;
+  string PreviewURL = 7;
+  string VideoURL = 8;
+}
+
+message MovieInfo {
+  int32 id = 1;
+  string title = 2;
+  string short_description = 3;
+  string full_description = 4;
+  string card_url = 5;
+  string album_url = 6;
+  string title_url = 7;
+  float rating = 8;
+  string release_date = 9;
+  string movie_type = 10;
+  string country = 11;
+  string video_url = 12;
+  repeated ActorInfo actors_info = 13;
+  DirectorInfo director_info = 14;
+  repeated Season seasons = 15;
+  bool is_favorite = 16;
+}
+
+
+message MovieShortInfo {
+  int32 id = 1;
+  string title = 2;
+  string card_url = 3;
+  string album_url = 4;
+  float rating = 5;
+  string release_date = 6;
+  string movie_type = 7;
+  string country = 8;
+}
+
+message Collection {
+  int32 id = 1;
+  string title = 2;
+  repeated MovieShortInfo movies = 3;
+}
+
+message GetMovieRequest {
+  int32 movie_id = 1;
+}
+
+message GetActorResponse {
+  ActorInfo actor = 1;
+}
+
+message GetActorRequest {
+  int32 actor_id = 1;
+}
+
+message GetMovieResponse {
+  MovieInfo movie = 1;
+}
+
+
+
+
+
+message GetMovieActorsRequest {
+  int32 movie_id = 1;
+}
+
+message GetMovieActorsResponse {
+  repeated ActorInfo actors_info = 1;
+}
+
+
+
+
+
+
+message GetCollectionsRequest {
+  string filter = 1;
+}
+
+message GetCollectionsResponse {
+  repeated Collection collections = 1;
+}
+
+message SearchMoviesRequest {
+  string query = 1;
+}
+
+message SearchMoviesResponse {
+  repeated MovieInfo movies = 1;
+}
+
+message SearchActorsRequest {
+  string query = 1;
+}
+
+message SearchActorsResponse {
+  repeated ActorInfo actors = 1;
+}
+
+message GetMovieByGenreRequest {
+  string genre = 1;
+}
+
+message GetMovieByGenreResponse {
+  repeated MovieShortInfo movies = 1;
+}
+
+service MovieService {
+  rpc GetMovie(GetMovieRequest) returns (GetMovieResponse);
+
+  rpc GetCollections(GetCollectionsRequest) returns (GetCollectionsResponse);
+
+  rpc GetMovieByGenre(GetMovieByGenreRequest) returns (GetMovieByGenreResponse);
+
+  rpc SearchMovies(SearchMoviesRequest) returns (SearchMoviesResponse);
+
+  rpc SearchActors(SearchActorsRequest) returns (SearchActorsResponse);
+
+  rpc GetActor(GetActorRequest) returns (GetActorResponse);
+
+  rpc GetMovieActors(GetMovieActorsRequest) returns (GetMovieActorsResponse);
+}
+
