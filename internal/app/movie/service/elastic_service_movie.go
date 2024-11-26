@@ -6,5 +6,5 @@ import (
 )
 
 func (s *MovieService) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
-	return s.movieRepository.SearchMovies(ctx, query)
+	return s.movieClient.SearchMovies(ctx, query)
 }

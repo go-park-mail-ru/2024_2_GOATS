@@ -29,9 +29,9 @@ import (
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 
-	// movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
-	// movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
-	// movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	// movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/delivery"
+	// movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/repository"
+	// movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
@@ -81,7 +81,7 @@ func New(isTest bool) (*App, error) {
 	esClient, err := elasticsearch.NewClient(cfgEl)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Elasticsearch client: %w", err)
+		return nil, fmt.Errorf("failed to create Elasticsearch clients: %w", err)
 	}
 
 	return &App{

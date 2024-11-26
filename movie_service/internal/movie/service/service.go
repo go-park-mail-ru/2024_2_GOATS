@@ -3,11 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
-
-	usrSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	api "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
+	usrSrv "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
@@ -31,7 +30,7 @@ type MovieService struct {
 	userClient      usrSrv.UserClientInterface
 }
 
-func NewMovieService(repo MovieRepositoryInterface, urepo usrSrv.UserClientInterface) api.MovieServiceInterface {
+func NewMovieService(repo MovieRepositoryInterface, urepo usrSrv.UserClientInterface) delivery.MovieServiceInterface {
 	return &MovieService{
 		movieRepository: repo,
 		userClient:      urepo,

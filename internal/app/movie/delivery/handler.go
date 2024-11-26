@@ -19,10 +19,6 @@ const (
 	genresFilter = "genres"
 )
 
-const (
-	genresFilter = "genres"
-)
-
 type MovieHandler struct {
 	movieService MovieServiceInterface
 }
@@ -109,7 +105,7 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
-		errMsg := errors.New("failed to get movie")
+		errMsg := errors.New("failed to get movie_service")
 		logger.Error().Err(errMsg).Interface("getMovieResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 

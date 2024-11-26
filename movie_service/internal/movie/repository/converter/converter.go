@@ -3,8 +3,8 @@ package converter
 import (
 	"database/sql"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/dto"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/dto"
 )
 
 func ToActorInfoFromRepo(ac *dto.RepoActor) *models.ActorInfo {

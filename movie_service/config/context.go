@@ -31,3 +31,27 @@ func FromLocalStorageContext(ctx context.Context) *LocalStorage {
 
 	return locST
 }
+
+type ContextConfigKey struct{}
+type ContextRedisKey struct{}
+type ContextLocalStorageKey struct{}
+type CurrentUserKey struct{}
+
+func FromRedisContext(ctx context.Context) *Redis {
+	value, ok := ctx.Value(ContextRedisKey{}).(*Redis)
+
+	if !ok {
+		return nil
+	}
+
+	return value
+}
+
+func CurrentUserID(ctx context.Context) int {
+	value, ok := ctx.Value(CurrentUserKey{}).(int)
+	if !ok {
+		return 0
+	}
+
+	return value
+}

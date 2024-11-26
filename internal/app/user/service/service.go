@@ -5,8 +5,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 )
 
-var _ delivery.UserServiceInterface = (*UserService)(nil)
-
 type UserService struct {
 	userClient client.UserClientInterface
 }

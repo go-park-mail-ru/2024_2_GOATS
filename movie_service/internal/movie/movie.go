@@ -15,7 +15,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
-	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/user_v1"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

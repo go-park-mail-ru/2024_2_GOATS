@@ -77,7 +77,7 @@ func createIndex(indexName, mapping string) {
 func addMovie(id int, movie Movie) {
 	data, err := json.Marshal(movie)
 	if err != nil {
-		log.Fatalf("Error marshaling movie data: %v", err)
+		log.Fatalf("Error marshaling movie_service data: %v", err)
 	}
 
 	url := fmt.Sprintf("http://localhost:9200/movies/_doc/%d", id)

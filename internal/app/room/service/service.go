@@ -90,16 +90,16 @@ package service
 //	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 //	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", roomState)
 //
-//	movie, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.Id)
+//	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.Id)
 //	if errMovie != nil {
 //		return nil, fmt.Errorf("errMovie = %+v", errMovie)
 //	}
 //	roomState.Movie = model.MovieInfo{
-//		Id:               movie.ID,
-//		Title:            movie.Title,
-//		TitleUrl:         movie.TitleURL,
-//		ShortDescription: movie.ShortDescription, //short_description
-//		VideoUrl:         movie.VideoURL,         //video_url
+//		Id:               movie_service.ID,
+//		Title:            movie_service.Title,
+//		TitleUrl:         movie_service.TitleURL,
+//		ShortDescription: movie_service.ShortDescription, //short_description
+//		VideoUrl:         movie_service.VideoURL,         //video_url
 //	}
 //	return roomState, err
 //}

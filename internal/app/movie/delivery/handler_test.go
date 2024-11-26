@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	mvCollPath = "/api/movie/movie_collections"
+	mvCollPath = "/api/movie_service/movie_collections"
 	actorsPath = "/api/actors/1"
 	moviePath  = "/api/movies/1"
 )
@@ -39,13 +39,13 @@ func TestDelivery_GetCollection(t *testing.T) {
 						Movies: []*models.MovieShortInfo{
 							{
 								ID:    1,
-								Title: "test movie",
+								Title: "test movie_service",
 							},
 						},
 					},
 				},
 			},
-			resp:       `{"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
+			resp:       `{"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie_service","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{

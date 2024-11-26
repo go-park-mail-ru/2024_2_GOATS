@@ -8,10 +8,10 @@ import (
 )
 
 func (s *MovieService) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.ServiceError) {
-	movies, err := s.movieRepository.GetMovieByGenre(ctx, genre)
+	movies, err := s.movieClient.GetMovieByGenre(ctx, genre)
 
 	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		return nil, errVals.NewServiceError("failed_to_reset_favorite", err)
 	}
 
 	return movies, nil

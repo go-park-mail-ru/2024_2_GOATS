@@ -23,17 +23,17 @@ type UserClientInterface interface {
 }
 
 type UserClient struct {
-	userMS user.UserRPCClient
+	UserMS user.UserRPCClient
 }
 
 func NewUserClient(userMS user.UserRPCClient) UserClientInterface {
 	return &UserClient{
-		userMS: userMS,
+		UserMS: userMS,
 	}
 }
 
 func (uc *UserClient) FindByEmail(ctx context.Context, email string) (*models.User, error) {
-	resp, err := uc.userMS.FindByEmail(ctx, &user.Email{Email: email})
+	resp, err := uc.UserMS.FindByEmail(ctx, &user.Email{Email: email})
 	if err != nil {
 		return nil, fmt.Errorf("userClientError#findByEmail: %w", err)
 	}
@@ -49,7 +49,7 @@ func (uc *UserClient) FindByEmail(ctx context.Context, email string) (*models.Us
 }
 
 func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, error) {
-	resp, err := uc.userMS.FindByID(ctx, &user.ID{ID: id})
+	resp, err := uc.UserMS.FindByID(ctx, &user.ID{ID: id})
 	if err != nil {
 		return nil, fmt.Errorf("userClientError#findByID: %w", err)
 	}
@@ -65,7 +65,7 @@ func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, er
 }
 
 func (uc *UserClient) Create(ctx context.Context, regData *models.RegisterData) (int, error) {
-	resp, err := uc.userMS.Create(ctx, &user.CreateUserRequest{
+	resp, err := uc.UserMS.Create(ctx, &user.CreateUserRequest{
 		Email:                regData.Email,
 		Username:             regData.Username,
 		Password:             regData.Password,
@@ -100,7 +100,7 @@ func (uc *UserClient) UpdateProfile(ctx context.Context, usrData *models.User) e
 		AvatarName: usrData.AvatarName,
 		AvatarFile: fileBytes,
 	}
-	_, err = uc.userMS.UpdateProfile(ctx, req)
+	_, err = uc.UserMS.UpdateProfile(ctx, req)
 	if err != nil {
 		return fmt.Errorf("userClientError#updateProfile: %w", err)
 	}
@@ -109,7 +109,7 @@ func (uc *UserClient) UpdateProfile(ctx context.Context, usrData *models.User) e
 }
 
 func (uc *UserClient) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) error {
-	_, err := uc.userMS.UpdatePassword(ctx, &user.UpdatePasswordRequest{
+	_, err := uc.UserMS.UpdatePassword(ctx, &user.UpdatePasswordRequest{
 		UserID:               uint64(passwordData.UserID),
 		OldPassword:          passwordData.OldPassword,
 		Password:             passwordData.Password,
@@ -124,7 +124,7 @@ func (uc *UserClient) UpdatePassword(ctx context.Context, passwordData *models.P
 }
 
 func (uc *UserClient) GetFavorites(ctx context.Context, usrID int) ([]uint64, error) {
-	resp, err := uc.userMS.GetFavorites(ctx, &user.ID{ID: uint64(usrID)})
+	resp, err := uc.UserMS.GetFavorites(ctx, &user.ID{ID: uint64(usrID)})
 
 	if err != nil {
 		return nil, fmt.Errorf("userClientError#getFavorites: %w", err)
@@ -142,7 +142,7 @@ func (uc *UserClient) ResetFavorite(ctx context.Context, favData *models.Favorit
 }
 
 func (uc *UserClient) CheckFavorite(ctx context.Context, favData *models.Favorite) (bool, error) {
-	resp, err := uc.userMS.CheckFavorite(ctx, &user.HandleFavorite{
+	resp, err := uc.UserMS.CheckFavorite(ctx, &user.HandleFavorite{
 		UserID:  uint64(favData.UserID),
 		MovieID: uint64(favData.MovieID),
 	})
@@ -162,9 +162,9 @@ func (uc *UserClient) toggleFavorite(ctx context.Context, favData *models.Favori
 
 	var err error
 	if op == "set" {
-		_, err = uc.userMS.SetFavorite(ctx, data)
+		_, err = uc.UserMS.SetFavorite(ctx, data)
 	} else {
-		_, err = uc.userMS.ResetFavorite(ctx, data)
+		_, err = uc.UserMS.ResetFavorite(ctx, data)
 	}
 
 	if err != nil {

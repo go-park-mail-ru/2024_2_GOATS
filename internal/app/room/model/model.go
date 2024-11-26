@@ -5,7 +5,7 @@ package models
 //type Room struct {
 //	ID      string `json:"id"`
 //	Title   string `json:"title"`
-//	Movie   string `json:"movie"`
+//	Movie   string `json:"movie_service"`
 //	AdminID string `json:"admin_id"`
 //}
 //
@@ -66,7 +66,7 @@ package models
 //	Id       string    `json:"id"`
 //	Status   string    `json:"status"` // paused, playing
 //	TimeCode float64   `json:"time_code"`
-//	Movie    MovieInfo `json:"movie"`
+//	Movie    MovieInfo `json:"movie_service"`
 //	Message  Msg       `json:"message"`
 //}
 //

@@ -7,7 +7,7 @@ package service
 
 // 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 // 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-// 	servMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service/mocks"
+// 	servMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/service/mocks"
 // 	"github.com/golang/mock/gomock"
 // 	"github.com/stretchr/testify/assert"
 // )
@@ -187,13 +187,13 @@ package service
 // 			name:             "Error_GetMovie",
 // 			mvID:             1,
 // 			mockMovieReturn:  nil,
-// 			mockMovieErr:     &errVals.RepoError{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie not found")}},
+// 			mockMovieErr:     &errVals.RepoError{Code: "movie_not_found", Error: errVals.CustomError{Err: errors.New("movie_service not found")}},
 // 			mockActorsReturn: nil,
 // 			mockActorsErr:    nil,
 // 			expectedResponse: nil,
 // 			expectedError: &errVals.ServiceError{
 // 				Code:  "movie_not_found",
-// 				Error: errVals.CustomError{Err: errors.New("movie not found")},
+// 				Error: errVals.CustomError{Err: errors.New("movie_service not found")},
 // 			},
 // 		},
 // 		{

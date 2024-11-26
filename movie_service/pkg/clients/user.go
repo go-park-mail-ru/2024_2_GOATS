@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/user_v1"
 )
 
 //go:generate mockgen -source=user.go -destination=../user/service/mocks/mock.go

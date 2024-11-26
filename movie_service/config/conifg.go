@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -11,13 +12,15 @@ type Config struct {
 	Databases Databases `yaml:"databases"`
 }
 
-type Listener struct {
-	Port string `yaml:"port"`
-}
-
 type Databases struct {
 	Postgres     Postgres     `yaml:"postgres"`
+	Redis        Redis        `yaml:"redis"`
 	LocalStorage LocalStorage `yaml:"localStorage"`
+}
+
+type LocalStorage struct {
+	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
+	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
 }
 
 type Postgres struct {
@@ -28,9 +31,22 @@ type Postgres struct {
 	Name     string `yaml:"name"`
 }
 
-type LocalStorage struct {
-	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
-	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
+type Redis struct {
+	Host   string `yaml:"host"`
+	Port   int    `yaml:"port"`
+	Cookie Cookie `yaml:"cookie"`
+}
+
+type Cookie struct {
+	Name   string        `yaml:"name"`
+	MaxAge time.Duration `yaml:"maxAge"`
+}
+
+type Listener struct {
+	Address     string        `yaml:"address"`
+	Port        string        `yaml:"port"`
+	Timeout     time.Duration `yaml:"timeout"`
+	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
 func New(isTest bool) (*Config, error) {

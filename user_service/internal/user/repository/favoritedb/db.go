@@ -101,10 +101,10 @@ func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, er
 	defer rows.Close()
 
 	if rows.Next() {
-		logger.Info().Msgf("postgres: favorite pair for user %d and movie %d found", favData.UserID, favData.MovieID)
+		logger.Info().Msgf("postgres: favorite pair for user %d and movie_service %d found", favData.UserID, favData.MovieID)
 		return true, nil
 	}
 
-	logger.Info().Msgf("postgres: favorite pair for user %d and movie %d not found", favData.UserID, favData.MovieID)
+	logger.Info().Msgf("postgres: favorite pair for user %d and movie_service %d not found", favData.UserID, favData.MovieID)
 	return false, nil
 }

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository/dto"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/dto"
 	"github.com/rs/zerolog/log"
 )
 

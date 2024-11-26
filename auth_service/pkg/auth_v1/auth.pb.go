@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.28.1
 // 	protoc        v5.28.1
-// source: auth.proto
+// source: movie.proto
 
 package __
 

@@ -5,8 +5,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 )
 
-var _ delivery.AuthServiceInterface = (*AuthService)(nil)
-
 type AuthService struct {
 	authClient client.AuthClientInterface
 	userClient client.UserClientInterface

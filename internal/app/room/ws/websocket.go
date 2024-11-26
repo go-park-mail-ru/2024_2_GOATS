@@ -38,8 +38,8 @@ package websocket
 //func (hub *RoomHub) Run() {
 //	for {
 //		select {
-//		case client := <-hub.Register:
-//			hub.addClientToRoom(client)
+//		case clients := <-hub.Register:
+//			hub.addClientToRoom(clients)
 //		case conn := <-hub.Unregister:
 //			hub.removeClient(conn)
 //		case message := <-hub.Broadcast:
@@ -50,8 +50,8 @@ package websocket
 //
 //// Регистрация клиента в комнате
 //func (hub *RoomHub) RegisterClient(conn *websocket.Conn, roomID string) {
-//	client := &Client{Conn: conn, RoomID: roomID}
-//	hub.Register <- client
+//	clients := &Client{Conn: conn, RoomID: roomID}
+//	hub.Register <- clients
 //}
 //
 //// Получение всех клиентов из указанной комнаты
@@ -61,15 +61,15 @@ package websocket
 //	return hub.Rooms[roomID]
 //}
 //
-//func (hub *RoomHub) addClientToRoom(client *Client) {
+//func (hub *RoomHub) addClientToRoom(clients *Client) {
 //	hub.mu.Lock()
 //	defer hub.mu.Unlock()
 //
 //	// Создаем комнату, если её нет
-//	if hub.Rooms[client.RoomID] == nil {
-//		hub.Rooms[client.RoomID] = make(map[*websocket.Conn]bool)
+//	if hub.Rooms[clients.RoomID] == nil {
+//		hub.Rooms[clients.RoomID] = make(map[*websocket.Conn]bool)
 //	}
-//	hub.Rooms[client.RoomID][client.Conn] = true
+//	hub.Rooms[clients.RoomID][clients.Conn] = true
 //}
 //
 //func (hub *RoomHub) removeClient(conn *websocket.Conn) {
