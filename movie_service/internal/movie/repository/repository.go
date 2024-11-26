@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service"
 )

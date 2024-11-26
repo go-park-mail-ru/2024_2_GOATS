@@ -9,7 +9,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
@@ -18,7 +17,7 @@ func TestGetActor_Success(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	actorID := 1
 	expectedActor := &models.ActorInfo{
@@ -93,7 +92,7 @@ func TestGetActor_FindByIDError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	actorID := 1
 	mock.ExpectQuery(`
@@ -116,7 +115,6 @@ func TestGetActor_FindByIDError(t *testing.T) {
 
 	assert.Nil(t, actor)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, errors.ErrServerCode, errObj.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -125,7 +123,7 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	actorID := 1
 	mock.ExpectQuery(`
@@ -166,7 +164,6 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 
 	assert.Nil(t, actor)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, errors.ErrServerCode, errObj.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -193,7 +190,7 @@ func TestGetCollection_Success(t *testing.T) {
 		},
 	}}
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	mock.ExpectQuery(`
 		SELECT
@@ -267,12 +264,11 @@ func TestGetCollection_ObtainError(t *testing.T) {
 		JOIN countries ON countries.id = movies.country_id
 	`).WillReturnError(fmt.Errorf("some_error"))
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	colls, errObj := r.GetCollection(context.Background(), "")
 	assert.Nil(t, colls)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, errors.ErrServerCode, errObj.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -387,7 +383,7 @@ func TestGetMovie_Success(t *testing.T) {
 	),
 	)
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	movie, errObj := r.GetMovie(context.Background(), movieID)
 
@@ -437,13 +433,12 @@ func TestGetMovie_FindByIDError(t *testing.T) {
 		WHERE movies.id = \$1
 	`).WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	movie, errObj := r.GetMovie(context.Background(), movieID)
 
 	assert.Nil(t, movie)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, errors.ErrServerCode, errObj.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -483,7 +478,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 			"small_photo_url",
 		}).AddRow(1, "Test", "Tester", "some bio", "some_small_photo_link"))
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	actors, errObj := r.GetMovieActors(context.Background(), movieID)
 
@@ -513,12 +508,11 @@ func TestGetMovieActors_DbError(t *testing.T) {
 		WHERE movies.id = \$1
 	`).WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
 
-	r := NewMovieRepository(db, nil, nil)
+	r := NewMovieRepository(db, nil)
 
 	actors, errObj := r.GetMovieActors(context.Background(), movieID)
 
 	assert.Nil(t, actors)
 	assert.NotNil(t, errObj)
-	assert.Equal(t, errors.ErrServerCode, errObj.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

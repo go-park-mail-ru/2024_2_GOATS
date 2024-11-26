@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/actordb"
@@ -13,17 +13,17 @@ import (
 func (r *MovieRepo) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	actor, err := actordb.FindByID(ctx, actorID, r.Database)
 	if err != nil {
-		return nil, errors.New("error finding actor")
+		return nil, fmt.Errorf("getActorRepoError: %w", err)
 	}
 
 	rows, err := moviedb.FindByActorID(ctx, actorID, r.Database)
 	if err != nil {
-		return nil, errors.New("error finding actor")
+		return nil, fmt.Errorf("getActorRepoError: %w", err)
 	}
 
 	actMvs, err := moviedb.ScanActorMoviesConnections(rows)
 	if err != nil {
-		return nil, errors.New("error finding actor")
+		return nil, fmt.Errorf("getActorRepoError: %w", err)
 	}
 
 	srvAct := converter.ToActorInfoFromRepo(actor)

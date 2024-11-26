@@ -15,7 +15,6 @@ func FindById(ctx context.Context, staffId int, post string, db *sql.DB) *sql.Ro
 			movie_staff.id,
 			movie_staff.first_name,
 			movie_staff.second_name,
-			movie_staff.patronymic,
 			movie_staff.biography,
 			movie_staff.birthdate,
 			movie_staff.big_photo_url,

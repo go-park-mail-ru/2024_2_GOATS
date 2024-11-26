@@ -2,20 +2,20 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
-	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/moviedb"
 	"github.com/rs/zerolog/log"
 )
 
-func (r *MovieRepo) GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, *errVals.RepoError) {
+func (r *MovieRepo) GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error) {
 	logger := log.Ctx(ctx)
 	rows, err := moviedb.GetMovieActors(ctx, mvID, r.Database)
 
 	if err != nil {
-		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
+		return nil, fmt.Errorf("getMovieActorsRepoError: %w", err)
 	}
 
 	defer func() {
@@ -26,7 +26,7 @@ func (r *MovieRepo) GetMovieActors(ctx context.Context, mvID int) ([]*models.Act
 
 	actorsInfos, err := moviedb.ScanActorsConnections(rows)
 	if err != nil {
-		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.NewCustomError(err.Error()))
+		return nil, fmt.Errorf("getMovieActorsRepoError: %w", err)
 	}
 
 	var srvActors = make([]*models.ActorInfo, 0, len(actorsInfos))
