@@ -23,7 +23,7 @@ func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.RepoCreateD
 	usr, err := userdb.Create(ctx, *registerData, u.Database)
 	if err != nil {
 		if errors.IsDuplicateError(err) {
-			return nil, fmt.Errorf("%s: duplicate entry: %w", errors.ErrCreateUserCode, err)
+			return nil, fmt.Errorf("%s: duplicate entry: %w", errors.DuplicateErrCode, err)
 		}
 
 		return nil, fmt.Errorf("%s: %w", errors.ErrCreateUserCode, err)

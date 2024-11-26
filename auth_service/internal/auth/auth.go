@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/config"
@@ -14,6 +15,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/interceptors"
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-redis/redis/v8"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 )
@@ -48,6 +51,13 @@ func New(isTest bool) (*AuthApp, error) {
 	sessRepo := repository.NewAuthRepository(rdb)
 	sessServ := service.NewAuthService(sessRepo)
 	auth.RegisterSessionRPCServer(srv, delivery.NewAuthManager(ctx, sessServ))
+
+	grpc_prometheus.Register(srv)
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":9081", nil)
+	}()
 
 	return &AuthApp{
 		rdb:    rdb,

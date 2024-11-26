@@ -26,7 +26,11 @@ func NewAuthClient(authMS auth.SessionRPCClient) AuthClientInterface {
 }
 
 func (cl *AuthClient) CreateSession(ctx context.Context, usrID int) (*models.CookieData, error) {
+	start := time.Now()
+	method := "CreateSession"
+
 	resp, err := cl.authMS.CreateSession(ctx, &auth.CreateSessionRequest{UserID: uint64(usrID)})
+	saveMetric(start, authService, method, err)
 
 	if err != nil {
 		return nil, err
@@ -43,7 +47,11 @@ func (cl *AuthClient) CreateSession(ctx context.Context, usrID int) (*models.Coo
 }
 
 func (cl *AuthClient) DestroySession(ctx context.Context, cookie string) error {
+	start := time.Now()
+	method := "DestroySession"
+
 	_, err := cl.authMS.DestroySession(ctx, &auth.DestroySessionRequest{Cookie: cookie})
+	saveMetric(start, authService, method, err)
 
 	if err != nil {
 		return err
@@ -53,7 +61,11 @@ func (cl *AuthClient) DestroySession(ctx context.Context, cookie string) error {
 }
 
 func (cl *AuthClient) Session(ctx context.Context, cookie string) (uint64, error) {
+	start := time.Now()
+	method := "Session"
+
 	resp, err := cl.authMS.Session(ctx, &auth.GetSessionRequest{Cookie: cookie})
+	saveMetric(start, authService, method, err)
 
 	if err != nil {
 		return 0, err

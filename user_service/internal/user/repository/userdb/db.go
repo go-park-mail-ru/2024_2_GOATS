@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/dto"
 	"github.com/rs/zerolog/log"
+	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
 )
 
 const (
@@ -24,6 +25,7 @@ const (
 )
 
 func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*dto.RepoUser, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	usr := dto.RepoUser{}
@@ -34,12 +36,14 @@ func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*
 	).Scan(&usr.ID, &usr.Email)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "create_user", "users")
 		errMsg := fmt.Errorf("postgres: error while creating user - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "create_user", "users")
 	logger.Info().Msg("postgres: user created successfully")
 
 	return &usr, nil
@@ -47,17 +51,20 @@ func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*
 
 func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, error) {
 	var usr dto.RepoUser
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	err := db.QueryRowContext(ctx, usrFindByEmail, email).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "find_user_by_email", "users")
 		errMsg := fmt.Errorf("postgres: error while scanning user by email - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "find_user_by_email", "users")
 	logger.Info().Msg("postgres: user found by email")
 
 	return &usr, nil
@@ -65,40 +72,47 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, 
 
 func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, error) {
 	var usr dto.RepoUser
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarURL)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "find_user_by_id", "users")
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "find_user_by_id", "users")
 	logger.Info().Msgf("postgres: user with id %d found", usr.ID)
 
 	return &usr, nil
 }
 
 func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB) error {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	_, err := db.ExecContext(ctx, usrUpdatePasswordSQL, pass, time.Now(), userID)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "update_password", "users")
 		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "update_password", "users")
 	logger.Info().Msgf("postgres: successfully update password for user with id - %d", userID)
 
 	return nil
 }
 
 func UpdateProfile(ctx context.Context, usrData *dto.RepoUser, db *sql.DB) error {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	sqlStatement := "UPDATE users SET "
@@ -136,12 +150,14 @@ func UpdateProfile(ctx context.Context, usrData *dto.RepoUser, db *sql.DB) error
 
 	_, err := db.ExecContext(ctx, sqlStatement, args...)
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "update_profile", "users")
 		errMsg := fmt.Errorf("postgres: error while updating user profile - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "update_profile", "users")
 	logger.Info().Msgf("postgres: successfully updated profile for user with id - %d", usrData.ID)
 
 	return nil

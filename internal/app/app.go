@@ -28,6 +28,7 @@ import (
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type App struct {
@@ -111,6 +112,11 @@ func (a *App) Run() {
 
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.SetupUser(delUser, authMW, mx)
+
+	mx.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
+
 	ctxValues := config.FromContext(ctx)
 
 	srv := &http.Server{

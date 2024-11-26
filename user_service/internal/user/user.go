@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,7 +17,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 )
@@ -56,6 +59,12 @@ func New(isTest bool) (*UserApp, error) {
 	usrRepo := repository.NewUserRepository(db)
 	usrServ := service.NewUserService(usrRepo)
 	user.RegisterUserRPCServer(srv, delivery.NewUserHandler(ctx, usrServ))
+	grpc_prometheus.Register(srv)
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":9082", nil)
+	}()
 
 	return &UserApp{
 		logger:   &logger,
