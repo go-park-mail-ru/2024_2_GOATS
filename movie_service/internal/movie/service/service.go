@@ -2,21 +2,21 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 
 	usrSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
-	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	api "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type MovieRepositoryInterface interface {
-	GetCollection(ctx context.Context, filter string) ([]models.Collection, *errVals.RepoError)
-	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.RepoError)
-	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errVals.RepoError)
-	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, *errVals.RepoError)
-	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.RepoError)
+	GetCollection(ctx context.Context, filter string) ([]models.Collection, error)
+	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error)
+	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error)
+	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error)
+	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 }
@@ -42,7 +42,7 @@ func (s *MovieService) GetMovieByGenre(ctx context.Context, genre string) ([]mod
 	movies, err := s.movieRepository.GetMovieByGenre(ctx, genre)
 
 	if err != nil {
-		return nil, &errVals.ServiceError{Code: "1"}
+		return nil, fmt.Errorf("movieService.GetMovieByGenre: %w", err)
 	}
 
 	return movies, nil
@@ -52,9 +52,7 @@ func (s *MovieService) GetCollection(ctx context.Context, filter string) (*model
 	collections, err := s.movieRepository.GetCollection(ctx, filter)
 
 	if err != nil {
-		return nil, &errVals.ServiceError{
-			Code: "1",
-		}
+		return nil, fmt.Errorf("movieService.GetCollection: %w", err)
 	}
 
 	return &models.CollectionsRespData{Collections: collections}, nil
@@ -70,11 +68,8 @@ func (s *MovieService) SearchActors(ctx context.Context, query string) ([]models
 
 func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error) {
 	mv, err := s.movieRepository.GetMovie(ctx, mvID)
-
 	if err != nil {
-		return nil, &errVals.ServiceError{
-			Code: "1",
-		}
+		return nil, fmt.Errorf("movieService.GetMovie: %w", err)
 	}
 
 	usrID := config.CurrentUserID(ctx)
@@ -86,9 +81,7 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 
 		isFav, err := s.userClient.CheckFavorite(ctx, fav)
 		if err != nil {
-			return nil, &errVals.ServiceError{
-				Code: "1",
-			}
+			return nil, fmt.Errorf("movieService.GetMovie: %w", err)
 		}
 
 		mv.IsFavorite = isFav
@@ -97,9 +90,7 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 	actors, err := s.movieRepository.GetMovieActors(ctx, mv.ID)
 
 	if err != nil {
-		return nil, &errVals.ServiceError{
-			Code: "1",
-		}
+		return nil, fmt.Errorf("movieService.GetMovieActors: %w", err)
 	}
 
 	mv.Actors = actors
@@ -111,9 +102,7 @@ func (s *MovieService) GetActor(ctx context.Context, actorID int) (*models.Actor
 	actor, err := s.movieRepository.GetActor(ctx, actorID)
 
 	if err != nil {
-		return nil, &errVals.ServiceError{
-			Code: "1",
-		}
+		return nil, fmt.Errorf("movieService.GetActor: %w", err)
 	}
 
 	return actor, nil
@@ -123,7 +112,7 @@ func (s *MovieService) GetMovieActors(ctx context.Context, mvID int) ([]*models.
 	actor, err := s.movieRepository.GetMovieActors(ctx, mvID)
 
 	if err != nil {
-		return nil, err.Error.Err
+		return nil, fmt.Errorf("movieService.GetMovieActors: %w", err)
 	}
 
 	return actor, nil

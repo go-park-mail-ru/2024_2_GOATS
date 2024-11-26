@@ -25,7 +25,7 @@ func (h *MovieHandler) GetMovieByGenre(ctx context.Context, req *movie.GetMovieB
 
 	movies, err := h.movieService.GetMovieByGenre(ctx, req.Genre)
 	if err != nil {
-		return nil, err.Error
+		return nil, err
 	}
 
 	var respp []*movie.MovieShortInfo
@@ -50,7 +50,7 @@ func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest)
 
 	movieg, err := h.movieService.GetMovie(ctx, int(req.MovieId))
 	if err != nil {
-		return nil, err.Error
+		return nil, err
 	}
 
 	var respp *movie.MovieInfo
@@ -106,7 +106,7 @@ func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest)
 
 	actor, err := h.movieService.GetActor(ctx, int(req.ActorId))
 	if err != nil {
-		return nil, err.Error
+		return nil, err
 	}
 
 	var respp *movie.ActorInfo
@@ -233,7 +233,7 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 func (h *MovieHandler) GetCollections(ctx context.Context, req *movie.GetCollectionsRequest) (*movie.GetCollectionsResponse, error) {
 	collections, err := h.movieService.GetCollection(ctx, req.Filter)
 	if err != nil {
-		return nil, err.Error
+		return nil, err
 	}
 
 	var respp []*movie.Collection
