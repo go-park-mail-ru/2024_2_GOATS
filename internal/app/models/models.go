@@ -23,6 +23,7 @@ type RegisterData struct {
 
 type SessionRespData struct {
 	UserData User
+	UserData User
 }
 
 type AuthRespData struct {
@@ -65,6 +66,7 @@ type MovieInfo struct {
 	Actors           []*ActorInfo  `json:"actors_info"`
 	Director         *DirectorInfo `json:"director_info"`
 	Seasons          []*Season     `json:"seasons"`
+	IsFavorite       bool          `json:"is_favorite"`
 }
 
 type Season struct {

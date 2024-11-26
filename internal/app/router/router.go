@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
+	webSocket "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	csrf_handle "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
@@ -31,9 +32,12 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions)
 	movieRouter.HandleFunc("/", delLayer.GetMovieByGenre).Methods(http.MethodGet, http.MethodOptions)
 	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
+
+	movieRouter.HandleFunc("/movies/search", delLayer.SearchMovies).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/actors/search", delLayer.SearchActors).Methods(http.MethodGet, http.MethodOptions)
 }
 
-func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.SessionMiddleware, router *mux.Router) {
+func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
@@ -42,17 +46,23 @@ func SetupUser(delLayer handlers.UserHandlerInterface, authMW *middleware.Sessio
 	userRouter.HandleFunc("/{id:[0-9]+}/favorites", delLayer.GetFavorites).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc("/favorites", delLayer.SetFavorite).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
-
-	userRouter.Use(authMW.AuthMiddleware)
 }
 
-func UseCommonMiddlewares(mx *mux.Router) {
+func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	roomRouter := apiMux.PathPrefix("/room").Subrouter()
+	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
+	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
+}
+
+func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.WithLogger)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
 	mx.Use(middleware.CsrfMiddleware)
 	mx.Use(middleware.XssMiddleware)
+	mx.Use(authMW.AuthMiddleware)
 }
 
 func SetupCsrf(router *mux.Router) {

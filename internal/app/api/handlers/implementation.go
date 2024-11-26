@@ -10,6 +10,8 @@ type MovieHandlerInterface interface {
 	GetMovie(w http.ResponseWriter, r *http.Request)
 	GetActor(w http.ResponseWriter, r *http.Request)
 	GetMovieByGenre(w http.ResponseWriter, r *http.Request)
+	SearchMovies(w http.ResponseWriter, r *http.Request)
+	SearchActors(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthHandlerInterface interface {
@@ -25,4 +27,9 @@ type UserHandlerInterface interface {
 	GetFavorites(w http.ResponseWriter, r *http.Request)
 	SetFavorite(w http.ResponseWriter, r *http.Request)
 	ResetFavorite(w http.ResponseWriter, r *http.Request)
+}
+
+type RoomImplementationInterface interface {
+	CreateRoom(w http.ResponseWriter, r *http.Request)
+	JoinRoom(w http.ResponseWriter, r *http.Request)
 }

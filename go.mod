@@ -6,16 +6,20 @@ toolchain go1.22.9
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang/mock v1.6.0
+	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/sessions v1.3.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/lib/pq v1.10.9
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/ory/dockertest v3.3.5+incompatible
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.27.0
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2

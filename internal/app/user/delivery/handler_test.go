@@ -3,7 +3,6 @@ package delivery
 import (
 	"bytes"
 	"context"
-	"errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	mockSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks"
 )
 

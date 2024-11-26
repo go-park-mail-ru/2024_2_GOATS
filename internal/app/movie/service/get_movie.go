@@ -3,25 +3,41 @@ package service
 import (
 	"context"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 )
 
 func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.ServiceError) {
-	// mv, err := s.movieRepository.GetMovie(ctx, mvID)
+	mv, err := s.movieRepository.GetMovie(ctx, mvID)
 
-	// if err != nil {
-	// 	return nil, errVals.ToServiceErrorFromRepo(err)
-	// }
+	if err != nil {
+		return nil, errVals.ToServiceErrorFromRepo(err)
+	}
 
-	// actors, err := s.movieRepository.GetMovieActors(ctx, mv.ID)
+	usrID := config.CurrentUserID(ctx)
+	if usrID != 0 {
+		fav := &dto.RepoFavorite{
+			UserID:  usrID,
+			MovieID: mv.ID,
+		}
 
-	// if err != nil {
-	// 	return nil, errVals.ToServiceErrorFromRepo(err)
-	// }
+		isFav, err := s.userRepository.CheckFavorite(ctx, fav)
+		if err != nil {
+			return nil, errVals.ToServiceErrorFromRepo(err)
+		}
 
-	// mv.Actors = actors
+		mv.IsFavorite = isFav
+	}
 
-	// return mv, nil
-	return nil, nil
+	actors, err := s.movieRepository.GetMovieActors(ctx, mv.ID)
+
+	if err != nil {
+		return nil, errVals.ToServiceErrorFromRepo(err)
+	}
+
+	mv.Actors = actors
+
+	return mv, nil
 }

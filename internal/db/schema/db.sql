@@ -136,7 +136,7 @@ CREATE INDEX idx_movie_collections_collection_id ON public.movie_collections(col
 CREATE TABLE public.favorites(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   movie_id int REFERENCES public.movies(id),
-  user_id int REFERENCES public.collections(id),
+  user_id int REFERENCES public.users(id),
   created_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 

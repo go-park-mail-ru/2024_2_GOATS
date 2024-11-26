@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
 )
 
 var _ delivery.UserServiceInterface = (*UserService)(nil)

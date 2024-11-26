@@ -2,13 +2,23 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/elastic/go-elasticsearch/v7"
+
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
+
+	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
+	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
+	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
+	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
@@ -17,12 +27,17 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
+
+	// movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	// movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
+	// movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
@@ -35,6 +50,7 @@ type App struct {
 	Redis             *redis.Client
 	Config            *config.Config
 	Logger            *zerolog.Logger
+	Es                *config.Elasticsearch
 	Server            *http.Server
 	AcceptConnections bool
 }
@@ -60,10 +76,25 @@ func New(isTest bool) (*App, error) {
 	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
+	cfgEl := elasticsearch.Config{
+		Addresses: []string{"http://elasticsearch:9200"},
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost:   10,
+			ResponseHeaderTimeout: time.Second,
+			DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
+			TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
+
+	esClient, err := elasticsearch.NewClient(cfgEl)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Elasticsearch client: %w", err)
+	}
+
 	return &App{
 		// Database: database,
 		Redis:  rdb,
 		Config: cfg,
+		Es:     esClient,
 		Logger: &logger,
 	}, nil
 }
@@ -99,12 +130,20 @@ func (a *App) Run() {
 	srvAuth := authServ.NewAuthService(sessManager, usrManager)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	// repoMov := movieRepo.NewMovieRepository(a.Database)
-	// srvMov := movieServ.NewMovieService(repoMov)
+	// repoMov := movieRepo.NewMovieRepository(a.Database, rdb, esClient)
+	// srvMov := movieServ.NewMovieService(repoMov, repoUser)
 	// delMov := movieApi.NewMovieHandler(srvMov)
 
+	repoRoom := roomRepo.NewRepository(database, rdb)
+	srvRoom := roomServ.NewService(repoRoom, srvMov)
+	roomHub := ws.NewRoomHub()
+	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+
+	go roomHub.Run() // Запуск обработчика Hub'a
+
 	mx := mux.NewRouter()
-	router.UseCommonMiddlewares(mx)
+	authMW := middleware.NewSessionMiddleware(srvAuth)
+	router.UseCommonMiddlewares(mx, authMW)
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
 	// router.SetupMovie(delMov, mx)

@@ -8,12 +8,11 @@ import (
 )
 
 func (s *MovieService) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.ServiceError) {
-	// movies, err := s.movieRepository.GetMovieByGenre(ctx, genre)
+	movies, err := s.movieRepository.GetMovieByGenre(ctx, genre)
 
-	// if err != nil {
-	// 	return nil, errVals.ToServiceErrorFromRepo(err)
-	// }
+	if err != nil {
+		return nil, errVals.ToServiceErrorFromRepo(err)
+	}
 
-	// return movies, nil
-	return nil, nil
+	return movies, nil
 }

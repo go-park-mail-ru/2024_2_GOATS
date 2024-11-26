@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/gorilla/sessions"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 )
 
 func AccessLogMiddleware(next http.Handler) http.Handler {
@@ -43,7 +43,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, mode")
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
