@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"

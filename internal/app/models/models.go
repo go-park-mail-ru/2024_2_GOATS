@@ -23,11 +23,10 @@ type RegisterData struct {
 
 type SessionRespData struct {
 	UserData User
-	UserData User
 }
 
 type AuthRespData struct {
-	NewCookie  *CookieData
+	NewCookie *CookieData
 }
 
 type CollectionsRespData struct {

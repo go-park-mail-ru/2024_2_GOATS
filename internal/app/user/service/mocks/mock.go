@@ -6,12 +6,10 @@ package mock_client
 
 import (
 	context "context"
-	os "os"
 	reflect "reflect"
 
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	dto "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/dto"
-	gomock "go.uber.org/mock/gomock"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockUserClientInterface is a mock of UserClientInterface interface.
@@ -35,35 +33,6 @@ func NewMockUserClientInterface(ctrl *gomock.Controller) *MockUserClientInterfac
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUserClientInterface) EXPECT() *MockUserClientInterfaceMockRecorder {
 	return m.recorder
-}
-
-// CheckFavorite mocks base method.
-func (m *MockUserRepositoryInterface) CheckFavorite(ctx context.Context, favData *dto.RepoFavorite) (bool, *errors.RepoError) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckFavorite", ctx, favData)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(*errors.RepoError)
-	return ret0, ret1
-}
-
-// CheckFavorite indicates an expected call of CheckFavorite.
-func (mr *MockUserRepositoryInterfaceMockRecorder) CheckFavorite(ctx, favData any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFavorite", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CheckFavorite), ctx, favData)
-}
-
-// CreateFavorite mocks base method.
-func (m *MockUserRepositoryInterface) CreateFavorite(ctx context.Context, favData *dto.RepoFavorite) *errors.RepoError {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateFavorite", ctx, favData)
-	ret0, _ := ret[0].(*errors.RepoError)
-	return ret0
-}
-
-// CreateFavorite indicates an expected call of CreateFavorite.
-func (mr *MockUserRepositoryInterfaceMockRecorder) CreateFavorite(ctx, favData any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFavorite", reflect.TypeOf((*MockUserRepositoryInterface)(nil).CreateFavorite), ctx, favData)
 }
 
 // CheckFavorite mocks base method.

@@ -15,11 +15,6 @@ import (
 	"os"
 	"time"
 
-	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
-	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
-	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
-	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,7 +22,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog"
 
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
@@ -50,7 +44,7 @@ type App struct {
 	Redis             *redis.Client
 	Config            *config.Config
 	Logger            *zerolog.Logger
-	Es                *config.Elasticsearch
+	Es                *elasticsearch.Client
 	Server            *http.Server
 	AcceptConnections bool
 }
@@ -134,22 +128,20 @@ func (a *App) Run() {
 	// srvMov := movieServ.NewMovieService(repoMov, repoUser)
 	// delMov := movieApi.NewMovieHandler(srvMov)
 
-	repoRoom := roomRepo.NewRepository(database, rdb)
-	srvRoom := roomServ.NewService(repoRoom, srvMov)
-	roomHub := ws.NewRoomHub()
-	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+	// repoRoom := roomRepo.NewRepository(database, rdb)
+	// srvRoom := roomServ.NewService(repoRoom, srvMov)
+	// roomHub := ws.NewRoomHub()
+	// delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
 
-	go roomHub.Run() // Запуск обработчика Hub'a
+	// go roomHub.Run() // Запуск обработчика Hub'a
 
 	mx := mux.NewRouter()
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.UseCommonMiddlewares(mx, authMW)
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
+	router.SetupUser(delUser, mx)
 	// router.SetupMovie(delMov, mx)
-
-	authMW := middleware.NewSessionMiddleware(srvAuth)
-	router.SetupUser(delUser, authMW, mx)
 	ctxValues := config.FromContext(ctx)
 
 	srv := &http.Server{

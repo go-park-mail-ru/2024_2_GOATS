@@ -19,6 +19,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type UserApp struct {
@@ -53,6 +54,7 @@ func New(isTest bool) (*UserApp, error) {
 		)),
 	)
 
+	reflection.Register(srv)
 	usrRepo := repository.NewUserRepository(db)
 	usrServ := service.NewUserService(usrRepo)
 	user.RegisterUserRPCServer(srv, delivery.NewUserHandler(ctx, usrServ))

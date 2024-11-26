@@ -16,6 +16,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type AuthApp struct {
@@ -45,6 +46,7 @@ func New(isTest bool) (*AuthApp, error) {
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 	ctx := config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
 
+	reflection.Register(srv)
 	sessRepo := repository.NewAuthRepository(rdb)
 	sessServ := service.NewAuthService(sessRepo)
 	auth.RegisterSessionRPCServer(srv, delivery.NewAuthManager(ctx, sessServ))
