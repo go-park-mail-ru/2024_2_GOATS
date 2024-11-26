@@ -6,19 +6,59 @@ import (
 	"crypto/subtle"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/spf13/viper"
+	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
 )
 
+var (
+	HTTPRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"method", "path", "status"},
+	)
+
+	HTTPRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "Histogram of response time for handler in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"method", "path"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(HTTPRequestsTotal)
+	prometheus.MustRegister(HTTPRequestDuration)
+}
+
+// Обёртка для ResponseWriter, которая сохраняет статус
+type statusRecorder struct {
+	http.ResponseWriter
+	Status int
+}
+
+func (rec *statusRecorder) WriteHeader(code int) {
+	rec.Status = code // Сохраняем статус
+	rec.ResponseWriter.WriteHeader(code)
+}
+
+func NewLoggingResponseWriter(w http.ResponseWriter) *statusRecorder {
+	return &statusRecorder{w, http.StatusOK}
+}
+
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 		reqID := r.Header.Get("Req-ID")
 		if reqID == "" {
 			reqID = generateRequestID()
@@ -26,15 +66,18 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 
 		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
 		w.Header().Set("Req-ID", reqID)
-		logRequest(r, start, "accessLogMiddleware", reqID)
-
+		rec := NewLoggingResponseWriter(w)
 		md := metadata.Pairs(
 			"request_id", reqID,
 		)
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
+		start := time.Now()
+		next.ServeHTTP(rec, r.WithContext(ctx))
+		status := rec.Status
+		logRequest(r, start, "accessLogMiddleware", reqID, status)
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		w.Header().Get("")
 	})
 }
 
@@ -71,8 +114,9 @@ func PanicMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
+func logRequest(r *http.Request, start time.Time, msg string, requestID string, status int) {
 	var bodyCopy bytes.Buffer
+	duration := time.Since(start)
 
 	tee := io.TeeReader(r.Body, &bodyCopy)
 	r.Body = io.NopCloser(&bodyCopy)
@@ -87,8 +131,12 @@ func logRequest(r *http.Request, start time.Time, msg string, requestID string) 
 		Str("url", r.URL.Path).
 		Str("request-id", requestID).
 		Bytes("body", bodyBytes).
-		Dur("work_time", time.Since(start)).
+		Dur("work_time", duration).
+		Int("status", status).
 		Msg(msg)
+
+	HTTPRequestsTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(status)).Inc()
+	HTTPRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(float64(duration))
 }
 
 func sanitizeInput(input string) string {
