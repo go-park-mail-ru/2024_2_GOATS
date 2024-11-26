@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
-	webSocket "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	csrf_handle "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
@@ -48,12 +47,12 @@ func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
 }
 
-func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
-	apiMux := router.PathPrefix("/api").Subrouter()
-	roomRouter := apiMux.PathPrefix("/room").Subrouter()
-	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
-	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
-}
+//func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
+//	apiMux := router.PathPrefix("/api").Subrouter()
+//	roomRouter := apiMux.PathPrefix("/room").Subrouter()
+//	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
+//	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
+//}
 
 func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) {
 	mx.Use(middleware.AccessLogMiddleware)
