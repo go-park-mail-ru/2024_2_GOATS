@@ -21,18 +21,6 @@ type MovieRepositoryInterface interface {
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
 }
 
-type UserClientInterface interface {
-	Create(ctx context.Context, regData *models.RegisterData) (int, error)
-	FindByEmail(ctx context.Context, email string) (*models.User, error)
-	FindByID(ctx context.Context, id uint64) (*models.User, error)
-	UpdatePassword(ctx context.Context, passwordData *models.PasswordData) error
-	GetFavorites(ctx context.Context, usrID int) ([]uint64, error)
-	SetFavorite(ctx context.Context, favData *models.Favorite) error
-	ResetFavorite(ctx context.Context, favData *models.Favorite) error
-	CheckFavorite(ctx context.Context, favData *models.Favorite) (bool, error)
-	UpdateProfile(ctx context.Context, usrData *models.User) error
-}
-
 type Favorite struct {
 	UserID  uint64
 	MovieID uint64
@@ -40,13 +28,11 @@ type Favorite struct {
 
 type MovieService struct {
 	movieRepository MovieRepositoryInterface
-	userClient      UserClientInterface
 }
 
-func NewMovieService(repo MovieRepositoryInterface, urepo UserClientInterface) delivery.MovieServiceInterface {
+func NewMovieService(repo MovieRepositoryInterface) delivery.MovieServiceInterface {
 	return &MovieService{
 		movieRepository: repo,
-		userClient:      urepo,
 	}
 }
 

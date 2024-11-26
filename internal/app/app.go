@@ -31,6 +31,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type App struct {
@@ -114,6 +115,11 @@ func (a *App) Run() {
 	router.SetupAuth(delAuth, mx)
 	router.SetupUser(delUser, mx)
 	router.SetupMovie(delMov, mx)
+
+	mx.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
+
 	ctxValues := config.FromContext(ctx)
 
 	srv := &http.Server{

@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	servMock "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service/mocks"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
+	"github.com/golang/mock/gomock"
 )
 
 func TestService_GetCollection(t *testing.T) {
@@ -52,9 +52,8 @@ func TestService_GetCollection(t *testing.T) {
 			defer ctrl.Finish()
 
 			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
-			mu := servMock.NewMockUserClientInterface(ctrl)
 
-			s := NewMovieService(mr, mu)
+			s := NewMovieService(mr)
 
 			mr.EXPECT().GetCollection(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
@@ -119,8 +118,7 @@ func TestService_GetActor(t *testing.T) {
 			defer ctrl.Finish()
 
 			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
-			mu := servMock.NewMockUserClientInterface(ctrl)
-			s := NewMovieService(mr, mu)
+			s := NewMovieService(mr)
 
 			mr.EXPECT().GetActor(gomock.Any(), test.actorID).Return(test.mockReturn, test.mockErr)
 
@@ -210,8 +208,7 @@ func TestService_GetMovie(t *testing.T) {
 			defer ctrl.Finish()
 
 			mr := servMock.NewMockMovieRepositoryInterface(ctrl)
-			mu := servMock.NewMockUserClientInterface(ctrl)
-			s := NewMovieService(mr, mu)
+			s := NewMovieService(mr)
 
 			mr.EXPECT().GetMovie(gomock.Any(), test.mvID).Return(test.mockMovieReturn, test.mockMovieErr)
 

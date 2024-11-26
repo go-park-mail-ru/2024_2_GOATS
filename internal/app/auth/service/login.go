@@ -25,9 +25,11 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err)
 	}
 
-	err = s.authClient.DestroySession(ctx, loginData.Cookie)
-	if err != nil {
-		return nil, errVals.NewServiceError(errVals.ErrDestroySessionCode, fmt.Errorf("failed to login: %w", err))
+	if loginData.Cookie != "" {
+		err = s.authClient.DestroySession(ctx, loginData.Cookie)
+		if err != nil {
+			return nil, errVals.NewServiceError(errVals.ErrDestroySessionCode, fmt.Errorf("failed to login: %w", err))
+		}
 	}
 
 	ckResp, err := s.authClient.CreateSession(ctx, usr.ID)

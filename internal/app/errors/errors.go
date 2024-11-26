@@ -40,7 +40,7 @@ const (
 )
 
 var ErrorCodeToHTTPStatus = map[string]int{
-	DuplicateErrCode:       http.StatusConflict,
+	DuplicateErrCode:       http.StatusUnprocessableEntity,
 	ErrBrokenCookieCode:    http.StatusBadRequest,
 	ErrNoCookieCode:        http.StatusBadRequest,
 	ErrRedisGetCode:        http.StatusInternalServerError,

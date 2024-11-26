@@ -272,8 +272,8 @@ func TestCheckFavorite_Success(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mockRows := sqlmock.NewRows([]string{"count"}).AddRow(1)
-	mock.ExpectQuery(`SELECT count\(movie_id\) FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mockRows := sqlmock.NewRows([]string{"movie_id"}).AddRow(1)
+	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnRows(mockRows)
 
@@ -295,8 +295,8 @@ func TestCheckFavorite_FalseSuccess(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mockRows := sqlmock.NewRows([]string{"count"})
-	mock.ExpectQuery(`SELECT count\(movie_id\) FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mockRows := sqlmock.NewRows([]string{"movie_id"})
+	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnRows(mockRows)
 
@@ -318,7 +318,7 @@ func TestCheckFavorite_Error(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mock.ExpectQuery(`SELECT count\(movie_id\) FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnError(errors.New("some_database_error"))
 
