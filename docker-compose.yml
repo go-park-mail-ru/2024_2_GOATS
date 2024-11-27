@@ -1,6 +1,5 @@
 volumes:
   grafana-data:
-  elasticsearch_data:
 
 services:
   facade_app:
@@ -25,20 +24,6 @@ services:
     depends_on:
       - facade_app
     restart: "always"
-    networks:
-      - cassette-world
-
-  elasticsearch:
-    image: elasticsearch:8.9.0
-    container_name: elasticsearch
-    environment:
-      - "discovery.type=single-node"
-      - "ES_JAVA_OPTS=-Xmx512m -Xms512m"
-      - "xpack.security.enabled=false"
-    volumes:
-      - "elasticsearch_data:/usr/share/elasticsearch/data"
-    ports:
-      - "9200:9200"
     networks:
       - cassette-world
 

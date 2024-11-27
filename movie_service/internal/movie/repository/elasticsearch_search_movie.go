@@ -8,7 +8,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	"io"
 	"log"
-	"strconv"
 )
 
 func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
@@ -47,7 +46,7 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 		Hits struct {
 			Hits []struct {
 				Source struct {
-					ID       string  `json:"id"`
+					ID       int     `json:"id"`
 					Title    string  `json:"title"`
 					Rating   float32 `json:"rating"`
 					AlbumUrl string  `json:"album_url"`
@@ -69,7 +68,7 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 
 	movies := make([]models.MovieInfo, len(esResponse.Hits.Hits))
 	for i, hit := range esResponse.Hits.Hits {
-		id, err := strconv.Atoi(hit.Source.ID)
+		id := hit.Source.ID
 		if err != nil {
 			return nil, fmt.Errorf("error converting id to int: %w", err)
 		}

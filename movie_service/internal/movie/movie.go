@@ -6,6 +6,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	client "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/user_v1"
+	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"net/http"
 	"os"
@@ -69,7 +72,14 @@ func New(isTest bool) (*MovieApp, error) {
 	reflection.Register(srv)
 	sessRepo := repository.NewMovieRepository(db, esClient)
 
-	movieService := service.NewMovieService(sessRepo)
+	uGrpcConn, err := grpc.NewClient(
+		"user_app:8082",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
+
+	movieService := service.NewMovieService(sessRepo, usrManager)
 	movie.RegisterMovieServiceServer(srv, delivery.NewMovieHandler(movieService))
 
 	return &MovieApp{

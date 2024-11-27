@@ -182,49 +182,50 @@ func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMovies
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var respp []*movie.MovieInfo
-	for i, movie := range movies {
-		respp[i].Id = int32(movie.ID)
-		respp[i].CardUrl = movie.CardURL
-		respp[i].AlbumUrl = movie.AlbumURL
-		respp[i].Rating = movie.Rating
-		respp[i].Title = movie.Title
-		respp[i].MovieType = movie.MovieType
-		respp[i].Country = movie.Country
-		respp[i].ReleaseDate = movie.ReleaseDate
-		respp[i].IsFavorite = movie.IsFavorite
-		respp[i].VideoUrl = movie.VideoURL
+	respp := make([]*movie.MovieInfo, len(movies))
+	for i, mov := range movies {
+		respp[i] = &movie.MovieInfo{
+			Id:          int32(mov.ID),
+			CardUrl:     mov.CardURL,
+			AlbumUrl:    mov.AlbumURL,
+			Rating:      mov.Rating,
+			Title:       mov.Title,
+			MovieType:   mov.MovieType,
+			Country:     mov.Country,
+			ReleaseDate: mov.ReleaseDate,
+			IsFavorite:  mov.IsFavorite,
+			VideoUrl:    mov.VideoURL,
 
-		respp[i].FullDescription = movie.FullDescription
-		respp[i].ShortDescription = movie.ShortDescription
-		respp[i].TitleUrl = movie.TitleURL
-		// for j, actor := range movie.Actors {
-		// 	respp[i].ActorsInfo[j].Person.Name = actor.Person.Name
-		// 	respp[i].ActorsInfo[j].Person.Surname = actor.Person.Surname
-		// 	respp[i].ActorsInfo[j].Id = int32(actor.ID)
-		// 	respp[i].ActorsInfo[j].Biography = actor.Biography
-		// 	respp[i].ActorsInfo[j].Post = actor.Post
-		// 	respp[i].ActorsInfo[j].Birthdate = actor.Birthdate.String
-		// 	respp[i].ActorsInfo[j].SmallPhotoUrl = actor.SmallPhotoURL
-		// 	respp[i].ActorsInfo[j].BigPhotoUrl = actor.BigPhotoURL
-		// 	respp[i].ActorsInfo[j].Country = actor.Country
-		// }
-		for s, season := range movie.Seasons {
-			respp[i].Seasons[s].SeasonNumber = int32(season.SeasonNumber)
-			for g, ep := range season.Episodes {
-				respp[i].Seasons[s].Episodes[g].Id = int64(ep.ID)
-				respp[i].Seasons[s].Episodes[g].Description = ep.Description
-				respp[i].Seasons[s].Episodes[g].EpisodeNumber = int64(ep.EpisodeNumber)
-				respp[i].Seasons[s].Episodes[g].Title = ep.Title
-				respp[i].Seasons[s].Episodes[g].Rating = ep.Rating
-				respp[i].Seasons[s].Episodes[g].ReleaseDate = ep.ReleaseDate
-				respp[i].Seasons[s].Episodes[g].VideoURL = ep.VideoURL
-				respp[i].Seasons[s].Episodes[g].PreviewURL = ep.PreviewURL
-			}
-
+			FullDescription:  mov.FullDescription,
+			ShortDescription: mov.ShortDescription,
+			TitleUrl:         mov.TitleURL,
+			// for j, actor := range movie.Actors {
+			// 	respp[i].ActorsInfo[j].Person.Name = actor.Person.Name
+			// 	respp[i].ActorsInfo[j].Person.Surname = actor.Person.Surname
+			// 	respp[i].ActorsInfo[j].Id = int32(actor.ID)
+			// 	respp[i].ActorsInfo[j].Biography = actor.Biography
+			// 	respp[i].ActorsInfo[j].Post = actor.Post
+			// 	respp[i].ActorsInfo[j].Birthdate = actor.Birthdate.String
+			// 	respp[i].ActorsInfo[j].SmallPhotoUrl = actor.SmallPhotoURL
+			// 	respp[i].ActorsInfo[j].BigPhotoUrl = actor.BigPhotoURL
+			// 	respp[i].ActorsInfo[j].Country = actor.Country
+			// }
+			//for s, season := range movie.Seasons{
+			//	respp[i].Seasons[s].SeasonNumber = int32(season.SeasonNumber)
+			//	for g, ep := range season.Episodes{
+			//	respp[i].Seasons[s].Episodes[g].Id = int64(ep.ID)
+			//	respp[i].Seasons[s].Episodes[g].Description = ep.Description
+			//	respp[i].Seasons[s].Episodes[g].EpisodeNumber = int64(ep.EpisodeNumber)
+			//	respp[i].Seasons[s].Episodes[g].Title = ep.Title
+			//	respp[i].Seasons[s].Episodes[g].Rating = ep.Rating
+			//	respp[i].Seasons[s].Episodes[g].ReleaseDate = ep.ReleaseDate
+			//	respp[i].Seasons[s].Episodes[g].VideoURL = ep.VideoURL
+			//	respp[i].Seasons[s].Episodes[g].PreviewURL = ep.PreviewURL
+			//}
+			//}
 		}
 	}
-
+	log.Println("resppmovie", respp)
 	return &movie.SearchMoviesResponse{Movies: respp}, nil
 }
 
@@ -239,26 +240,28 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var respp []*movie.ActorInfo
+	respp := make([]*movie.ActorInfo, len(actors))
 	for i, v := range actors {
-		respp[i].Id = int32(v.ID)
-		respp[i].Birthdate = v.Birthdate.String
-		respp[i].Country = v.Country
-		respp[i].BigPhotoUrl = v.BigPhotoURL
-		respp[i].Biography = v.Biography
-		respp[i].Name = v.Person.Name
-		respp[i].Surname = v.Person.Surname
-		respp[i].Post = v.Post
-		respp[i].SmallPhotoUrl = v.SmallPhotoURL
-		for j, mov := range v.Movies {
-			respp[i].Movies[j].Id = int32(mov.ID)
-			respp[i].Movies[j].Title = mov.Title
-			respp[i].Movies[j].Rating = mov.Rating
-			respp[i].Movies[j].ReleaseDate = mov.ReleaseDate
-			respp[i].Movies[j].Country = mov.Country
-			respp[i].Movies[j].MovieType = mov.MovieType
-			respp[i].Movies[j].CardUrl = mov.CardURL
-			respp[i].Movies[j].AlbumUrl = mov.AlbumURL
+		respp[i] = &movie.ActorInfo{
+			Id: int32(v.ID),
+			//respp[i].Birthdate = v.Birthdate.String
+			//respp[i].Country = v.Country
+			BigPhotoUrl: v.BigPhotoURL,
+			//respp[i].Biography = v.Biography
+			Name:    v.Person.Name,
+			Surname: v.Person.Surname,
+			//respp[i].Post = v.Post
+			//respp[i].SmallPhotoUrl = v.SmallPhotoURL
+			//for j, mov := range v.Movies {
+			//	respp[i].Movies[j].Id = int32(mov.ID)
+			//	respp[i].Movies[j].Title = mov.Title
+			//	respp[i].Movies[j].Rating = mov.Rating
+			//	respp[i].Movies[j].ReleaseDate = mov.ReleaseDate
+			//	respp[i].Movies[j].Country = mov.Country
+			//	respp[i].Movies[j].MovieType = mov.MovieType
+			//	respp[i].Movies[j].CardUrl = mov.CardURL
+			//	respp[i].Movies[j].AlbumUrl = mov.AlbumURL
+			//}
 		}
 
 	}

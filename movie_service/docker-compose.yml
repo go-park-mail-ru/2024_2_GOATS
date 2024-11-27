@@ -1,5 +1,6 @@
 volumes:
   postgres_volume:
+  elasticsearch_data:
 
 services:
   movie_app:
@@ -33,6 +34,20 @@ services:
       - postgres_volume:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    networks:
+      - cassette-world
+
+  elasticsearch:
+    image: elasticsearch:8.9.0
+    container_name: elasticsearch
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xmx512m -Xms512m"
+      - "xpack.security.enabled=false"
+    volumes:
+      - "elasticsearch_data:/usr/share/elasticsearch/data"
+    ports:
+      - "9200:9200"
     networks:
       - cassette-world
 
