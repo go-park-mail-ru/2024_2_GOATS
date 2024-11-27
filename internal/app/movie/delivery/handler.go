@@ -29,6 +29,8 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 	}
 }
 
+// TODO раскоментить к 4му РК
+
 // func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
 // 	logger := log.Ctx(r.Context())
 // 	genre := r.URL.Query().Get("genre")

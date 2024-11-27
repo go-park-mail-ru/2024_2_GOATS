@@ -251,39 +251,6 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 			AlbumURL: mov.AlbumUrl,
 			Rating:   mov.Rating,
 			Title:    mov.Title,
-			//MovieType:   movie.MovieType,
-			//Country:     movie.Country,
-			//ReleaseDate: movie.ReleaseDate,
-			//IsFavorite:  movie.IsFavorite,
-			//VideoURL:    movie.VideoUrl,
-
-			//respp[i].FullDescription = movie.FullDescription
-			//respp[i].ShortDescription = movie.ShortDescription
-			//respp[i].TitleURL = movie.TitleUrl
-			//for j, actor := range movie.ActorsInfo {
-			//	respp[i].Actors[j].Person.Name = actor.Name
-			//	respp[i].Actors[j].Person.Surname = actor.Surname
-			//	respp[i].Actors[j].ID = int(actor.Id)
-			//	respp[i].Actors[j].Biography = actor.Biography
-			//	respp[i].Actors[j].Post = actor.Post
-			//	respp[i].Actors[j].Birthdate = sql.NullString{String: actor.Birthdate}
-			//	respp[i].Actors[j].SmallPhotoURL = actor.SmallPhotoUrl
-			//	respp[i].Actors[j].BigPhotoURL = actor.BigPhotoUrl
-			//	respp[i].Actors[j].Country = actor.Country
-			//}
-			//for s, season := range movie.Seasons{
-			//	respp[i].Seasons[s].SeasonNumber = int(season.SeasonNumber)
-			//	for g, ep := range season.Episodes{
-			//	respp[i].Seasons[s].Episodes[g].ID = int(ep.Id)
-			//	respp[i].Seasons[s].Episodes[g].Description = ep.Description
-			//	respp[i].Seasons[s].Episodes[g].EpisodeNumber = int(ep.EpisodeNumber)
-			//	respp[i].Seasons[s].Episodes[g].Title = ep.Title
-			//	respp[i].Seasons[s].Episodes[g].Rating = ep.Rating
-			//	respp[i].Seasons[s].Episodes[g].ReleaseDate = ep.ReleaseDate
-			//	respp[i].Seasons[s].Episodes[g].VideoURL = ep.VideoURL
-			//	respp[i].Seasons[s].Episodes[g].PreviewURL = ep.PreviewURL
-			//}
-			//}
 		}
 	}
 	return respp, nil
@@ -307,29 +274,14 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 
 	for i, v := range respActor {
 		respp[i] = models.ActorInfo{
-			ID: int(v.Id),
-			//Birthdate:   sql.NullString{String: v.Birthdate},
-			//Country:     v.Country,
+			ID:          int(v.Id),
 			BigPhotoURL: v.BigPhotoUrl,
-			//Biography:   v.Biography,
 			Person: models.Person{
 				Name:    v.Name,
 				Surname: v.Surname,
 			},
-			//Post : v.Post,
-			//SmallPhotoURL : v.SmallPhotoUrl,
-			//for j, mov := range v.Movies {
-			//respp[i].Movies[j].ID = int(mov.Id)
-			//respp[i].Movies[j].Title = mov.Title
-			//respp[i].Movies[j].Rating = mov.Rating
-			//respp[i].Movies[j].ReleaseDate = mov.ReleaseDate
-			//respp[i].Movies[j].Country = mov.Country
-			//respp[i].Movies[j].MovieType = mov.MovieType
-			//respp[i].Movies[j].CardURL = mov.CardUrl
-			//respp[i].Movies[j].AlbumURL = mov.AlbumUrl
 		}
 	}
-	//}
 	return respp, nil
 }
 

@@ -199,30 +199,6 @@ func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMovies
 			FullDescription:  mov.FullDescription,
 			ShortDescription: mov.ShortDescription,
 			TitleUrl:         mov.TitleURL,
-			// for j, actor := range movie.Actors {
-			// 	respp[i].ActorsInfo[j].Person.Name = actor.Person.Name
-			// 	respp[i].ActorsInfo[j].Person.Surname = actor.Person.Surname
-			// 	respp[i].ActorsInfo[j].Id = int32(actor.ID)
-			// 	respp[i].ActorsInfo[j].Biography = actor.Biography
-			// 	respp[i].ActorsInfo[j].Post = actor.Post
-			// 	respp[i].ActorsInfo[j].Birthdate = actor.Birthdate.String
-			// 	respp[i].ActorsInfo[j].SmallPhotoUrl = actor.SmallPhotoURL
-			// 	respp[i].ActorsInfo[j].BigPhotoUrl = actor.BigPhotoURL
-			// 	respp[i].ActorsInfo[j].Country = actor.Country
-			// }
-			//for s, season := range movie.Seasons{
-			//	respp[i].Seasons[s].SeasonNumber = int32(season.SeasonNumber)
-			//	for g, ep := range season.Episodes{
-			//	respp[i].Seasons[s].Episodes[g].Id = int64(ep.ID)
-			//	respp[i].Seasons[s].Episodes[g].Description = ep.Description
-			//	respp[i].Seasons[s].Episodes[g].EpisodeNumber = int64(ep.EpisodeNumber)
-			//	respp[i].Seasons[s].Episodes[g].Title = ep.Title
-			//	respp[i].Seasons[s].Episodes[g].Rating = ep.Rating
-			//	respp[i].Seasons[s].Episodes[g].ReleaseDate = ep.ReleaseDate
-			//	respp[i].Seasons[s].Episodes[g].VideoURL = ep.VideoURL
-			//	respp[i].Seasons[s].Episodes[g].PreviewURL = ep.PreviewURL
-			//}
-			//}
 		}
 	}
 	log.Println("resppmovie", respp)
@@ -243,25 +219,10 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 	respp := make([]*movie.ActorInfo, len(actors))
 	for i, v := range actors {
 		respp[i] = &movie.ActorInfo{
-			Id: int32(v.ID),
-			//respp[i].Birthdate = v.Birthdate.String
-			//respp[i].Country = v.Country
+			Id:          int32(v.ID),
 			BigPhotoUrl: v.BigPhotoURL,
-			//respp[i].Biography = v.Biography
-			Name:    v.Person.Name,
-			Surname: v.Person.Surname,
-			//respp[i].Post = v.Post
-			//respp[i].SmallPhotoUrl = v.SmallPhotoURL
-			//for j, mov := range v.Movies {
-			//	respp[i].Movies[j].Id = int32(mov.ID)
-			//	respp[i].Movies[j].Title = mov.Title
-			//	respp[i].Movies[j].Rating = mov.Rating
-			//	respp[i].Movies[j].ReleaseDate = mov.ReleaseDate
-			//	respp[i].Movies[j].Country = mov.Country
-			//	respp[i].Movies[j].MovieType = mov.MovieType
-			//	respp[i].Movies[j].CardUrl = mov.CardURL
-			//	respp[i].Movies[j].AlbumUrl = mov.AlbumURL
-			//}
+			Name:        v.Person.Name,
+			Surname:     v.Person.Surname,
 		}
 
 	}
