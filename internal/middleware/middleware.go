@@ -4,19 +4,38 @@ import (
 	"bytes"
 	"context"
 	"crypto/subtle"
-	"github.com/gorilla/sessions"
 	"io"
+	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/metrics"
+	"github.com/gorilla/sessions"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 )
+
+type statusRecorder struct {
+	http.ResponseWriter
+	Status int
+}
+
+func (rec *statusRecorder) WriteHeader(code int) {
+	rec.Status = code
+	rec.ResponseWriter.WriteHeader(code)
+}
+
+func NewLoggingResponseWriter(w http.ResponseWriter) *statusRecorder {
+	return &statusRecorder{w, http.StatusOK}
+}
 
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 		reqID := r.Header.Get("Req-ID")
 		if reqID == "" {
 			reqID = generateRequestID()
@@ -24,9 +43,16 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 
 		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
 		w.Header().Set("Req-ID", reqID)
-		logRequest(r, start, "accessLogMiddleware", reqID)
+		rec := NewLoggingResponseWriter(w)
+		md := metadata.Pairs(
+			"request_id", reqID,
+		)
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		ctx = metadata.NewOutgoingContext(ctx, md)
+		start := time.Now()
+		next.ServeHTTP(rec, r.WithContext(ctx))
+		status := rec.Status
+		logRequest(r, start, "accessLogMiddleware", reqID, status)
 	})
 }
 
@@ -35,7 +61,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, mode")
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
@@ -63,8 +89,9 @@ func PanicMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
+func logRequest(r *http.Request, start time.Time, msg string, requestID string, status int) {
 	var bodyCopy bytes.Buffer
+	duration := time.Since(start)
 
 	tee := io.TeeReader(r.Body, &bodyCopy)
 	r.Body = io.NopCloser(&bodyCopy)
@@ -79,8 +106,19 @@ func logRequest(r *http.Request, start time.Time, msg string, requestID string) 
 		Str("url", r.URL.Path).
 		Str("request-id", requestID).
 		Bytes("body", bodyBytes).
-		Dur("work_time", time.Since(start)).
+		Dur("work_time", duration).
+		Int("status", status).
+		Str("user_agent", r.UserAgent()).
+		Str("host", r.Host).
+		Str("real_ip", realIP(r)).
+		Int64("content_length", r.ContentLength).
+		Str("start_time", start.Format(time.RFC3339)).
+		Str("duration_human", duration.String()).
+		Int64("duration_ms", duration.Milliseconds()).
 		Msg(msg)
+
+	metrics.HTTPRequestTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(status)).Inc()
+	metrics.HTTPRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration.Seconds())
 }
 
 func sanitizeInput(input string) string {
@@ -135,4 +173,20 @@ func CsrfMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func realIP(r *http.Request) string {
+	rIP := r.Header.Get("X-Real-IP")
+	if rIP == "" {
+		rIP = r.Header.Get("X-Forwarded-For")
+		if rIP != "" {
+			rIP = strings.Split(rIP, ",")[0]
+		}
+	}
+
+	if rIP == "" {
+		rIP, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+
+	return rIP
 }

@@ -95,3 +95,33 @@ func (mr *MockMovieServiceInterfaceMockRecorder) GetMovieByGenre(ctx, genre inte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByGenre", reflect.TypeOf((*MockMovieServiceInterface)(nil).GetMovieByGenre), ctx, genre)
 }
+
+// SearchActors mocks base method.
+func (m *MockMovieServiceInterface) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchActors", ctx, query)
+	ret0, _ := ret[0].([]models.ActorInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchActors indicates an expected call of SearchActors.
+func (mr *MockMovieServiceInterfaceMockRecorder) SearchActors(ctx, query interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchActors", reflect.TypeOf((*MockMovieServiceInterface)(nil).SearchActors), ctx, query)
+}
+
+// SearchMovies mocks base method.
+func (m *MockMovieServiceInterface) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchMovies", ctx, query)
+	ret0, _ := ret[0].([]models.MovieInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchMovies indicates an expected call of SearchMovies.
+func (mr *MockMovieServiceInterfaceMockRecorder) SearchMovies(ctx, query interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieServiceInterface)(nil).SearchMovies), ctx, query)
+}

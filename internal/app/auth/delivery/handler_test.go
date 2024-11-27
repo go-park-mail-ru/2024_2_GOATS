@@ -56,7 +56,7 @@ func TestDelivery_Register(t *testing.T) {
 		{
 			name:       "Service Error",
 			req:        `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "123456789"}`,
-			mockErr:    errVals.NewServiceError(errVals.ErrGenerateTokenCode, errVals.CustomError{Err: errors.New("some token error")}),
+			mockErr:    errVals.NewServiceError(errVals.ErrGenerateTokenCode, errors.New("some token error")),
 			statusCode: http.StatusInternalServerError,
 			resp:       `{"errors":[{"code":"auth_token_generation_error","error":"some token error"}]}`,
 		},
@@ -72,7 +72,7 @@ func TestDelivery_Register(t *testing.T) {
 			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "12345678910"}`,
 			mockErr: &errVals.ServiceError{
 				Code:  errVals.ErrInvalidPasswordCode,
-				Error: errVals.CustomError{Err: errVals.ErrInvalidPasswordsMatch.Err},
+				Error: errVals.ErrInvalidPasswordsMatch.Err,
 			},
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
@@ -139,7 +139,7 @@ func TestDelivery_Login(t *testing.T) {
 		{
 			req:        `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, (errVals.NewCustomError(errVals.ErrInvalidPasswordsMatch.Err.Error()))),
+			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err),
 			resp:       `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
@@ -190,17 +190,17 @@ func TestDelivery_Logout(t *testing.T) {
 			name:       "Success",
 			mockReturn: &models.AuthRespData{},
 			statusCode: http.StatusOK,
-			resp:       `{}`,
+			resp:       ``,
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrRedisClearCode, errVals.CustomError{Err: errors.New("some redis error")}),
+			mockErr:    errVals.NewServiceError(errVals.ErrRedisClearCode, errors.New("some redis error")),
 			statusCode: http.StatusInternalServerError,
 			resp:       `{"errors":[{"code":"failed_delete_from_redis","error":"some redis error"}]}`,
 		},
 		{
 			name:         "Validation Error",
-			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.CustomError{Err: errVals.ErrBrokenCookie.Err}),
+			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.ErrBrokenCookie.Err),
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,
@@ -234,7 +234,7 @@ func TestDelivery_Logout(t *testing.T) {
 
 			if !test.isValidation {
 				req.Header.Set("Cookie", "session_id=some_cookie")
-				mAuthSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				mAuthSrv.EXPECT().Logout(gomock.Any(), gomock.Any()).Return(test.mockErr)
 			} else if test.emptyCookie {
 				req.Header.Set("Cookie", "session_id=")
 			}
@@ -242,7 +242,12 @@ func TestDelivery_Logout(t *testing.T) {
 			r.ServeHTTP(w, req)
 
 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
-			assert.JSONEq(t, test.resp, w.Body.String())
+
+			if test.resp != "" {
+				assert.JSONEq(t, test.resp, w.Body.String())
+			} else {
+				assert.Equal(t, test.resp, w.Body.String())
+			}
 		})
 	}
 }
@@ -274,7 +279,7 @@ func TestDelivery_Session(t *testing.T) {
 			name: "Service Error",
 			mockErr: errVals.NewServiceError(
 				errVals.ErrCreateUserCode,
-				errVals.CustomError{Err: errors.New("cannot get cookie from redis")},
+				errors.New("cannot get cookie from redis"),
 			),
 			resp:       `{"errors":[{"code":"create_user_error","error":"cannot get cookie from redis"}]}`,
 			statusCode: http.StatusInternalServerError,

@@ -52,12 +52,11 @@ func (mr *MockAuthServiceInterfaceMockRecorder) Login(ctx, loginData interface{}
 }
 
 // Logout mocks base method.
-func (m *MockAuthServiceInterface) Logout(ctx context.Context, cookie string) (*models.AuthRespData, *errors.ServiceError) {
+func (m *MockAuthServiceInterface) Logout(ctx context.Context, cookie string) *errors.ServiceError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Logout", ctx, cookie)
-	ret0, _ := ret[0].(*models.AuthRespData)
-	ret1, _ := ret[1].(*errors.ServiceError)
-	return ret0, ret1
+	ret0, _ := ret[0].(*errors.ServiceError)
+	return ret0
 }
 
 // Logout indicates an expected call of Logout.

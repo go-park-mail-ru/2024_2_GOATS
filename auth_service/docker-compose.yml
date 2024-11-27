@@ -1,0 +1,23 @@
+volumes:
+  redis:
+
+services:
+  auth_app:
+    build:
+      context: ..
+      dockerfile: auth_service/Dockerfile
+    restart: always
+    networks:
+      - cassette-world
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    container_name: redis
+    volumes:
+      - redis:/data
+    networks:
+      - cassette-world
+networks:
+  cassette-world:
+    external:
+      name: cassette-world

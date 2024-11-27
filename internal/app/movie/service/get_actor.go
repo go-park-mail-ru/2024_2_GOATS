@@ -2,16 +2,19 @@ package service
 
 import (
 	"context"
-
+	"errors"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
 func (s *MovieService) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errVals.ServiceError) {
-	actor, err := s.movieRepository.GetActor(ctx, actorID)
+	actor, err := s.movieClient.GetActor(ctx, actorID)
 
 	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		return nil, &errVals.ServiceError{
+			Code:  "ACTOR_NOT_FOUND",
+			Error: errors.New("internal server error"),
+		}
 	}
 
 	return actor, nil

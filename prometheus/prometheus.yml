@@ -1,0 +1,28 @@
+global:
+  scrape_interval:     10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: "facade_app"
+    static_configs:
+      - targets: ['facade_app:8080']
+
+  - job_name: "user_app"
+    static_configs:
+      - targets: ['user_app:9082']
+
+  - job_name: "auth_app"
+    static_configs:
+      - targets: ['auth_app:9081']
+
+  - job_name: "movie_app"
+    static_configs:
+      - targets: ['movie_app:9083']
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  - job_name: "node"
+    static_configs:
+      - targets: ['83.166.232.3:9100']

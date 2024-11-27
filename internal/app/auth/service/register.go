@@ -2,30 +2,29 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/converter"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/cookie"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
 func (s *AuthService) Register(ctx context.Context, registerData *models.RegisterData) (*models.AuthRespData, *errVals.ServiceError) {
-	usr, err := s.userRepository.CreateUser(ctx, converter.ConvertToRepoRegister(registerData))
+	usrId, err := s.userClient.Create(ctx, registerData)
 	if err != nil {
-		return nil, errVals.ToServiceErrorFromRepo(err)
+		if strings.Contains(err.Error(), errVals.DuplicateErrCode) {
+			return nil, errVals.NewServiceError(errVals.DuplicateErrCode, fmt.Errorf("failed to register: %w", err))
+		}
+
+		return nil, errVals.NewServiceError(errVals.ErrCreateUserCode, fmt.Errorf("failed to register: %w", err))
 	}
 
-	token, errVal := cookie.GenerateToken(ctx, usr.ID)
-	if errVal != nil {
-		return nil, errVals.NewServiceError(errVals.ErrGenerateTokenCode, errVals.NewCustomError(errVal.Error()))
-	}
-
-	ck, errCk := s.authRepository.SetCookie(ctx, token)
-	if errCk != nil {
-		return nil, errVals.ToServiceErrorFromRepo(errCk)
+	ckData, err := s.authClient.CreateSession(ctx, usrId)
+	if err != nil {
+		return nil, errVals.NewServiceError(errVals.ErrCreateSessionCode, fmt.Errorf("failed to regisyer: %w", err))
 	}
 
 	return &models.AuthRespData{
-		NewCookie: ck,
+		NewCookie: ckData,
 	}, nil
 }

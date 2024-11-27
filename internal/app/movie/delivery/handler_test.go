@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,7 +16,7 @@ import (
 )
 
 const (
-	mvCollPath = "/api/movie/movie_collections"
+	mvCollPath = "/api/movie_service/movie_collections"
 	actorsPath = "/api/actors/1"
 	moviePath  = "/api/movies/1"
 )
@@ -38,18 +39,18 @@ func TestDelivery_GetCollection(t *testing.T) {
 						Movies: []*models.MovieShortInfo{
 							{
 								ID:    1,
-								Title: "test movie",
+								Title: "test movie_service",
 							},
 						},
 					},
 				},
 			},
-			resp:       `{"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
+			resp:       `{"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie_service","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
 			statusCode: http.StatusOK,
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
@@ -105,12 +106,12 @@ func TestDelivery_GetMovie(t *testing.T) {
 				VideoURL:        "video_link",
 				Director:        &models.DirectorInfo{},
 			},
-			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[], "seasons":null}}`,
+			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[],"seasons":null,"is_favorite":false}}`,
 			statusCode: http.StatusOK,
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},
@@ -178,7 +179,7 @@ func TestDelivery_GetActor(t *testing.T) {
 		},
 		{
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errVals.NewCustomError("Some database error")),
+			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
 			statusCode: http.StatusInternalServerError,
 		},

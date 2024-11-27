@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,8 +14,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
-
-var _ handlers.MovieHandlerInterface = (*MovieHandler)(nil)
 
 const (
 	genresFilter = "genres"
@@ -30,39 +29,41 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 	}
 }
 
-func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
-	logger := log.Ctx(r.Context())
-	genre := r.URL.Query().Get("genre")
+// TODO раскоментить к 4му РК
 
-	if genre == "" {
-		errMsg := errors.New("incorrect genre was given")
-		err := errVals.NewDeliveryError(
-			http.StatusBadRequest,
-			[]errVals.ErrorItem{
-				errVals.NewErrorItem("bad_request", errVals.NewCustomError(errMsg.Error())),
-			},
-		)
+// func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
+// 	logger := log.Ctx(r.Context())
+// 	genre := r.URL.Query().Get("genre")
 
-		logger.Error().Err(errMsg).Interface("getMovieByGenre", err).Msg("request_failed")
-		api.Response(r.Context(), w, err.HTTPStatus, err)
+// 	if genre == "" {
+// 		errMsg := errors.New("incorrect genre was given")
+// 		err := errVals.NewDeliveryError(
+// 			http.StatusBadRequest,
+// 			[]errVals.ErrorItem{
+// 				errVals.NewErrorItem("bad_request", errVals.NewCustomError(errMsg.Error())),
+// 			},
+// 		)
 
-		return
-	}
+// 		logger.Error().Err(errMsg).Interface("getMovieByGenre", err).Msg("request_failed")
+// 		api.Response(r.Context(), w, err.HTTPStatus, err)
 
-	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
-	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
-	if errResp != nil {
-		errMsg := errors.New("failed to get movies by genre")
-		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
-		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+// 		return
+// 	}
 
-		return
-	}
+// 	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
+// 	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
+// 	if errResp != nil {
+// 		errMsg := errors.New("failed to get movies by genre")
+// 		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
+// 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
-	logger.Info().Interface("getMovieByGenre", resp).Msg("byGenre success")
+// 		return
+// 	}
 
-	api.Response(r.Context(), w, http.StatusOK, resp)
-}
+// 	logger.Info().Interface("getMovieByGenre", resp).Msg("byGenre success")
+
+// 	api.Response(r.Context(), w, http.StatusOK, resp)
+// }
 
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
 	m.collectMovieData(w, r, "")
@@ -106,7 +107,7 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
-		errMsg := errors.New("failed to get movie")
+		errMsg := errors.New("failed to get movie_service")
 		logger.Error().Err(errMsg).Interface("getMovieResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
@@ -143,4 +144,74 @@ func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	logger.Info().Interface("actorResp", actorResp).Msg("getActor success")
 
 	api.Response(r.Context(), w, http.StatusOK, actorResp)
+}
+
+func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		http.Error(w, "query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	movies, err := h.movieService.SearchMovies(r.Context(), query)
+	if err != nil {
+		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var movieResponses []map[string]interface{}
+	if len(movies) == 0 {
+		movieResponses = append(movieResponses, map[string]interface{}{})
+	}
+	for _, movie := range movies {
+		movieResponses = append(movieResponses, map[string]interface{}{
+			"id":           movie.ID,
+			"title":        movie.Title,
+			"card_url":     movie.CardURL,
+			"album_url":    movie.AlbumURL,
+			"rating":       strconv.FormatFloat(float64(movie.Rating), 'f', -1, 32),
+			"release_date": movie.ReleaseDate,
+			"movie_type":   movie.MovieType,
+			"country":      movie.Country,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(movieResponses); err != nil {
+		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		http.Error(w, "query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	actors, err := h.movieService.SearchActors(r.Context(), query)
+	if err != nil {
+		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var actorResponses []map[string]interface{}
+
+	if len(actors) == 0 {
+		actorResponses = append(actorResponses, map[string]interface{}{})
+	}
+
+	for _, actor := range actors {
+		actorResponses = append(actorResponses, map[string]interface{}{
+			"id":        actor.ID,
+			"full_name": actor.Name,
+			"photo_url": actor.BigPhotoURL,
+			"country":   actor.Country,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(actorResponses); err != nil {
+		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+	}
 }

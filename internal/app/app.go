@@ -2,41 +2,42 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
+
+	"log"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
+	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
-	authRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/repository"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
+
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
-	movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/repository"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
-	userRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
+	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type App struct {
-	Database          *sql.DB
-	Redis             *redis.Client
-	Server            *http.Server
-	Mux               *mux.Router
+	Config            *config.Config
 	Logger            *zerolog.Logger
+	Server            *http.Server
 	AcceptConnections bool
 }
 
@@ -49,59 +50,90 @@ func New(isTest bool) (*App, error) {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
 
-	ctx := config.WrapContext(context.Background(), cfg)
-	ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
+	return &App{
+		Config: cfg,
+		Logger: &logger,
+	}, nil
+}
 
-	database, err := db.SetupDatabase(ctxDBTimeout, cancel)
+func (a *App) Run() {
+	ctx := config.WrapContext(context.Background(), a.Config)
+	aGrpcConn, err := grpc.NewClient(
+		"auth_app:8081",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("error initialize database: %w", err)
+		log.Fatalf("cant connect to grpc")
 	}
 
-	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
-	rdb := redis.NewClient(&redis.Options{Addr: addr})
+	defer aGrpcConn.Close()
 
-	repoUser := userRepo.NewUserRepository(database)
-	srvUser := userServ.NewUserService(repoUser)
+	uGrpcConn, err := grpc.NewClient(
+		"user_app:8082",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer uGrpcConn.Close()
+
+	mGrpcConn, err := grpc.NewClient(
+		"movie_app:8083",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer mGrpcConn.Close()
+
+	sessManager := client.NewAuthClient(auth.NewSessionRPCClient(aGrpcConn))
+	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
+	mvManager := client.NewMovieClient(movie.NewMovieServiceClient(mGrpcConn))
+
+	srvUser := userServ.NewUserService(usrManager, mvManager)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
 
-	repoAuth := authRepo.NewAuthRepository(database, rdb)
-	srvAuth := authServ.NewAuthService(repoAuth, repoUser)
+	srvAuth := authServ.NewAuthService(sessManager, usrManager)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	repoMov := movieRepo.NewMovieRepository(database)
-	srvMov := movieServ.NewMovieService(repoMov, repoUser)
+	srvMov := movieServ.NewMovieService(mvManager, usrManager)
 	delMov := movieApi.NewMovieHandler(srvMov)
+
+	// repoRoom := roomRepo.NewRepository(database, rdb)
+	// srvRoom := roomServ.NewService(repoRoom, srvMov)
+	// roomHub := ws.NewRoomHub()
+	// delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+
+	// go roomHub.Run() // Запуск обработчика Hub'a
 
 	mx := mux.NewRouter()
 	authMW := middleware.NewSessionMiddleware(srvAuth)
 	router.UseCommonMiddlewares(mx, authMW)
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
-	router.SetupMovie(delMov, mx)
 	router.SetupUser(delUser, mx)
+	router.SetupMovie(delMov, mx)
+
+	mx.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
+
+	ctxValues := config.FromContext(ctx)
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.Listener.Port),
+		Addr:         fmt.Sprintf(":%d", ctxValues.Listener.Port),
 		Handler:      mx,
-		ReadTimeout:  cfg.Listener.Timeout,
-		WriteTimeout: cfg.Listener.Timeout,
-		IdleTimeout:  cfg.Listener.IdleTimeout,
+		ReadTimeout:  ctxValues.Listener.Timeout,
+		WriteTimeout: ctxValues.Listener.Timeout,
+		IdleTimeout:  ctxValues.Listener.IdleTimeout,
 	}
 
-	return &App{
-		Database: database,
-		Redis:    rdb,
-		Server:   srv,
-		Logger:   &logger,
-		Mux:      mx,
-	}, nil
-}
+	a.Server = srv
+	mx.Use(a.AppReadyMiddleware)
 
-func (a *App) Run() {
-	a.Mux.Use(a.AppReadyMiddleware)
-
-	a.Logger.Info().Msgf("Server is listening: %s", a.Server.Addr)
+	a.Logger.Info().Msgf("Server is listening: %s", srv.Addr)
 
 	// Not ready yet
 	defer func() {
@@ -111,7 +143,7 @@ func (a *App) Run() {
 	}()
 
 	a.AcceptConnections = true
-	if err := a.Server.ListenAndServe(); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			a.Logger.Info().Msg("server closed under request")
 		} else {
@@ -123,39 +155,6 @@ func (a *App) Run() {
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
 	a.Logger.Info().Msg("Starting graceful shutdown")
-
-	var wg sync.WaitGroup
-	errChan := make(chan error, 2)
-
-	shutdownFuncs := []func() error{
-		a.Database.Close,
-		a.Redis.Close,
-	}
-
-	wg.Add(len(shutdownFuncs))
-
-	for _, shutdownFunc := range shutdownFuncs {
-		go func(shutdownFunc func() error) {
-			defer wg.Done()
-			if err := shutdownFunc(); err != nil {
-				errChan <- err
-			}
-		}(shutdownFunc)
-	}
-
-	wg.Wait()
-	close(errChan)
-
-	var errs []error
-	for err := range errChan {
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) > 0 {
-		return fmt.Errorf("shutdown errors: %v", errs)
-	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

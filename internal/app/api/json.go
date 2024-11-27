@@ -46,7 +46,7 @@ func Response(ctx context.Context, w http.ResponseWriter, code int, obj interfac
 	w.WriteHeader(code)
 	_, writeErr := w.Write(buf.Bytes())
 	if writeErr != nil {
-		logger.Error().Err(writeErr).Msg("error while writing response to client")
+		logger.Error().Err(writeErr).Msg("error while writing response to clients")
 	}
 }
 

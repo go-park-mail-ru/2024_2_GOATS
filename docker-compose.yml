@@ -1,39 +1,17 @@
 volumes:
-  postgres_volume:
-  redis:
+  grafana-data:
 
 services:
-  app:
+  facade_app:
     build:
       context: ./
       dockerfile: Dockerfile
     restart: always
-    volumes:
-      - /home/ubuntu/images:/home/ubuntu/images
     ports:
       - 8080:8080
     networks:
       - cassette-world
-  redis:
-    image: 'redis:latest'
-    command: redis-server
-    container_name: redis
-    volumes:
-      - redis:/data
-    networks:
-      - cassette-world
-  db:
-    image: postgres:latest
-    container_name: db
-    environment:
-      - "POSTGRES_DB=cassette-world"
-      - "POSTGRES_USER=test"
-      - "POSTGRES_PASSWORD=test"
-    volumes:
-      - ./dev/SQL:/docker-entrypoint-initdb.d/
-      - "postgres_volume:/var/lib/postgresql/data"
-    networks:
-      - cassette-world
+
   nginx:
     build: ./nginx
     volumes:
@@ -44,13 +22,49 @@ services:
     ports:
       - 80:80
     depends_on:
-      - app
+      - facade_app
     restart: "always"
     networks:
       - cassette-world
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: "always"
+    networks:
+      - cassette-world
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: "always"
+    networks:
+      - cassette-world
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    pid: "host"
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+
 networks:
   cassette-world:
-  default:
     external:
-      name: cassette-world # Не забыть создать сеть перед деплоем
+      name: cassette-world

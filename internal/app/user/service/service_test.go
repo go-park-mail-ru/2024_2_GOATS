@@ -1,211 +1,310 @@
-package service
+package service_test
 
 import (
 	"context"
 	"errors"
-	"os"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/bcrypt"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/password"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/converter"
-	mockRep "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
+	clMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 )
 
-func TestUserService_UpdatePassword(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mUsrRep := mockRep.NewMockUserRepositoryInterface(ctrl)
-	userService := NewUserService(mUsrRep)
-	hashedPasswd, err := password.HashAndSalt(context.Background(), "oldpassword")
-	assert.NoError(t, err)
-
+func TestUpdatePassword(t *testing.T) {
 	tests := []struct {
-		name          string
-		passwordData  *models.PasswordData
-		mockUser      *models.User
-		mockUserErr   *errVals.RepoError
-		mockUpdateErr *errVals.RepoError
-		expectedError *errVals.ServiceError
-		tryUpdate     bool
+		name           string
+		setupMocks     func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData)
+		passwordData   *models.PasswordData
+		expectedErr    error
+		expectedErrMsg string
 	}{
 		{
 			name: "Success",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData) {
+				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("old_password"), bcrypt.DefaultCost)
+				mockUser := &models.User{
+					ID:       1,
+					Password: string(hashedPassword),
+				}
+				mockUserClient.EXPECT().FindByID(ctx, uint64(1)).Return(mockUser, nil)
+				mockUserClient.EXPECT().UpdatePassword(ctx, passwordData).Return(nil)
+			},
 			passwordData: &models.PasswordData{
 				UserID:               1,
-				OldPassword:          "oldpassword",
-				Password:             "newpassword",
-				PasswordConfirmation: "newpassword",
+				OldPassword:          "old_password",
+				Password:             "new_password",
+				PasswordConfirmation: "new_password",
 			},
-			mockUser: &models.User{
-				ID:       1,
-				Password: hashedPasswd,
-			},
-			tryUpdate: true,
+			expectedErr: nil,
 		},
 		{
-			name: "User not found",
-			passwordData: &models.PasswordData{
-				UserID:               2,
-				OldPassword:          "somepassword",
-				Password:             "newpassword",
-				PasswordConfirmation: "newpassword",
+			name: "InvalidOldPassword",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData) {
+				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("old_password"), bcrypt.DefaultCost)
+				mockUser := &models.User{
+					ID:       1,
+					Password: string(hashedPassword),
+				}
+				mockUserClient.EXPECT().FindByID(ctx, uint64(1)).Return(mockUser, nil)
 			},
-			mockUserErr: &errVals.RepoError{
-				Code:  "user_not_found",
-				Error: errVals.CustomError{Err: errors.New("user not found")},
-			},
-			expectedError: &errVals.ServiceError{
-				Code:  "user_not_found",
-				Error: errVals.CustomError{Err: errors.New("user not found")},
-			},
-		},
-		{
-			name: "Invalid old password",
 			passwordData: &models.PasswordData{
 				UserID:               1,
-				OldPassword:          "wrongpassword",
-				Password:             "newpassword",
-				PasswordConfirmation: "newpassword",
+				OldPassword:          "wrong_password",
+				Password:             "new_password",
+				PasswordConfirmation: "new_password",
 			},
-			mockUser: &models.User{
-				ID:       1,
-				Password: hashedPasswd,
-			},
-			expectedError: &errVals.ServiceError{
-				Code:  errVals.ErrInvalidPasswordCode,
-				Error: errVals.ErrInvalidOldPassword,
-			},
+			expectedErr:    errVals.ErrInvalidOldPassword.Err,
+			expectedErrMsg: errVals.ErrInvalidOldPassword.Err.Error(),
 		},
 		{
-			name: "Repository update error",
+			name: "FailureOnFindByID",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData) {
+				mockUserClient.EXPECT().FindByID(ctx, uint64(1)).Return(nil, errors.New("user not found"))
+			},
 			passwordData: &models.PasswordData{
 				UserID:               1,
-				OldPassword:          "oldpassword",
-				Password:             "newpassword",
-				PasswordConfirmation: "newpassword",
+				OldPassword:          "old_password",
+				Password:             "new_password",
+				PasswordConfirmation: "new_password",
 			},
-			mockUser: &models.User{
-				ID:       1,
-				Password: hashedPasswd,
+			expectedErr:    errors.New("user not found"),
+			expectedErrMsg: "user not found",
+		},
+		{
+			name: "FailureOnUpdatePassword",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData) {
+				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("old_password"), bcrypt.DefaultCost)
+				mockUser := &models.User{
+					ID:       1,
+					Password: string(hashedPassword),
+				}
+				mockUserClient.EXPECT().FindByID(ctx, uint64(1)).Return(mockUser, nil)
+				mockUserClient.EXPECT().UpdatePassword(ctx, passwordData).Return(errors.New("update failed"))
 			},
-			mockUpdateErr: &errVals.RepoError{
-				Code:  "update_failed",
-				Error: errVals.CustomError{Err: errors.New("failed to update password")},
+			passwordData: &models.PasswordData{
+				UserID:               1,
+				OldPassword:          "old_password",
+				Password:             "new_password",
+				PasswordConfirmation: "new_password",
 			},
-			expectedError: &errVals.ServiceError{
-				Code:  "update_failed",
-				Error: errVals.CustomError{Err: errors.New("failed to update password")},
-			},
-			tryUpdate: true,
+			expectedErr:    errors.New("update failed"),
+			expectedErrMsg: "update failed",
 		},
 	}
 
-	ctx := context.Background()
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.mockUserErr != nil {
-				mUsrRep.EXPECT().UserByID(ctx, tt.passwordData.UserID).Return(nil, tt.mockUserErr)
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
+
+			ctx := context.Background()
+			tt.setupMocks(mockUserClient, ctx, tt.passwordData)
+
+			err := userService.UpdatePassword(ctx, tt.passwordData)
+
+			if tt.expectedErr == nil {
+				assert.Nil(t, err)
 			} else {
-				mUsrRep.EXPECT().UserByID(ctx, tt.passwordData.UserID).Return(tt.mockUser, nil)
-			}
-
-			if tt.mockUserErr == nil && tt.tryUpdate {
-				mUsrRep.EXPECT().UpdatePassword(ctx, tt.passwordData.UserID, gomock.Any()).Return(tt.mockUpdateErr)
-			}
-
-			errData := userService.UpdatePassword(ctx, tt.passwordData)
-
-			if tt.expectedError != nil {
-				assert.Equal(t, tt.expectedError, errData)
-			} else {
-				assert.Nil(t, errData)
+				assert.NotNil(t, err)
+				assert.Contains(t, err.Error.Error(), tt.expectedErrMsg)
 			}
 		})
 	}
 }
 
-func TestUserService_UpdateProfile(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mUsrRep := mockRep.NewMockUserRepositoryInterface(ctrl)
-	userService := NewUserService(mUsrRep)
-
+func TestUpdateProfile(t *testing.T) {
 	tests := []struct {
-		name          string
-		usrData       *models.User
-		mockAvatarErr *errVals.RepoError
-		mockUpdateErr *errVals.RepoError
-		expectedError *errVals.ServiceError
+		name           string
+		setupMocks     func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, usrData *models.User)
+		usrData        *models.User
+		expectedErr    error
+		expectedErrMsg string
 	}{
-		// {
-		// 	name: "Success with avatar",
-		// 	usrData: &models.User{
-		// 		ID:         1,
-		// 		AvatarName: "avatar.png",
-		// 		Email:      "test@mail.ru",
-		// 		Username:   "hello world",
-		// 	},
-		// },
 		{
-			name: "Success without avatar",
+			name: "Success",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, usrData *models.User) {
+				mockUserClient.EXPECT().UpdateProfile(ctx, usrData).Return(nil)
+			},
 			usrData: &models.User{
 				ID:         1,
-				AvatarName: "",
-				Email:      "test@mail.ru",
-				Username:   "hello world",
+				Email:      "test@example.com",
+				Username:   "testuser",
+				AvatarURL:  "/static/avatars/avatar.png",
+				AvatarName: "avatar.png",
 			},
+			expectedErr: nil,
 		},
-		// {
-		// 	name: "Error updating profile",
-		// 	usrData: &models.User{
-		// 		ID:         1,
-		// 		AvatarName: "avatar.png",
-		// 		Email:      "test@mail.ru",
-		// 		Username:   "hello world",
-		// 	},
-		// 	mockUpdateErr: &errVals.RepoError{
-		// 		Code:  "update_failed",
-		// 		Error: errVals.CustomError{Err: errors.New("failed to update profile")},
-		// 	},
-		// 	expectedError: &errVals.ServiceError{
-		// 		Code:  "update_failed",
-		// 		Error: errVals.CustomError{Err: errors.New("failed to update profile")},
-		// 	},
-		// },
+		{
+			name: "UpdateProfileError",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, usrData *models.User) {
+				mockUserClient.EXPECT().UpdateProfile(ctx, usrData).Return(errors.New("update failed"))
+			},
+			usrData: &models.User{
+				ID:         2,
+				Email:      "user2@example.com",
+				Username:   "user2",
+				AvatarURL:  "/static/avatars/user2.png",
+				AvatarName: "user2.png",
+			},
+			expectedErr:    errors.New("update failed"),
+			expectedErrMsg: "update_profile_error",
+		},
 	}
 
-	ctx := context.Background()
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.mockAvatarErr != nil {
-				mUsrRep.EXPECT().SaveUserAvatar(ctx, converter.ToRepoUserFromUser(tt.usrData)).Return("", tt.mockAvatarErr)
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
+
+			ctx := context.Background()
+			tt.setupMocks(mockUserClient, ctx, tt.usrData)
+
+			err := userService.UpdateProfile(ctx, tt.usrData)
+
+			if tt.expectedErr == nil {
+				assert.Nil(t, err)
 			} else {
-				if tt.usrData.AvatarName != "" {
-					tempFile, err := os.CreateTemp("", tt.usrData.AvatarName)
-					require.NoError(t, err)
-					mUsrRep.EXPECT().SaveUserAvatar(ctx, tt.usrData.AvatarName).Return("http://example.com/avatar.png", tempFile, nil)
-				}
+				assert.NotNil(t, err)
+				assert.Equal(t, tt.expectedErrMsg, err.Code)
 			}
+		})
+	}
+}
 
-			if tt.mockUpdateErr != nil {
-				mUsrRep.EXPECT().UpdateProfileData(ctx, converter.ToRepoUserFromUser(tt.usrData)).Return(tt.mockUpdateErr)
-			} else if tt.mockAvatarErr == nil {
-				mUsrRep.EXPECT().UpdateProfileData(ctx, converter.ToRepoUserFromUser(tt.usrData)).Return(nil)
-			}
+func TestResetFavorite(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupMocks     func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, favData *models.Favorite)
+		favData        *models.Favorite
+		expectedErr    error
+		expectedErrMsg string
+	}{
+		{
+			name: "Success",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, favData *models.Favorite) {
+				mockUserClient.EXPECT().ResetFavorite(ctx, favData).Return(nil)
+			},
+			favData: &models.Favorite{
+				UserID:  1,
+				MovieID: 100,
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "ResetFavoriteError",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, favData *models.Favorite) {
+				mockUserClient.EXPECT().ResetFavorite(ctx, favData).Return(errors.New("reset failed"))
+			},
+			favData: &models.Favorite{
+				UserID:  2,
+				MovieID: 200,
+			},
+			expectedErr:    errors.New("reset failed"),
+			expectedErrMsg: "failed_to_reset_favorite",
+		},
+	}
 
-			errData := userService.UpdateProfile(ctx, tt.usrData)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-			if tt.expectedError != nil {
-				assert.Equal(t, tt.expectedError, errData)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
+
+			ctx := context.Background()
+			tt.setupMocks(mockUserClient, ctx, tt.favData)
+
+			err := userService.ResetFavorite(ctx, tt.favData)
+
+			if tt.expectedErr == nil {
+				assert.Nil(t, err)
 			} else {
-				assert.Nil(t, errData)
+				assert.NotNil(t, err)
+				assert.Equal(t, tt.expectedErrMsg, err.Code)
+			}
+		})
+	}
+}
+
+func TestAddFavorite(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupMocks     func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, favData *models.Favorite)
+		favData        *models.Favorite
+		expectedErr    error
+		expectedErrMsg string
+	}{
+		{
+			name: "Success",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, favData *models.Favorite) {
+				mockUserClient.EXPECT().SetFavorite(ctx, favData).Return(nil)
+			},
+			favData: &models.Favorite{
+				UserID:  1,
+				MovieID: 1,
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "SetFavoriteError",
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, favData *models.Favorite) {
+				mockUserClient.EXPECT().SetFavorite(ctx, favData).Return(errors.New("set favorite failed"))
+			},
+			favData: &models.Favorite{
+				UserID:  2,
+				MovieID: 2,
+			},
+			expectedErr:    errors.New("set favorite failed"),
+			expectedErrMsg: "failed_to_set_favorite",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
+
+			ctx := context.Background()
+			tt.setupMocks(mockUserClient, ctx, tt.favData)
+
+			err := userService.AddFavorite(ctx, tt.favData)
+
+			if tt.expectedErr == nil {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tt.expectedErrMsg, err.Code)
 			}
 		})
 	}

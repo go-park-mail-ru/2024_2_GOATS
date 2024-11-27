@@ -1,31 +1,21 @@
 package service
 
 import (
-	"context"
-
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
-	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
-	usrServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 )
 
-var _ delivery.AuthServiceInterface = (*AuthService)(nil)
-
-//go:generate mockgen -source=service.go -destination=mocks/mock.go
-type AuthRepositoryInterface interface {
-	DestroySession(ctx context.Context, cookie string) *errVals.RepoError
-	SetCookie(ctx context.Context, token *models.Token) (*models.CookieData, *errVals.RepoError)
-	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError)
-}
-
 type AuthService struct {
-	authRepository AuthRepositoryInterface
-	userRepository usrServ.UserRepositoryInterface
+	authClient client.AuthClientInterface
+	userClient client.UserClientInterface
 }
 
-func NewAuthService(authRepo AuthRepositoryInterface, usrRepo usrServ.UserRepositoryInterface) delivery.AuthServiceInterface {
+func NewAuthService(
+	authClient client.AuthClientInterface,
+	usrClient client.UserClientInterface,
+) delivery.AuthServiceInterface {
 	return &AuthService{
-		authRepository: authRepo,
-		userRepository: usrRepo,
+		authClient: authClient,
+		userClient: usrClient,
 	}
 }
