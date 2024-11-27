@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/actordb"
@@ -11,7 +12,9 @@ import (
 )
 
 func (r *MovieRepo) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
+	log.Println("qwer")
 	actor, err := actordb.FindByID(ctx, actorID, r.Database)
+	log.Println("qwer", actor)
 	if err != nil {
 		return nil, fmt.Errorf("getActorRepoError: %w", err)
 	}
@@ -22,6 +25,7 @@ func (r *MovieRepo) GetActor(ctx context.Context, actorID int) (*models.ActorInf
 	}
 
 	actMvs, err := moviedb.ScanActorMoviesConnections(rows)
+	log.Println("actMvs", actMvs)
 	if err != nil {
 		return nil, fmt.Errorf("getActorRepoError: %w", err)
 	}

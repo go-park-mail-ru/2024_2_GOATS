@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	usrSrv "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
+	"log"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
@@ -99,7 +100,7 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 
 func (s *MovieService) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	actor, err := s.movieRepository.GetActor(ctx, actorID)
-
+	log.Println("actorServ", actor)
 	if err != nil {
 		return nil, fmt.Errorf("movieService.GetActor: %w", err)
 	}

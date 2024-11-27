@@ -5,6 +5,7 @@ import (
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 )
 
 type MovieHandler struct {
@@ -28,16 +29,18 @@ func (h *MovieHandler) GetMovieByGenre(ctx context.Context, req *movie.GetMovieB
 		return nil, err
 	}
 
-	var respp []*movie.MovieShortInfo
-	for i, movie := range movies {
-		respp[i].Id = int32(movie.ID)
-		respp[i].CardUrl = movie.CardURL
-		respp[i].MovieType = movie.MovieType
-		respp[i].AlbumUrl = movie.AlbumURL
-		respp[i].Title = movie.Title
-		respp[i].Country = movie.Country
-		respp[i].ReleaseDate = movie.ReleaseDate
-		respp[i].Rating = movie.Rating
+	respp := make([]*movie.MovieShortInfo, len(movies))
+	for i, mov := range movies {
+		respp[i] = &movie.MovieShortInfo{
+			Id:          int32(mov.ID),
+			CardUrl:     mov.CardURL,
+			MovieType:   mov.MovieType,
+			AlbumUrl:    mov.AlbumURL,
+			Title:       mov.Title,
+			Country:     mov.Country,
+			ReleaseDate: mov.ReleaseDate,
+			Rating:      mov.Rating,
+		}
 	}
 
 	return &movie.GetMovieByGenreResponse{Movies: respp}, nil
@@ -52,8 +55,9 @@ func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("moviegDel", movieg)
 
-	var respp *movie.MovieInfo
+	var respp movie.MovieInfo
 
 	respp.Id = int32(movieg.ID)
 	respp.CardUrl = movieg.CardURL
@@ -65,38 +69,45 @@ func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest)
 	respp.ReleaseDate = movieg.ReleaseDate
 	respp.IsFavorite = movieg.IsFavorite
 	respp.VideoUrl = movieg.VideoURL
+	respp.DirectorInfo = &movie.DirectorInfo{}
 	respp.DirectorInfo.Id = int32(movieg.Director.ID)
-
 	respp.FullDescription = movieg.FullDescription
 	respp.ShortDescription = movieg.ShortDescription
 	respp.TitleUrl = movieg.TitleURL
 	for j, actor := range movieg.Actors {
-		respp.ActorsInfo[j].Person.Name = actor.Person.Name
-		respp.ActorsInfo[j].Person.Surname = actor.Person.Surname
-		respp.ActorsInfo[j].Id = int32(actor.ID)
-		respp.ActorsInfo[j].Biography = actor.Biography
-		respp.ActorsInfo[j].Post = actor.Post
-		respp.ActorsInfo[j].Birthdate = actor.Birthdate.String
-		respp.ActorsInfo[j].SmallPhotoUrl = actor.SmallPhotoURL
-		respp.ActorsInfo[j].BigPhotoUrl = actor.BigPhotoURL
-		respp.ActorsInfo[j].Country = actor.Country
+		respp.ActorsInfo[j] = &movie.ActorInfo{
+			Id: int32(actor.ID),
+			Person: &movie.Person{
+				Name:    actor.Person.Name,
+				Surname: actor.Person.Surname,
+			},
+			Biography:     actor.Biography,
+			Post:          actor.Post,
+			Birthdate:     actor.Birthdate.String,
+			SmallPhotoUrl: actor.SmallPhotoURL,
+			BigPhotoUrl:   actor.BigPhotoURL,
+			Country:       actor.Country,
+		}
+
 	}
 	for s, season := range movieg.Seasons {
 		respp.Seasons[s].SeasonNumber = int32(season.SeasonNumber)
 		for g, ep := range season.Episodes {
-			respp.Seasons[s].Episodes[g].Id = int64(ep.ID)
-			respp.Seasons[s].Episodes[g].Description = ep.Description
-			respp.Seasons[s].Episodes[g].EpisodeNumber = int64(ep.EpisodeNumber)
-			respp.Seasons[s].Episodes[g].Title = ep.Title
-			respp.Seasons[s].Episodes[g].Rating = ep.Rating
-			respp.Seasons[s].Episodes[g].ReleaseDate = ep.ReleaseDate
-			respp.Seasons[s].Episodes[g].VideoURL = ep.VideoURL
-			respp.Seasons[s].Episodes[g].PreviewURL = ep.PreviewURL
+			respp.Seasons[s].Episodes[g] = &movie.Episode{
+				Id:            int64(ep.ID),
+				Description:   ep.Description,
+				EpisodeNumber: int64(ep.EpisodeNumber),
+				Title:         ep.Title,
+				Rating:        ep.Rating,
+				ReleaseDate:   ep.ReleaseDate,
+				VideoURL:      ep.VideoURL,
+				PreviewURL:    ep.PreviewURL,
+			}
 		}
 
 	}
 
-	return &movie.GetMovieResponse{Movie: respp}, nil
+	return &movie.GetMovieResponse{Movie: &respp}, nil
 }
 
 func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest) (*movie.GetActorResponse, error) {
@@ -109,30 +120,32 @@ func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest)
 		return nil, err
 	}
 
-	var respp *movie.ActorInfo
+	log.Println("actorDel", actor)
+
+	var respp movie.ActorInfo
 	respp.Id = int32(actor.ID)
 	respp.Birthdate = actor.Birthdate.String
 	respp.Country = actor.Country
 	respp.BigPhotoUrl = actor.BigPhotoURL
 	respp.Biography = actor.Biography
+	respp.Person = &movie.Person{}
 	respp.Person.Name = actor.Person.Name
 	respp.Person.Surname = actor.Person.Surname
 	respp.Post = actor.Post
 	respp.SmallPhotoUrl = actor.SmallPhotoURL
-	respp.Person.Name = actor.Person.Name
-	respp.Person.Surname = actor.Person.Surname
-	for j, mov := range actor.Movies {
-		respp.Movies[j].Id = int32(mov.ID)
-		respp.Movies[j].Title = mov.Title
-		respp.Movies[j].Rating = mov.Rating
-		respp.Movies[j].ReleaseDate = mov.ReleaseDate
-		respp.Movies[j].Country = mov.Country
-		respp.Movies[j].MovieType = mov.MovieType
-		respp.Movies[j].CardUrl = mov.CardURL
-		respp.Movies[j].AlbumUrl = mov.AlbumURL
-	}
+	//for j, mov := range actor.Movies {
+	//respp.Movies[j].Id = int32(mov.ID)
+	//respp.Movies[j].Title = mov.Title
+	//respp.Movies[j].Rating = mov.Rating
+	//respp.Movies[j].ReleaseDate = mov.ReleaseDate
+	//respp.Movies[j].Country = mov.Country
+	//respp.Movies[j].MovieType = mov.MovieType
+	//respp.Movies[j].CardUrl = mov.CardURL
+	//respp.Movies[j].AlbumUrl = mov.AlbumURL
+	//}
+	log.Println("resppDel", respp)
 
-	return &movie.GetActorResponse{Actor: respp}, nil
+	return &movie.GetActorResponse{Actor: &respp}, nil
 }
 
 func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMoviesRequest) (*movie.SearchMoviesResponse, error) {
@@ -198,6 +211,7 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 	}
 
 	actors, err := h.movieService.SearchActors(ctx, req.Query)
+	log.Println("del", actors)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -227,6 +241,7 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 		}
 
 	}
+	log.Println("respp", respp)
 	return &movie.SearchActorsResponse{Actors: respp}, nil
 }
 
