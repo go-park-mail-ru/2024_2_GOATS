@@ -26,7 +26,7 @@ const (
 	`
 
 	favCheckSQL = `
-		SELECT count(movie_id) FROM favorites
+		SELECT movie_id FROM favorites
 		WHERE user_id = $1 and movie_id = $2
 	`
 )

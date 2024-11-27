@@ -97,7 +97,7 @@ func (a *App) Run() {
 	srvAuth := authServ.NewAuthService(sessManager, usrManager)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	srvMov := movieServ.NewMovieService(mvManager)
+	srvMov := movieServ.NewMovieService(mvManager, usrManager)
 	delMov := movieApi.NewMovieHandler(srvMov)
 
 	// repoRoom := roomRepo.NewRepository(database, rdb)

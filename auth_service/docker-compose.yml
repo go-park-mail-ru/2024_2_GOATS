@@ -7,8 +7,6 @@ services:
       context: ..
       dockerfile: auth_service/Dockerfile
     restart: always
-    volumes:
-      - /home/ubuntu/images:/home/ubuntu/images
     networks:
       - cassette-world
   redis:
