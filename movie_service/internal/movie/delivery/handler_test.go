@@ -1,223 +1,617 @@
 package delivery
 
-// import (
-// 	"bytes"
-// 	"errors"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"testing"
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"testing"
 
-// 	srvMock "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery/mocks"
-// 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
-// 	"github.com/golang/mock/gomock"
-// 	"github.com/gorilla/mux"
-// 	"github.com/stretchr/testify/assert"
-// )
+	mockService "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery/mocks"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
+	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
 
-// const (
-// 	mvCollPath = "/api/movie_service/movie_collections"
-// 	actorsPath = "/api/actors/1"
-// 	moviePath  = "/api/movies/1"
-// )
+func TestMovieHandler_GetMovieByGenre(t *testing.T) {
+	tests := []struct {
+		name          string
+		req           *movie.GetMovieByGenreRequest
+		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		expectedResp  *movie.GetMovieByGenreResponse
+		expectedError error
+	}{
+		{
+			name: "Success",
+			req:  &movie.GetMovieByGenreRequest{Genre: "Action"},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetMovieByGenre(gomock.Any(), "Action").
+					Return([]models.MovieShortInfo{
+						{
+							ID:          1,
+							CardURL:     "card_url_1",
+							MovieType:   "Action",
+							AlbumURL:    "album_url_1",
+							Title:       "Movie 1",
+							Country:     "USA",
+							ReleaseDate: "2023-01-01",
+							Rating:      8.5,
+						},
+						{
+							ID:          2,
+							CardURL:     "card_url_2",
+							MovieType:   "Action",
+							AlbumURL:    "album_url_2",
+							Title:       "Movie 2",
+							Country:     "UK",
+							ReleaseDate: "2023-02-01",
+							Rating:      7.5,
+						},
+					}, nil)
+			},
+			expectedResp: &movie.GetMovieByGenreResponse{
+				Movies: []*movie.MovieShortInfo{
+					{
+						Id:          1,
+						CardUrl:     "card_url_1",
+						MovieType:   "Action",
+						AlbumUrl:    "album_url_1",
+						Title:       "Movie 1",
+						Country:     "USA",
+						ReleaseDate: "2023-01-01",
+						Rating:      8.5,
+					},
+					{
+						Id:          2,
+						CardUrl:     "card_url_2",
+						MovieType:   "Action",
+						AlbumUrl:    "album_url_2",
+						Title:       "Movie 2",
+						Country:     "UK",
+						ReleaseDate: "2023-02-01",
+						Rating:      7.5,
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "Missing Genre",
+			req:           &movie.GetMovieByGenreRequest{Genre: ""},
+			mockSetup:     func(mock *mockService.MockMovieServiceInterface) {},
+			expectedResp:  nil,
+			expectedError: status.Error(codes.InvalidArgument, "genre is required"),
+		},
+		{
+			name: "Service Error",
+			req:  &movie.GetMovieByGenreRequest{Genre: "Drama"},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetMovieByGenre(gomock.Any(), "Drama").
+					Return(nil, errors.New("internal error"))
+			},
+			expectedResp:  nil,
+			expectedError: errors.New("internal error"),
+		},
+	}
 
-// func TestDelivery_GetCollection(t *testing.T) {
-// 	tests := []struct {
-// 		name       string
-// 		mockReturn *models.CollectionsRespData
-// 		mockErr    error
-// 		statusCode int
-// 		resp       string
-// 	}{
-// 		{
-// 			name: "Success",
-// 			mockReturn: &models.CollectionsRespData{
-// 				Collections: []models.Collection{
-// 					{
-// 						ID:    1,
-// 						Title: "Test collection",
-// 						Movies: []*models.MovieShortInfo{
-// 							{
-// 								ID:    1,
-// 								Title: "test movie_service",
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 			resp:       `{"collections":[{"id":1,"title":"Test collection","movies":[{"id":1,"title":"test movie_service","card_url":"", "album_url":"", "rating":0,"release_date":"","movie_type":"","country":""}]}]}`,
-// 			statusCode: http.StatusOK,
-// 		},
-// 		{
-// 			name:       "Service Error",
-// 			mockErr:    errors.New("Some database error"),
-// 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
-// 			statusCode: http.StatusInternalServerError,
-// 		},
-// 	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(test.name, func(t *testing.T) {
-// 			t.Parallel()
+			mockService := mockService.NewMockMovieServiceInterface(ctrl)
+			test.mockSetup(mockService)
 
-// 			ctrl := gomock.NewController(t)
-// 			defer ctrl.Finish()
+			handler := NewMovieHandler(mockService)
+			resp, err := handler.GetMovieByGenre(context.Background(), test.req)
 
-// 			ms := srvMock.NewMockMovieServiceInterface(ctrl)
-// 			handler := NewMovieHandler(ms)
+			assert.Equal(t, test.expectedResp, resp)
+			if test.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
-// 			ms.EXPECT().GetCollection(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+func TestMovieHandler_GetMovie(t *testing.T) {
+	tests := []struct {
+		name          string
+		req           *movie.GetMovieRequest
+		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		expectedResp  *movie.GetMovieResponse
+		expectedError error
+	}{
+		{
+			name: "Success",
+			req:  &movie.GetMovieRequest{MovieId: 1},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetMovie(gomock.Any(), 1).
+					Return(&models.MovieInfo{
+						ID:               1,
+						CardURL:          "card_url_1",
+						AlbumURL:         "album_url_1",
+						Rating:           8.5,
+						Title:            "Test Movie",
+						MovieType:        "Action",
+						Country:          "USA",
+						ReleaseDate:      "2023-01-01",
+						IsFavorite:       true,
+						VideoURL:         "video_url",
+						Director:         &models.DirectorInfo{Person: models.Person{Name: "John", Surname: "Doe"}},
+						FullDescription:  "Full Description",
+						ShortDescription: "Short Description",
+						TitleURL:         "title_url",
+						Actors: []*models.ActorInfo{
+							{
+								ID: 1,
+								Person: models.Person{
+									Name:    "Actor Name",
+									Surname: "Actor Surname",
+								},
+								Biography:     "Biography",
+								Post:          "Post",
+								Birthdate:     sql.NullString{String: "1990-01-01", Valid: true},
+								SmallPhotoURL: "small_photo_url",
+								BigPhotoURL:   "big_photo_url",
+								Country:       "USA",
+							},
+						},
+						Seasons: []*models.Season{
+							{
+								SeasonNumber: 1,
+								Episodes: []*models.Episode{
+									{
+										ID:            1,
+										Description:   "Episode 1 Description",
+										EpisodeNumber: 1,
+										Title:         "Episode 1",
+										Rating:        9.0,
+										ReleaseDate:   "2023-01-01",
+										VideoURL:      "video_url_1",
+										PreviewURL:    "preview_url_1",
+									},
+								},
+							},
+						},
+					}, nil)
+			},
+			expectedResp: &movie.GetMovieResponse{
+				Movie: &movie.MovieInfo{
+					Id:               1,
+					CardUrl:          "card_url_1",
+					AlbumUrl:         "album_url_1",
+					Rating:           8.5,
+					Title:            "Test Movie",
+					MovieType:        "Action",
+					Country:          "USA",
+					ReleaseDate:      "2023-01-01",
+					IsFavorite:       true,
+					VideoUrl:         "video_url",
+					DirectorInfo:     &movie.DirectorInfo{Name: "John", Surname: "Doe"},
+					FullDescription:  "Full Description",
+					ShortDescription: "Short Description",
+					TitleUrl:         "title_url",
+					ActorsInfo: []*movie.ActorInfo{
+						{
+							Id:            1,
+							Name:          "Actor Name",
+							Surname:       "Actor Surname",
+							Biography:     "Biography",
+							Post:          "Post",
+							Birthdate:     "1990-01-01",
+							SmallPhotoUrl: "small_photo_url",
+							BigPhotoUrl:   "big_photo_url",
+							Country:       "USA",
+						},
+					},
+					Seasons: []*movie.Season{
+						{
+							SeasonNumber: 1,
+							Episodes: []*movie.Episode{
+								{
+									Id:            1,
+									Description:   "Episode 1 Description",
+									EpisodeNumber: 1,
+									Title:         "Episode 1",
+									Rating:        9.0,
+									ReleaseDate:   "2023-01-01",
+									VideoURL:      "video_url_1",
+									PreviewURL:    "preview_url_1",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "Invalid Movie ID",
+			req:           &movie.GetMovieRequest{MovieId: 0},
+			mockSetup:     func(mock *mockService.MockMovieServiceInterface) {},
+			expectedResp:  nil,
+			expectedError: status.Error(codes.InvalidArgument, "invalid movie ID"),
+		},
+		{
+			name: "Service Error",
+			req:  &movie.GetMovieRequest{MovieId: 1},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetMovie(gomock.Any(), 1).
+					Return(nil, errors.New("internal error"))
+			},
+			expectedResp:  nil,
+			expectedError: errors.New("internal error"),
+		},
+	}
 
-// 			resp, err := handler.GetCollections(context.Background(), test.req)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-// 			w := httptest.NewRecorder()
-// 			req := httptest.NewRequest("GET", mvCollPath, bytes.NewBufferString(""))
+			mockService := mockService.NewMockMovieServiceInterface(ctrl)
+			test.mockSetup(mockService)
 
-// 			r.ServeHTTP(w, req)
+			handler := NewMovieHandler(mockService)
+			resp, err := handler.GetMovie(context.Background(), test.req)
 
-// 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
-// 			assert.JSONEq(t, test.resp, w.Body.String())
-// 		})
-// 	}
-// }
+			assert.Equal(t, test.expectedResp, resp)
+			if test.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
-// func TestDelivery_GetMovie(t *testing.T) {
-// 	tests := []struct {
-// 		name       string
-// 		mockReturn *models.MovieInfo
-// 		mockErr    *errVals.ServiceError
-// 		statusCode int
-// 		resp       string
-// 		badReq     bool
-// 	}{
-// 		{
-// 			name: "Success",
-// 			mockReturn: &models.MovieInfo{
-// 				ID:              1,
-// 				Title:           "Test",
-// 				FullDescription: "Test desc",
-// 				CardURL:         "card_link",
-// 				AlbumURL:        "album_link",
-// 				Rating:          7.8,
-// 				MovieType:       "film",
-// 				Country:         "Russia",
-// 				VideoURL:        "video_link",
-// 				Director:        &models.DirectorInfo{},
-// 			},
-// 			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[], "seasons":null}}`,
-// 			statusCode: http.StatusOK,
-// 		},
-// 		{
-// 			name:       "Service Error",
-// 			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
-// 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
-// 			statusCode: http.StatusInternalServerError,
-// 		},
-// 		{
-// 			name:       "Bad Request",
-// 			resp:       `{"errors":[{"code":"bad_request","error":"getMovie action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
-// 			statusCode: http.StatusBadRequest,
-// 			badReq:     true,
-// 		},
-// 	}
+func TestMovieHandler_GetActor(t *testing.T) {
+	tests := []struct {
+		name          string
+		req           *movie.GetActorRequest
+		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		expectedResp  *movie.GetActorResponse
+		expectedError error
+	}{
+		{
+			name: "Success",
+			req:  &movie.GetActorRequest{ActorId: 1},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetActor(gomock.Any(), 1).
+					Return(&models.ActorInfo{
+						ID:            1,
+						Person:        models.Person{Name: "John", Surname: "Doe"},
+						Biography:     "Actor Biography",
+						Post:          "Lead Actor",
+						Birthdate:     sql.NullString{String: "1990-01-01", Valid: true},
+						SmallPhotoURL: "small_photo_url",
+						BigPhotoURL:   "big_photo_url",
+						Country:       "USA",
+						Movies: []*models.MovieShortInfo{
+							{
+								ID:          1,
+								Title:       "Movie 1",
+								CardURL:     "card_url_1",
+								AlbumURL:    "album_url_1",
+								Rating:      8.0,
+								ReleaseDate: "2023-01-01",
+								MovieType:   "Action",
+								Country:     "USA",
+							},
+						},
+					}, nil)
+			},
+			expectedResp: &movie.GetActorResponse{
+				Actor: &movie.ActorInfo{
+					Id:            1,
+					Name:          "John",
+					Surname:       "Doe",
+					Biography:     "Actor Biography",
+					Post:          "Lead Actor",
+					Birthdate:     "1990-01-01",
+					SmallPhotoUrl: "small_photo_url",
+					BigPhotoUrl:   "big_photo_url",
+					Country:       "USA",
+					Movies: []*movie.MovieShortInfo{
+						{
+							Id:          1,
+							Title:       "Movie 1",
+							CardUrl:     "card_url_1",
+							AlbumUrl:    "album_url_1",
+							Rating:      8.0,
+							ReleaseDate: "2023-01-01",
+							MovieType:   "Action",
+							Country:     "USA",
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "Invalid Actor ID",
+			req:           &movie.GetActorRequest{ActorId: 0},
+			mockSetup:     func(mock *mockService.MockMovieServiceInterface) {},
+			expectedResp:  nil,
+			expectedError: status.Error(codes.InvalidArgument, "invalid actor ID"),
+		},
+		{
+			name: "Service Error",
+			req:  &movie.GetActorRequest{ActorId: 1},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetActor(gomock.Any(), 1).
+					Return(nil, errors.New("internal error"))
+			},
+			expectedResp:  nil,
+			expectedError: errors.New("internal error"),
+		},
+	}
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(test.name, func(t *testing.T) {
-// 			t.Parallel()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-// 			ctrl := gomock.NewController(t)
-// 			defer ctrl.Finish()
+			mockService := mockService.NewMockMovieServiceInterface(ctrl)
+			test.mockSetup(mockService)
 
-// 			ms := srvMock.NewMockMovieServiceInterface(ctrl)
-// 			handler := NewMovieHandler(ms)
+			handler := NewMovieHandler(mockService)
+			resp, err := handler.GetActor(context.Background(), test.req)
 
-// 			r := mux.NewRouter()
-// 			r.HandleFunc(moviePath, handler.GetMovie)
+			assert.Equal(t, test.expectedResp, resp)
+			if test.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
-// 			w := httptest.NewRecorder()
-// 			req := httptest.NewRequest("GET", moviePath, nil)
+func TestMovieHandler_GetCollections(t *testing.T) {
+	tests := []struct {
+		name          string
+		req           *movie.GetCollectionsRequest
+		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		expectedResp  *movie.GetCollectionsResponse
+		expectedError error
+	}{
+		{
+			name: "Success",
+			req:  &movie.GetCollectionsRequest{Filter: "Top"},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetCollection(gomock.Any(), "Top").
+					Return(&models.CollectionsRespData{
+						Collections: []models.Collection{
+							{
+								ID:    1,
+								Title: "Top Movies",
+								Movies: []*models.MovieShortInfo{
+									{
+										ID:          1,
+										Title:       "Movie 1",
+										CardURL:     "card_url_1",
+										AlbumURL:    "album_url_1",
+										Rating:      8.0,
+										ReleaseDate: "2023-01-01",
+										MovieType:   "Action",
+										Country:     "USA",
+									},
+								},
+							},
+							{
+								ID:    2,
+								Title: "New Releases",
+								Movies: []*models.MovieShortInfo{
+									{
+										ID:          2,
+										Title:       "Movie 2",
+										CardURL:     "card_url_2",
+										AlbumURL:    "album_url_2",
+										Rating:      7.5,
+										ReleaseDate: "2023-02-01",
+										MovieType:   "Comedy",
+										Country:     "UK",
+									},
+								},
+							},
+						},
+					}, nil)
+			},
+			expectedResp: &movie.GetCollectionsResponse{
+				Collections: []*movie.Collection{
+					{
+						Id:    1,
+						Title: "Top Movies",
+						Movies: []*movie.MovieShortInfo{
+							{
+								Id:          1,
+								Title:       "Movie 1",
+								CardUrl:     "card_url_1",
+								AlbumUrl:    "album_url_1",
+								Rating:      8.0,
+								ReleaseDate: "2023-01-01",
+								MovieType:   "Action",
+								Country:     "USA",
+							},
+						},
+					},
+					{
+						Id:    2,
+						Title: "New Releases",
+						Movies: []*movie.MovieShortInfo{
+							{
+								Id:          2,
+								Title:       "Movie 2",
+								CardUrl:     "card_url_2",
+								AlbumUrl:    "album_url_2",
+								Rating:      7.5,
+								ReleaseDate: "2023-02-01",
+								MovieType:   "Comedy",
+								Country:     "UK",
+							},
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Service Error",
+			req:  &movie.GetCollectionsRequest{Filter: "Popular"},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetCollection(gomock.Any(), "Popular").
+					Return(nil, errors.New("internal error"))
+			},
+			expectedResp:  nil,
+			expectedError: errors.New("internal error"),
+		},
+	}
 
-// 			vars := map[string]string{}
-// 			if !test.badReq {
-// 				ms.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
-// 				vars["movie_id"] = "1"
-// 			}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-// 			req = mux.SetURLVars(req, vars)
+			mockService := mockService.NewMockMovieServiceInterface(ctrl)
+			test.mockSetup(mockService)
 
-// 			handler.GetMovie(w, req)
+			handler := NewMovieHandler(mockService)
+			resp, err := handler.GetCollections(context.Background(), test.req)
 
-// 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
-// 			assert.JSONEq(t, test.resp, w.Body.String())
-// 		})
-// 	}
-// }
+			assert.Equal(t, test.expectedResp, resp)
+			if test.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
-// func TestDelivery_GetActor(t *testing.T) {
-// 	tests := []struct {
-// 		name       string
-// 		mockReturn *models.ActorInfo
-// 		mockErr    *errVals.ServiceError
-// 		statusCode int
-// 		resp       string
-// 		badReq     bool
-// 	}{
-// 		{
-// 			name: "Success",
-// 			mockReturn: &models.ActorInfo{
-// 				ID: 1,
-// 				Person: models.Person{
-// 					Name:    "Tester",
-// 					Surname: "Testov",
-// 				},
-// 			},
-// 			resp:       `{"actor_info":{"id":1,"full_name":"Tester Testov","biography":"","birthdate":"","photo_url":"","country":"", "movies":null}}`,
-// 			statusCode: http.StatusOK,
-// 		},
-// 		{
-// 			name:       "Service Error",
-// 			mockErr:    errVals.NewServiceError(errVals.ErrServerCode, errors.New("Some database error")),
-// 			resp:       `{"errors":[{"code":"something_went_wrong","error":"Some database error"}]}`,
-// 			statusCode: http.StatusInternalServerError,
-// 		},
-// 		{
-// 			name:       "Bad Request",
-// 			resp:       `{"errors":[{"code":"bad_request","error":"getActor action: Bad request - strconv.Atoi: parsing \"\": invalid syntax"}]}`,
-// 			statusCode: http.StatusBadRequest,
-// 			badReq:     true,
-// 		},
-// 	}
+func TestMovieHandler_GetFavorites(t *testing.T) {
+	tests := []struct {
+		name          string
+		req           *movie.GetFavoritesRequest
+		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		expectedResp  *movie.GetFavoritesResponse
+		expectedError error
+	}{
+		{
+			name: "Success",
+			req:  &movie.GetFavoritesRequest{MovieIds: []uint64{1, 2}},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetFavorites(gomock.Any(), []uint64{1, 2}).
+					Return([]*models.MovieShortInfo{
+						{
+							ID:          1,
+							Title:       "Movie 1",
+							CardURL:     "card_url_1",
+							AlbumURL:    "album_url_1",
+							Rating:      8.5,
+							ReleaseDate: "2023-01-01",
+							MovieType:   "Action",
+							Country:     "USA",
+						},
+						{
+							ID:          2,
+							Title:       "Movie 2",
+							CardURL:     "card_url_2",
+							AlbumURL:    "album_url_2",
+							Rating:      7.5,
+							ReleaseDate: "2023-02-01",
+							MovieType:   "Comedy",
+							Country:     "UK",
+						},
+					}, nil)
+			},
+			expectedResp: &movie.GetFavoritesResponse{
+				Movies: []*movie.MovieShortInfo{
+					{
+						Id:          1,
+						Title:       "Movie 1",
+						CardUrl:     "card_url_1",
+						AlbumUrl:    "album_url_1",
+						Rating:      8.5,
+						ReleaseDate: "2023-01-01",
+						MovieType:   "Action",
+						Country:     "USA",
+					},
+					{
+						Id:          2,
+						Title:       "Movie 2",
+						CardUrl:     "card_url_2",
+						AlbumUrl:    "album_url_2",
+						Rating:      7.5,
+						ReleaseDate: "2023-02-01",
+						MovieType:   "Comedy",
+						Country:     "UK",
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Empty MovieIds",
+			req:  &movie.GetFavoritesRequest{MovieIds: []uint64{}},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetFavorites(gomock.Any(), []uint64{}).
+					Return([]*models.MovieShortInfo{}, nil)
+			},
+			expectedResp: &movie.GetFavoritesResponse{
+				Movies: []*movie.MovieShortInfo(nil),
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Service Error",
+			req:  &movie.GetFavoritesRequest{MovieIds: []uint64{1, 2}},
+			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
+				mock.EXPECT().
+					GetFavorites(gomock.Any(), []uint64{1, 2}).
+					Return(nil, errors.New("internal error"))
+			},
+			expectedResp:  nil,
+			expectedError: errors.New("internal error"),
+		},
+	}
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(test.name, func(t *testing.T) {
-// 			t.Parallel()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-// 			ctrl := gomock.NewController(t)
-// 			defer ctrl.Finish()
+			mockService := mockService.NewMockMovieServiceInterface(ctrl)
+			test.mockSetup(mockService)
 
-// 			ms := srvMock.NewMockMovieServiceInterface(ctrl)
-// 			handler := NewMovieHandler(ms)
+			handler := NewMovieHandler(mockService)
+			resp, err := handler.GetFavorites(context.Background(), test.req)
 
-// 			r := mux.NewRouter()
-// 			r.HandleFunc(actorsPath, handler.GetActor)
-
-// 			w := httptest.NewRecorder()
-// 			req := httptest.NewRequest("GET", actorsPath, nil)
-
-// 			vars := map[string]string{}
-// 			if !test.badReq {
-// 				ms.EXPECT().GetActor(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
-// 				vars["actor_id"] = "1"
-// 			}
-
-// 			req = mux.SetURLVars(req, vars)
-
-// 			handler.GetActor(w, req)
-
-// 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
-// 			assert.JSONEq(t, test.resp, w.Body.String())
-// 		})
-// 	}
-// }
+			assert.Equal(t, test.expectedResp, resp)
+			if test.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

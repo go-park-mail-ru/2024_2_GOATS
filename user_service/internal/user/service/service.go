@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
 type UserRepoInterface interface {
 	CreateUser(ctx context.Context, registerData *repoDTO.RepoCreateData) (*dto.User, error)
 	SetFavorite(ctx context.Context, favData *repoDTO.RepoFavorite) error

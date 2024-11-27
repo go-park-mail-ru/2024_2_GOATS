@@ -7,6 +7,9 @@ import (
 
 	"github.com/lib/pq"
 
+	"time"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -80,65 +83,77 @@ const (
 )
 
 func FindByID(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, movieFindByIDSQL, mvID)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_movie_by_id", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_service info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_movie_by_id", "movies")
 	logger.Info().Msg("postgres: successfully select movie_service info")
 
 	return rows, nil
 }
 
 func GetMovieActors(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, getMovieActorsSQL, mvID)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_movie_actors", "actors")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_service actors info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_movie_actors", "actors")
 	logger.Info().Msg("postgres: successfully select movie_service actors info")
 
 	return rows, nil
 }
 
 func FindByActorID(ctx context.Context, actorID int, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, findByActorIDSQL, actorID)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "find_by_actor_id", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting actor's movies: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "find_by_actor_id", "movies")
 	return rows, nil
 }
 
 func GetMoviesByIDs(ctx context.Context, mvIDs []uint64, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.Query(getFavoritesSQL, pq.Array(mvIDs))
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_movie_by_ids", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting favorite movies: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_movie_by_ids", "movies")
 	return rows, nil
 }

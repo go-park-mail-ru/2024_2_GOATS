@@ -8,8 +8,7 @@ github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/struct.go
 github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg
 github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg
-github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1
-github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/user_v1
+github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg
 github.com/go-park-mail-ru/2024_2_GOATS/user_service/proto
 github.com/go-park-mail-ru/2024_2_GOATS/auth_service/proto
 github.com/go-park-mail-ru/2024_2_GOATS/movie_service/proto
@@ -19,4 +18,6 @@ github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/delivery/mock
 github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/db/script_elastic

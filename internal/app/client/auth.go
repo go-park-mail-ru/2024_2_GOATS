@@ -30,7 +30,7 @@ func (cl *AuthClient) CreateSession(ctx context.Context, usrID int) (*models.Coo
 	method := "CreateSession"
 
 	resp, err := cl.authMS.CreateSession(ctx, &auth.CreateSessionRequest{UserID: uint64(usrID)})
-	saveMetric(start, authService, method, err)
+	saveMetric(start, authClient, method, err)
 
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (cl *AuthClient) DestroySession(ctx context.Context, cookie string) error {
 	method := "DestroySession"
 
 	_, err := cl.authMS.DestroySession(ctx, &auth.DestroySessionRequest{Cookie: cookie})
-	saveMetric(start, authService, method, err)
+	saveMetric(start, authClient, method, err)
 
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (cl *AuthClient) Session(ctx context.Context, cookie string) (uint64, error
 	method := "Session"
 
 	resp, err := cl.authMS.Session(ctx, &auth.GetSessionRequest{Cookie: cookie})
-	saveMetric(start, authService, method, err)
+	saveMetric(start, authClient, method, err)
 
 	if err != nil {
 		return 0, err

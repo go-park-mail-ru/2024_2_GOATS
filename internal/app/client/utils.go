@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	userService = "user_service"
-	authService = "auth_service"
+	userClient  = "user_client"
+	authClient  = "auth_client"
+	movieClient = "movie_client"
 )
 
 func status(err error) string {

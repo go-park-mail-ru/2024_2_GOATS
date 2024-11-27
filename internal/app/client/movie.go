@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"database/sql"
-	"log"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
@@ -12,7 +12,7 @@ import (
 //go:generate mockgen -source=movie.go -destination=../user/service/mocks/movie_mock.go
 //go:generate mockgen -source=movie.go -destination=../movie/service/mocks/mock.go
 type MovieClientInterface interface {
-	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
+	// GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error)
 	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
@@ -32,7 +32,10 @@ func NewMovieClient(movieMS movie.MovieServiceClient) MovieClientInterface {
 }
 
 func (m MovieClient) GetCollection(ctx context.Context, filter string) ([]models.Collection, error) {
+	start := time.Now()
+	method := "GetCollection"
 	resp, err := m.movieMS.GetCollections(ctx, &movie.GetCollectionsRequest{Filter: filter})
+	saveMetric(start, movieClient, method, err)
 
 	if err != nil {
 		return nil, err
@@ -69,7 +72,13 @@ func (m MovieClient) GetCollection(ctx context.Context, filter string) ([]models
 }
 
 func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error) {
+	start := time.Now()
+	method := "GetMovie"
+
 	resp, err := m.movieMS.GetMovie(ctx, &movie.GetMovieRequest{MovieId: int32(mvID)})
+
+	saveMetric(start, movieClient, method, err)
+
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +160,13 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 }
 
 func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
+	start := time.Now()
+	method := "GetActor"
+
 	resp, err := m.movieMS.GetActor(ctx, &movie.GetActorRequest{ActorId: int32(actorID)})
+
+	saveMetric(start, movieClient, method, err)
+
 	if err != nil {
 		return nil, err
 	}
@@ -190,42 +205,45 @@ func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorIn
 	return respp, nil
 }
 
-func (m MovieClient) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error) {
-	resp, err := m.movieMS.GetMovieByGenre(ctx, &movie.GetMovieByGenreRequest{Genre: genre})
-	if err != nil {
-		return nil, err
-	}
+// func (m MovieClient) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error) {
+// resp, err := m.movieMS.GetMovieByGenre(ctx, &movie.GetMovieByGenreRequest{Genre: genre})
+// if err != nil {
+// 	return nil, err
+// }
 
-	respMovie := resp.Movies
+// 	respMovie := resp.Movies
 
-	var respp = make([]models.MovieShortInfo, 0, len(respMovie))
+// var respp = make([]models.MovieShortInfo, 0, len(respMovie))
 
-	for i, movie := range respMovie {
-		respp[i].ID = int(movie.Id)
-		respp[i].CardURL = movie.CardUrl
-		respp[i].MovieType = movie.MovieType
-		respp[i].AlbumURL = movie.AlbumUrl
-		respp[i].Title = movie.Title
-		respp[i].Country = movie.Country
-		respp[i].ReleaseDate = movie.ReleaseDate
-		respp[i].Rating = movie.Rating
-	}
-	return respp, nil
-}
+// 	for i, movie := range respMovie {
+// 		respp[i].ID = int(movie.Id)
+// 		respp[i].CardURL = movie.CardUrl
+// 		respp[i].MovieType = movie.MovieType
+// 		respp[i].AlbumURL = movie.AlbumUrl
+// 		respp[i].Title = movie.Title
+// 		respp[i].Country = movie.Country
+// 		respp[i].ReleaseDate = movie.ReleaseDate
+// 		respp[i].Rating = movie.Rating
+// 	}
+// 	return respp, nil
+// }
 
 func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
+	start := time.Now()
+	method := "SearchMovies"
+
 	resp, err := m.movieMS.SearchMovies(ctx, &movie.SearchMoviesRequest{Query: query})
+
+	saveMetric(start, movieClient, method, err)
+
 	if err != nil {
 		return nil, err
 	}
 
 	respMovie := resp.Movies
-
-	log.Println("respMovie", respMovie)
 
 	var respp = make([]models.MovieInfo, len(respMovie))
 
-	log.Println("respp", respp)
 	for i, mov := range respMovie {
 		respp[i] = models.MovieInfo{
 			ID:       int(mov.Id),
@@ -267,24 +285,25 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 			//}
 			//}
 		}
-		log.Println("respp", respp)
 	}
 	return respp, nil
 }
 
 func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
+	start := time.Now()
+	method := "SearchActors"
+
 	resp, err := m.movieMS.SearchActors(ctx, &movie.SearchActorsRequest{Query: query})
+
+	saveMetric(start, movieClient, method, err)
+
 	if err != nil {
 		return nil, err
 	}
 
 	respActor := resp.Actors
 
-	log.Println("respActor", respActor)
-
 	var respp = make([]models.ActorInfo, len(respActor))
-
-	log.Println("respp", respp)
 
 	for i, v := range respActor {
 		respp[i] = models.ActorInfo{
@@ -310,13 +329,17 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 			//respp[i].Movies[j].AlbumURL = mov.AlbumUrl
 		}
 	}
-	log.Println("respp", respp)
 	//}
 	return respp, nil
 }
 
 func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error) {
+	start := time.Now()
+	method := "GetFavorites"
+
 	resp, err := m.movieMS.GetFavorites(ctx, &movie.GetFavoritesRequest{MovieIds: mvIDs})
+
+	saveMetric(start, movieClient, method, err)
 
 	if err != nil {
 		return nil, err

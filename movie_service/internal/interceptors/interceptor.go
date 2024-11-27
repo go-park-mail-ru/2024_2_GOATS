@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/metrics"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -15,6 +16,7 @@ type ctxKey int
 
 const (
 	requestIDKey ctxKey = iota
+	service             = "movie_microservice"
 )
 
 func WithLogger(
@@ -51,18 +53,32 @@ func AccessLogInterceptor(
 
 	defer func() {
 		if r := recover(); r != nil {
+			duration := time.Since(start)
+
 			logger.Info().
 				Str("method", info.FullMethod).
 				Interface("request_body", req).
-				Dur("work_time", time.Since(start)).
+				Dur("work_time", duration).
 				Interface("panic", r).
 				Msg("panic occurred")
+
+			metrics.GRPCServerRequestsTotal.WithLabelValues(service, info.FullMethod, "panic").Inc()
+			metrics.GRPCServerDuration.WithLabelValues(service, info.FullMethod).Observe(duration.Seconds())
 
 			err = status.Errorf(codes.Internal, "panic occurred: %v", r)
 		}
 	}()
 
 	resp, err = handler(ctx, req)
+
+	duration := time.Since(start)
+	statusCode := codes.OK
+	if err != nil {
+		statusCode = status.Code(err)
+	}
+
+	metrics.GRPCServerRequestsTotal.WithLabelValues(service, info.FullMethod, statusCode.String()).Inc()
+	metrics.GRPCServerDuration.WithLabelValues(service, info.FullMethod).Observe(duration.Seconds())
 
 	var acMsg string
 	if err != nil {
@@ -74,7 +90,7 @@ func AccessLogInterceptor(
 	logger.Info().
 		Str("method", info.FullMethod).
 		Interface("request_body", req).
-		Dur("work_time", time.Since(start)).
+		Dur("work_time", duration).
 		Interface("response_body", resp).
 		Msg(acMsg)
 

@@ -5,8 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"time"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/dto"
 	"github.com/rs/zerolog/log"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 )
 
 const (
@@ -26,6 +30,7 @@ const (
 )
 
 func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 	actorInfo := &dto.RepoActor{}
 
@@ -43,12 +48,14 @@ func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, err
 	)
 
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_actor_by_id", "actors")
 		errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_actor_by_id", "actors")
 	logger.Info().Msg("postgres: successfully select actor info")
 
 	return actorInfo, nil

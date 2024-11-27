@@ -6,6 +6,9 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
+	"time"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 )
 
 const (
@@ -32,48 +35,57 @@ const (
 )
 
 func GetMovieCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, getMovieCollectionsSQL)
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_movie_collections", "collections")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_collections: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_movie_collections", "collections")
 	logger.Info().Msg("postgres: successfully select movie_collections")
 
 	return rows, nil
 }
 
 func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, getGenresCollectionsSQL)
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_genres", "genres")
 		errMsg := fmt.Errorf("postgres: error while selecting genre_collections: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_genres", "genres")
 	logger.Info().Msg("postgres: successfully select movie_collections")
 
 	return rows, nil
 }
 
 func GetMovieByGenre(ctx context.Context, genre string, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	rows, err := db.QueryContext(ctx, getByGenreSQL, genre)
 	if err != nil {
+		metricsutils.SaveErrorMetric(start, "get_movie_by_genre", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting movies by genre: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg
 	}
 
+	metricsutils.SaveSuccessMetric(start, "get_movie_by_genre", "movies")
 	logger.Info().Msg("postgres: successfully select movies by genre")
 
 	return rows, nil

@@ -38,7 +38,7 @@ func (uc *UserClient) FindByEmail(ctx context.Context, email string) (*models.Us
 	method := "FindByEmail"
 
 	resp, err := uc.UserMS.FindByEmail(ctx, &user.Email{Email: email})
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return nil, fmt.Errorf("userClientError#findByEmail: %w", err)
@@ -59,7 +59,7 @@ func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, er
 	method := "FindByID"
 
 	resp, err := uc.UserMS.FindByID(ctx, &user.ID{ID: id})
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return nil, fmt.Errorf("userClientError#findByID: %w", err)
@@ -86,7 +86,7 @@ func (uc *UserClient) Create(ctx context.Context, regData *models.RegisterData) 
 		PasswordConfirmation: regData.PasswordConfirmation,
 	})
 
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return 0, fmt.Errorf("userClientError#create: %w", err)
@@ -105,7 +105,7 @@ func (uc *UserClient) UpdateProfile(ctx context.Context, usrData *models.User) e
 	if usrData.AvatarFile != nil {
 		fileBytes, err = io.ReadAll(usrData.AvatarFile)
 		if err != nil && usrData.AvatarFile != nil {
-			saveMetric(start, userService, method, err)
+			saveMetric(start, userClient, method, err)
 			return fmt.Errorf("userClientError#updateProfile: %w", err)
 		}
 	} else {
@@ -122,7 +122,7 @@ func (uc *UserClient) UpdateProfile(ctx context.Context, usrData *models.User) e
 	}
 
 	_, err = uc.UserMS.UpdateProfile(ctx, req)
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return fmt.Errorf("userClientError#updateProfile: %w", err)
@@ -142,7 +142,7 @@ func (uc *UserClient) UpdatePassword(ctx context.Context, passwordData *models.P
 		PasswordConfirmation: passwordData.PasswordConfirmation,
 	})
 
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return fmt.Errorf("userClientError#updatePassword: %w", err)
@@ -156,7 +156,7 @@ func (uc *UserClient) GetFavorites(ctx context.Context, usrID int) ([]uint64, er
 	method := "GetFavorites"
 
 	resp, err := uc.UserMS.GetFavorites(ctx, &user.ID{ID: uint64(usrID)})
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return nil, fmt.Errorf("userClientError#getFavorites: %w", err)
@@ -170,7 +170,7 @@ func (uc *UserClient) SetFavorite(ctx context.Context, favData *models.Favorite)
 	method := "SetFavorite"
 
 	err := uc.toggleFavorite(ctx, favData, "set")
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	return err
 }
@@ -180,7 +180,7 @@ func (uc *UserClient) ResetFavorite(ctx context.Context, favData *models.Favorit
 	method := "ResetFavorite"
 
 	err := uc.toggleFavorite(ctx, favData, "reset")
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	return err
 }
@@ -194,7 +194,7 @@ func (uc *UserClient) CheckFavorite(ctx context.Context, favData *models.Favorit
 		MovieID: uint64(favData.MovieID),
 	})
 
-	saveMetric(start, userService, method, err)
+	saveMetric(start, userClient, method, err)
 
 	if err != nil {
 		return false, fmt.Errorf("userClientError#checkFavorite: %w", err)

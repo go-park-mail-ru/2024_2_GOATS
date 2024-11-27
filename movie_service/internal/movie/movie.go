@@ -6,9 +6,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	client "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
-	user "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/user_v1"
-	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"net/http"
 	"os"
@@ -22,7 +19,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -72,15 +71,15 @@ func New(isTest bool) (*MovieApp, error) {
 	reflection.Register(srv)
 	sessRepo := repository.NewMovieRepository(db, esClient)
 
-	uGrpcConn, err := grpc.NewClient(
-		"user_app:8082",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-
-	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
-
-	movieService := service.NewMovieService(sessRepo, usrManager)
+	movieService := service.NewMovieService(sessRepo)
 	movie.RegisterMovieServiceServer(srv, delivery.NewMovieHandler(movieService))
+
+	grpc_prometheus.Register(srv)
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":9083", nil)
+	}()
 
 	return &MovieApp{
 		database: db,

@@ -15,6 +15,10 @@ scrape_configs:
     static_configs:
       - targets: ['auth_app:9081']
 
+  - job_name: "movie_app"
+    static_configs:
+      - targets: ['movie_app:9083']
+
   - job_name: "prometheus"
     static_configs:
       - targets: ['prometheus:9090']

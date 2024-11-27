@@ -9,7 +9,7 @@ type MovieHandlerInterface interface {
 	GetGenres(w http.ResponseWriter, r *http.Request)
 	GetMovie(w http.ResponseWriter, r *http.Request)
 	GetActor(w http.ResponseWriter, r *http.Request)
-	GetMovieByGenre(w http.ResponseWriter, r *http.Request)
+	// GetMovieByGenre(w http.ResponseWriter, r *http.Request)
 	SearchMovies(w http.ResponseWriter, r *http.Request)
 	SearchActors(w http.ResponseWriter, r *http.Request)
 }
