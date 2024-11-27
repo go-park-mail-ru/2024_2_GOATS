@@ -12,7 +12,7 @@ type MovieHandler struct {
 	movie.UnimplementedMovieServiceServer
 }
 
-func NewMovieHandler(ctx context.Context, service MovieServiceInterface) *MovieHandler {
+func NewMovieHandler(service MovieServiceInterface) *MovieHandler {
 	return &MovieHandler{
 		movieService: service,
 	}

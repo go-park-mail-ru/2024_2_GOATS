@@ -16,6 +16,8 @@ services:
       - DATABASE_NAME=movie_db
     depends_on:
       - movie_db
+    ports:
+      - "8083:8083"
     networks:
       - cassette-world
 

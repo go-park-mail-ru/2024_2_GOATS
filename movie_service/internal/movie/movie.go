@@ -2,10 +2,13 @@ package movie
 
 import (
 	"context"
-	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
+	"net"
+	"os"
+	"time"
+
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/db"
@@ -21,10 +24,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"net"
-	"net/http"
-	"os"
-	"time"
 )
 
 type MovieApp struct {
@@ -58,18 +57,18 @@ func New(isTest bool) (*MovieApp, error) {
 		return nil, fmt.Errorf("error initialize user_app database: %w", err)
 	}
 
-	cfgEl := elasticsearch.Config{
-		Addresses: []string{"http://elasticsearch:9200"},
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost:   10,
-			ResponseHeaderTimeout: time.Second,
-			DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
-			TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
+	// cfgEl := elasticsearch.Config{
+	// 	Addresses: []string{"http://elasticsearch:9200"},
+	// 	Transport: &http.Transport{
+	// 		MaxIdleConnsPerHost:   10,
+	// 		ResponseHeaderTimeout: time.Second,
+	// 		DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
+	// 		TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
 
-	esClient, err := elasticsearch.NewClient(cfgEl)
+	// esClient, err := elasticsearch.NewClient(cfgEl)
 
 	reflection.Register(srv)
-	sessRepo := repository.NewMovieRepository(db, esClient)
+	sessRepo := repository.NewMovieRepository(db, &elasticsearch.Client{})
 
 	uGrpcConn, err := grpc.NewClient(
 		"user_app:8082",
@@ -77,10 +76,8 @@ func New(isTest bool) (*MovieApp, error) {
 	)
 
 	usrClient := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
-
 	movieService := service.NewMovieService(sessRepo, usrClient)
-
-	movie.RegisterMovieServiceServer(srv, delivery.NewMovieHandler(ctx, movieService))
+	movie.RegisterMovieServiceServer(srv, delivery.NewMovieHandler(movieService))
 
 	return &MovieApp{
 		srv:    srv,
