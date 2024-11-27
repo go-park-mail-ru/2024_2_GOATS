@@ -70,6 +70,21 @@ func (mr *MockMovieRepositoryInterfaceMockRecorder) GetCollection(ctx, filter an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetCollection), ctx, filter)
 }
 
+// GetFavorites mocks base method.
+func (m *MockMovieRepositoryInterface) GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFavorites", ctx, mvIDs)
+	ret0, _ := ret[0].([]*models.MovieShortInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFavorites indicates an expected call of GetFavorites.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetFavorites(ctx, mvIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetFavorites), ctx, mvIDs)
+}
+
 // GetMovie mocks base method.
 func (m *MockMovieRepositoryInterface) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error) {
 	m.ctrl.T.Helper()

@@ -33,7 +33,6 @@ type UserClientInterface interface {
 	UpdateProfile(ctx context.Context, usrData *models.User) error
 }
 
-
 type Favorite struct {
 	UserID  uint64
 	MovieID uint64
@@ -41,11 +40,13 @@ type Favorite struct {
 
 type MovieService struct {
 	movieRepository MovieRepositoryInterface
+	userClient      UserClientInterface
 }
 
-func NewMovieService(repo MovieRepositoryInterface) delivery.MovieServiceInterface {
+func NewMovieService(repo MovieRepositoryInterface, urepo UserClientInterface) delivery.MovieServiceInterface {
 	return &MovieService{
 		movieRepository: repo,
+		userClient:      urepo,
 	}
 }
 
