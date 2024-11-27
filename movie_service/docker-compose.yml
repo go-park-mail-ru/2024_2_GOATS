@@ -1,5 +1,4 @@
 volumes:
-  redis:
   postgres_volume:
 
 services:
@@ -8,12 +7,10 @@ services:
       context: ..
       dockerfile: movie_service/Dockerfile
     restart: always
-    volumes:
-      - /home/ubuntu/images:/home/ubuntu/images
     environment:
       - PORT=8083
       - DATABASE_HOST=movie_db
-      - DATABASE_PORT=5433
+      - DATABASE_PORT=5432
       - DATABASE_USER=test
       - DATABASE_PASSWORD=test
       - DATABASE_NAME=movie_db

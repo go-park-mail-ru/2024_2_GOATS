@@ -1,10 +1,10 @@
 listener:
-  port: :8083
+  port: ":8083"
 
 databases:
   postgres:
     host: movie_db
-    port: 5433
+    port: 5432
     user: test
     password: test
     name: movie_db
