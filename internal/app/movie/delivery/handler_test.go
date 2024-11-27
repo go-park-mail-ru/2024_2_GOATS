@@ -106,7 +106,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 				VideoURL:        "video_link",
 				Director:        &models.DirectorInfo{},
 			},
-			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[], "seasons":null}}`,
+			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[],"seasons":null,"is_favorite":false}}`,
 			statusCode: http.StatusOK,
 		},
 		{

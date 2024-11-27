@@ -2,10 +2,12 @@ package movie
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,13 +18,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service"
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
-	user "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/user_v1"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -57,32 +56,27 @@ func New(isTest bool) (*MovieApp, error) {
 		return nil, fmt.Errorf("error initialize user_app database: %w", err)
 	}
 
-	// cfgEl := elasticsearch.Config{
-	// 	Addresses: []string{"http://elasticsearch:9200"},
-	// 	Transport: &http.Transport{
-	// 		MaxIdleConnsPerHost:   10,
-	// 		ResponseHeaderTimeout: time.Second,
-	// 		DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
-	// 		TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
+	cfgEl := elasticsearch.Config{
+		Addresses: []string{"http://elasticsearch:9200"},
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost:   10,
+			ResponseHeaderTimeout: time.Second,
+			DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
+			TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
 
-	// esClient, err := elasticsearch.NewClient(cfgEl)
+	esClient, _ := elasticsearch.NewClient(cfgEl)
 
 	reflection.Register(srv)
-	sessRepo := repository.NewMovieRepository(db, &elasticsearch.Client{})
+	sessRepo := repository.NewMovieRepository(db, esClient)
 
-	uGrpcConn, err := grpc.NewClient(
-		"user_app:8082",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-
-	usrClient := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
-	movieService := service.NewMovieService(sessRepo, usrClient)
+	movieService := service.NewMovieService(sessRepo)
 	movie.RegisterMovieServiceServer(srv, delivery.NewMovieHandler(movieService))
 
 	return &MovieApp{
-		srv:    srv,
-		logger: &logger,
-		cfg:    cfg,
+		database: db,
+		srv:      srv,
+		logger:   &logger,
+		cfg:      cfg,
 	}, nil
 }
 

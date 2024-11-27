@@ -7,10 +7,12 @@ import (
 
 type UserService struct {
 	userClient client.UserClientInterface
+	mvClient client.MovieClientInterface
 }
 
-func NewUserService(usrClient client.UserClientInterface) delivery.UserServiceInterface {
+func NewUserService(usrClient client.UserClientInterface, mvClient client.MovieClientInterface) delivery.UserServiceInterface {
 	return &UserService{
 		userClient: usrClient,
+		mvClient: mvClient,
 	}
 }

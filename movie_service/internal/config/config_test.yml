@@ -2,9 +2,9 @@ listener:
   port: :8088
 
 databases:
-  redis:
+  postgres:
     host: localhost
-    port: 6379
-    cookie:
-      maxAge: 86400s
-      name: session_id
+    port: 5435
+    user: test
+    password: test
+    name: movie_db

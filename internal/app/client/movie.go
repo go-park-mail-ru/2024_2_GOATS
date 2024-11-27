@@ -3,25 +3,28 @@ package client
 import (
 	"context"
 	"database/sql"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 )
 
+//go:generate mockgen -source=movie.go -destination=../user/service/mocks/movie_mock.go
+//go:generate mockgen -source=movie.go -destination=../movie/service/mocks/mock.go
 type MovieClientInterface interface {
-	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error)
 	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error)
 	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetCollection(ctx context.Context, filter string) ([]models.Collection, error)
+	GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error)
 }
 
 type MovieClient struct {
-	movieMS movie.MovieServiceServer
+	movieMS movie.MovieServiceClient
 }
 
-func NewMovieClient(movieMS movie.MovieServiceServer) MovieClientInterface {
+func NewMovieClient(movieMS movie.MovieServiceClient) MovieClientInterface {
 	return &MovieClient{
 		movieMS: movieMS,
 	}
@@ -34,21 +37,33 @@ func (m MovieClient) GetCollection(ctx context.Context, filter string) ([]models
 		return nil, err
 	}
 
-	var ans []models.Collection
-	for i, v := range resp.Collections {
-		ans[i].ID = int(v.Id)
-		ans[i].Title = v.Title
-		for j, vv := range ans[i].Movies {
-			ans[i].Movies[j].ID = vv.ID
-			ans[i].Movies[j].MovieType = vv.MovieType
-			ans[i].Movies[j].Rating = vv.Rating
-			ans[i].Movies[j].ReleaseDate = vv.ReleaseDate
-			ans[i].Movies[j].Country = vv.Country
-			ans[i].Movies[j].Title = vv.Title
-			ans[i].Movies[j].AlbumURL = vv.AlbumURL
-			ans[i].Movies[j].CardURL = vv.CardURL
+	var ans = make([]models.Collection, 0, len(resp.Collections))
+
+	for _, col := range resp.Collections {
+		var mvs []*models.MovieShortInfo
+		for _, mv := range col.Movies {
+			curMV := &models.MovieShortInfo{
+				ID:          int(mv.Id),
+				Title:       mv.Title,
+				CardURL:     mv.CardUrl,
+				AlbumURL:    mv.AlbumUrl,
+				Rating:      mv.Rating,
+				ReleaseDate: mv.ReleaseDate,
+				MovieType:   mv.MovieType,
+				Country:     mv.Country,
+			}
+
+			mvs = append(mvs, curMV)
 		}
+		cur := models.Collection{
+			ID:     int(col.Id),
+			Title:  col.Title,
+			Movies: mvs,
+		}
+
+		ans = append(ans, cur)
 	}
+
 	return ans, nil
 }
 
@@ -59,8 +74,7 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	}
 
 	respMov := resp.Movie
-
-	var respp *models.MovieInfo
+	var respp = &models.MovieInfo{}
 
 	respp.ID = int(respMov.Id)
 	respp.CardURL = respMov.CardUrl
@@ -72,36 +86,66 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	respp.ReleaseDate = respMov.ReleaseDate
 	respp.IsFavorite = respMov.IsFavorite
 	respp.VideoURL = respMov.VideoUrl
-	respp.Director.ID = int(respMov.DirectorInfo.Id)
-
+	respp.Director = &models.DirectorInfo{
+		Person: models.Person{
+			Name:    respMov.DirectorInfo.Name,
+			Surname: respMov.DirectorInfo.Surname,
+		},
+	}
 	respp.FullDescription = respMov.FullDescription
 	respp.ShortDescription = respMov.ShortDescription
 	respp.TitleURL = respMov.TitleUrl
-	for j, actor := range respMov.ActorsInfo {
-		respp.Actors[j].Person.Name = actor.Person.Name
-		respp.Actors[j].Person.Surname = actor.Person.Surname
-		respp.Actors[j].ID = int(actor.Id)
-		respp.Actors[j].Biography = actor.Biography
-		respp.Actors[j].Post = actor.Post
-		respp.Actors[j].Birthdate = sql.NullString{String: actor.Birthdate}
-		respp.Actors[j].SmallPhotoURL = actor.SmallPhotoUrl
-		respp.Actors[j].BigPhotoURL = actor.BigPhotoUrl
-		respp.Actors[j].Country = actor.Country
-	}
-	for s, season := range respMov.Seasons {
-		respp.Seasons[s].SeasonNumber = int(season.SeasonNumber)
-		for g, ep := range season.Episodes {
-			respp.Seasons[s].Episodes[g].ID = int(ep.Id)
-			respp.Seasons[s].Episodes[g].Description = ep.Description
-			respp.Seasons[s].Episodes[g].EpisodeNumber = int(ep.EpisodeNumber)
-			respp.Seasons[s].Episodes[g].Title = ep.Title
-			respp.Seasons[s].Episodes[g].Rating = ep.Rating
-			respp.Seasons[s].Episodes[g].ReleaseDate = ep.ReleaseDate
-			respp.Seasons[s].Episodes[g].VideoURL = ep.VideoURL
-			respp.Seasons[s].Episodes[g].PreviewURL = ep.PreviewURL
+
+	var actors []*models.ActorInfo
+	for _, actor := range respMov.ActorsInfo {
+		cur := &models.ActorInfo{
+			ID: int(actor.Id),
+			Person: models.Person{
+				Name:    actor.Name,
+				Surname: actor.Surname,
+			},
+			Biography:     actor.Biography,
+			Post:          actor.Post,
+			Birthdate:     sql.NullString{String: actor.Birthdate, Valid: true},
+			SmallPhotoURL: actor.SmallPhotoUrl,
+			BigPhotoURL:   actor.BigPhotoUrl,
+			Country:       actor.Country,
 		}
 
+		actors = append(actors, cur)
 	}
+
+	respp.Actors = actors
+
+	var seasons []*models.Season
+	for _, season := range respMov.Seasons {
+		sn := season.SeasonNumber
+		var eps []*models.Episode
+		for _, ep := range season.Episodes {
+			cur := &models.Episode{
+				ID:            int(ep.Id),
+				Description:   ep.Description,
+				EpisodeNumber: int(ep.EpisodeNumber),
+				Title:         ep.Title,
+				Rating:        ep.Rating,
+				ReleaseDate:   ep.ReleaseDate,
+				VideoURL:      ep.VideoURL,
+				PreviewURL:    ep.PreviewURL,
+			}
+
+			eps = append(eps, cur)
+		}
+
+		curSeas := &models.Season{
+			SeasonNumber: int(sn),
+			Episodes:     eps,
+		}
+
+		seasons = append(seasons, curSeas)
+	}
+
+	respp.Seasons = seasons
+
 	return respp, nil
 }
 
@@ -112,68 +156,36 @@ func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorIn
 	}
 
 	respActor := resp.Actor
-
-	var respp *models.ActorInfo
+	var respp = &models.ActorInfo{}
 
 	respp.ID = int(respActor.Id)
-	respp.Birthdate = sql.NullString{String: respActor.Birthdate}
+	respp.Birthdate = sql.NullString{String: respActor.Birthdate, Valid: true}
 	respp.Country = respActor.Country
 	respp.BigPhotoURL = respActor.BigPhotoUrl
 	respp.Biography = respActor.Biography
-	respp.Person.Name = respActor.Person.Name
-	respp.Person.Surname = respActor.Person.Surname
+	respp.Name = respActor.Name
+	respp.Surname = respActor.Surname
 	respp.Post = respActor.Post
 	respp.SmallPhotoURL = respActor.SmallPhotoUrl
-	respp.Person.Name = respActor.Person.Name
-	respp.Person.Surname = respActor.Person.Surname
-	for j, mov := range respActor.Movies {
-		respp.Movies[j].ID = int(mov.Id)
-		respp.Movies[j].Title = mov.Title
-		respp.Movies[j].Rating = mov.Rating
-		respp.Movies[j].ReleaseDate = mov.ReleaseDate
-		respp.Movies[j].Country = mov.Country
-		respp.Movies[j].MovieType = mov.MovieType
-		respp.Movies[j].CardURL = mov.CardUrl
-		respp.Movies[j].AlbumURL = mov.AlbumUrl
-	}
 
-	return respp, nil
-}
-
-func (m MovieClient) GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error) {
-	resp, err := m.movieMS.GetMovieActors(ctx, &movie.GetMovieActorsRequest{MovieId: int32(mvID)})
-	if err != nil {
-		return nil, err
-	}
-
-	respActorInfo := resp.ActorsInfo
-
-	var respp []*models.ActorInfo
-
-	for i, v := range respActorInfo {
-		respp[i].ID = int(v.Id)
-		respp[i].Birthdate = sql.NullString{String: v.Birthdate}
-		respp[i].Country = v.Country
-		respp[i].BigPhotoURL = v.BigPhotoUrl
-		respp[i].Biography = v.Biography
-		respp[i].Person.Name = v.Person.Name
-		respp[i].Person.Surname = v.Person.Surname
-		respp[i].Post = v.Post
-		respp[i].SmallPhotoURL = v.SmallPhotoUrl
-		respp[i].Person.Name = v.Person.Name
-		respp[i].Person.Surname = v.Person.Surname
-		for j, mov := range v.Movies {
-			respp[i].Movies[j].ID = int(mov.Id)
-			respp[i].Movies[j].Title = mov.Title
-			respp[i].Movies[j].Rating = mov.Rating
-			respp[i].Movies[j].ReleaseDate = mov.ReleaseDate
-			respp[i].Movies[j].Country = mov.Country
-			respp[i].Movies[j].MovieType = mov.MovieType
-			respp[i].Movies[j].CardURL = mov.CardUrl
-			respp[i].Movies[j].AlbumURL = mov.AlbumUrl
+	var mvs []*models.MovieShortInfo
+	for _, mv := range respActor.Movies {
+		cur := &models.MovieShortInfo{
+			ID:          int(mv.Id),
+			Title:       mv.Title,
+			CardURL:     mv.CardUrl,
+			AlbumURL:    mv.AlbumUrl,
+			Rating:      mv.Rating,
+			ReleaseDate: mv.ReleaseDate,
+			MovieType:   mv.MovieType,
+			Country:     mv.Country,
 		}
 
+		mvs = append(mvs, cur)
 	}
+
+	respp.Movies = mvs
+
 	return respp, nil
 }
 
@@ -185,7 +197,7 @@ func (m MovieClient) GetMovieByGenre(ctx context.Context, genre string) ([]model
 
 	respMovie := resp.Movies
 
-	var respp []models.MovieShortInfo
+	var respp = make([]models.MovieShortInfo, 0, len(respMovie))
 
 	for i, movie := range respMovie {
 		respp[i].ID = int(movie.Id)
@@ -208,7 +220,7 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 
 	respActor := resp.Movies
 
-	var respp []models.MovieInfo
+	var respp = make([]models.MovieInfo, 0, len(respActor))
 
 	for i, movie := range respActor {
 		respp[i].ID = int(movie.Id)
@@ -221,14 +233,13 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 		respp[i].ReleaseDate = movie.ReleaseDate
 		respp[i].IsFavorite = movie.IsFavorite
 		respp[i].VideoURL = movie.VideoUrl
-		respp[i].Director.ID = int(movie.DirectorInfo.Id)
 
 		respp[i].FullDescription = movie.FullDescription
 		respp[i].ShortDescription = movie.ShortDescription
 		respp[i].TitleURL = movie.TitleUrl
 		for j, actor := range movie.ActorsInfo {
-			respp[i].Actors[j].Person.Name = actor.Person.Name
-			respp[i].Actors[j].Person.Surname = actor.Person.Surname
+			respp[i].Actors[j].Person.Name = actor.Name
+			respp[i].Actors[j].Person.Surname = actor.Surname
 			respp[i].Actors[j].ID = int(actor.Id)
 			respp[i].Actors[j].Biography = actor.Biography
 			respp[i].Actors[j].Post = actor.Post
@@ -263,7 +274,7 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 
 	respActor := resp.Actors
 
-	var respp []models.ActorInfo
+	var respp = make([]models.ActorInfo, 0, len(respActor))
 
 	for i, v := range respActor {
 		respp[i].ID = int(v.Id)
@@ -271,12 +282,10 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 		respp[i].Country = v.Country
 		respp[i].BigPhotoURL = v.BigPhotoUrl
 		respp[i].Biography = v.Biography
-		respp[i].Person.Name = v.Person.Name
-		respp[i].Person.Surname = v.Person.Surname
+		respp[i].Person.Name = v.Name
+		respp[i].Person.Surname = v.Surname
 		respp[i].Post = v.Post
 		respp[i].SmallPhotoURL = v.SmallPhotoUrl
-		respp[i].Person.Name = v.Person.Name
-		respp[i].Person.Surname = v.Person.Surname
 		for j, mov := range v.Movies {
 			respp[i].Movies[j].ID = int(mov.Id)
 			respp[i].Movies[j].Title = mov.Title
@@ -289,4 +298,31 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 		}
 	}
 	return respp, nil
+}
+
+func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error) {
+	resp, err := m.movieMS.GetFavorites(ctx, &movie.GetFavoritesRequest{MovieIds: mvIDs})
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ans = make([]models.MovieShortInfo, 0, len(resp.Movies))
+
+	for _, mv := range resp.Movies {
+		curMV := models.MovieShortInfo{
+			ID:          int(mv.Id),
+			Title:       mv.Title,
+			CardURL:     mv.CardUrl,
+			AlbumURL:    mv.AlbumUrl,
+			Rating:      mv.Rating,
+			ReleaseDate: mv.ReleaseDate,
+			MovieType:   mv.MovieType,
+			Country:     mv.Country,
+		}
+
+		ans = append(ans, curMV)
+	}
+
+	return ans, nil
 }

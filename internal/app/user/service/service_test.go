@@ -106,7 +106,8 @@ func TestUpdatePassword(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
-			userService := service.NewUserService(mockUserClient)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
 
 			ctx := context.Background()
 			tt.setupMocks(mockUserClient, ctx, tt.passwordData)
@@ -171,7 +172,8 @@ func TestUpdateProfile(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
-			userService := service.NewUserService(mockUserClient)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
 
 			ctx := context.Background()
 			tt.setupMocks(mockUserClient, ctx, tt.usrData)
@@ -230,7 +232,8 @@ func TestResetFavorite(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
-			userService := service.NewUserService(mockUserClient)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
 
 			ctx := context.Background()
 			tt.setupMocks(mockUserClient, ctx, tt.favData)
@@ -289,7 +292,8 @@ func TestAddFavorite(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockUserClient := clMock.NewMockUserClientInterface(ctrl)
-			userService := service.NewUserService(mockUserClient)
+			mockMvClient := clMock.NewMockMovieClientInterface(ctrl)
+			userService := service.NewUserService(mockUserClient, mockMvClient)
 
 			ctx := context.Background()
 			tt.setupMocks(mockUserClient, ctx, tt.favData)
