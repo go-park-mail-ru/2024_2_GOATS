@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"database/sql"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 )
@@ -34,7 +35,8 @@ func (m MovieClient) GetCollection(ctx context.Context, filter string) ([]models
 		return nil, err
 	}
 
-	var ans []models.Collection
+	var ans = make([]models.Collection, 0, len(resp.Collections))
+
 	for i, v := range resp.Collections {
 		ans[i].ID = int(v.Id)
 		ans[i].Title = v.Title
@@ -60,7 +62,8 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 
 	respMov := resp.Movie
 
-	var respp *models.MovieInfo
+	var respp = &models.MovieInfo{}
+
 
 	respp.ID = int(respMov.Id)
 	respp.CardURL = respMov.CardUrl
@@ -113,7 +116,7 @@ func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorIn
 
 	respActor := resp.Actor
 
-	var respp *models.ActorInfo
+	var respp = &models.ActorInfo{}
 
 	respp.ID = int(respActor.Id)
 	respp.Birthdate = sql.NullString{String: respActor.Birthdate}
@@ -148,7 +151,7 @@ func (m MovieClient) GetMovieActors(ctx context.Context, mvID int) ([]*models.Ac
 
 	respActorInfo := resp.ActorsInfo
 
-	var respp []*models.ActorInfo
+	var respp = make([]*models.ActorInfo, 0, len(respActorInfo))
 
 	for i, v := range respActorInfo {
 		respp[i].ID = int(v.Id)
@@ -185,7 +188,7 @@ func (m MovieClient) GetMovieByGenre(ctx context.Context, genre string) ([]model
 
 	respMovie := resp.Movies
 
-	var respp []models.MovieShortInfo
+	var respp = make([]models.MovieShortInfo, 0, len(respMovie))
 
 	for i, movie := range respMovie {
 		respp[i].ID = int(movie.Id)
@@ -208,7 +211,7 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 
 	respActor := resp.Movies
 
-	var respp []models.MovieInfo
+	var respp = make([]models.MovieInfo, 0, len(respActor))
 
 	for i, movie := range respActor {
 		respp[i].ID = int(movie.Id)
@@ -263,7 +266,7 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 
 	respActor := resp.Actors
 
-	var respp []models.ActorInfo
+	var respp = make([]models.ActorInfo, 0, len(respActor))
 
 	for i, v := range respActor {
 		respp[i].ID = int(v.Id)

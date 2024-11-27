@@ -9,7 +9,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 )
 
 func TestGetActor_Success(t *testing.T) {

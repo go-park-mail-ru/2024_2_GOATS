@@ -80,9 +80,10 @@ func New(isTest bool) (*MovieApp, error) {
 	movie.RegisterMovieServiceServer(srv, delivery.NewMovieHandler(movieService))
 
 	return &MovieApp{
-		srv:    srv,
-		logger: &logger,
-		cfg:    cfg,
+		database: db,
+		srv:      srv,
+		logger:   &logger,
+		cfg:      cfg,
 	}, nil
 }
 
