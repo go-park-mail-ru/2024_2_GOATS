@@ -1,10 +1,10 @@
 listener:
-  port: :8081
+  port: :8083
 
 databases:
-  redis:
-    host: redis
-    port: 6379
-    cookie:
-      maxAge: 86400s
-      name: session_id
+  postgres:
+    host: movie_db
+    port: 5433
+    user: test
+    password: test
+    name: movie_db
