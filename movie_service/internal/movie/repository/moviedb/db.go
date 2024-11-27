@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/lib/pq"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -69,6 +71,12 @@ const (
 		JOIN countries ON movies.country_id = countries.id
 		WHERE actors.id = $1
 	`
+
+	getFavoritesSQL = `
+		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
+		JOIN countries ON countries.id = movies.country_id
+		WHERE movies.id = ANY($1)
+	`
 )
 
 func FindByID(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
@@ -112,6 +120,21 @@ func FindByActorID(ctx context.Context, actorID int, db *sql.DB) (*sql.Rows, err
 
 	if err != nil {
 		errMsg := fmt.Errorf("postgres: error while selecting actor's movies: %w", err)
+		logger.Error().Err(errMsg).Msg("pg_error")
+
+		return nil, errMsg
+	}
+
+	return rows, nil
+}
+
+func GetMoviesByIDs(ctx context.Context, mvIDs []uint64, db *sql.DB) (*sql.Rows, error) {
+	logger := log.Ctx(ctx)
+
+	rows, err := db.Query(getFavoritesSQL, pq.Array(mvIDs))
+
+	if err != nil {
+		errMsg := fmt.Errorf("postgres: error while selecting favorite movies: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
 		return nil, errMsg

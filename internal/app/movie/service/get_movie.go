@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -41,17 +42,6 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 
 		mv.IsFavorite = isFav
 	}
-
-	actors, err := s.movieClient.GetMovieActors(ctx, mv.ID)
-
-	if err != nil {
-		return nil, &errVals.ServiceError{
-			Code:  "GetCollection",
-			Error: fmt.Errorf("error GetCollection: %w", err),
-		}
-	}
-
-	mv.Actors = actors
 
 	return mv, nil
 }

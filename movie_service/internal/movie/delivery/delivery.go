@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 )
 
@@ -14,4 +15,5 @@ type MovieServiceInterface interface {
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error)
+	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
 }

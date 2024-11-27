@@ -3,11 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/config"
+	"log"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
-	usrSrv "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/clients"
-	"log"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
@@ -19,6 +18,7 @@ type MovieRepositoryInterface interface {
 	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
+	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
 }
 
 type Favorite struct {
@@ -28,13 +28,11 @@ type Favorite struct {
 
 type MovieService struct {
 	movieRepository MovieRepositoryInterface
-	userClient      usrSrv.UserClientInterface
 }
 
-func NewMovieService(repo MovieRepositoryInterface, urepo usrSrv.UserClientInterface) delivery.MovieServiceInterface {
+func NewMovieService(repo MovieRepositoryInterface) delivery.MovieServiceInterface {
 	return &MovieService{
 		movieRepository: repo,
-		userClient:      urepo,
 	}
 }
 
@@ -72,21 +70,6 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 		return nil, fmt.Errorf("movieService.GetMovie: %w", err)
 	}
 
-	usrID := config.CurrentUserID(ctx)
-	if usrID != 0 {
-		fav := &models.Favorite{
-			UserID:  usrID,
-			MovieID: mv.ID,
-		}
-
-		isFav, err := s.userClient.CheckFavorite(ctx, fav)
-		if err != nil {
-			return nil, fmt.Errorf("movieService.GetMovie: %w", err)
-		}
-
-		mv.IsFavorite = isFav
-	}
-
 	actors, err := s.movieRepository.GetMovieActors(ctx, mv.ID)
 
 	if err != nil {
@@ -116,4 +99,13 @@ func (s *MovieService) GetMovieActors(ctx context.Context, mvID int) ([]*models.
 	}
 
 	return actor, nil
+}
+
+func (s *MovieService) GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error) {
+	mvs, err := s.movieRepository.GetFavorites(ctx, mvIDs)
+	if err != nil {
+		return nil, fmt.Errorf("movieService.GetFavorites: %w", err)
+	}
+
+	return mvs, nil
 }

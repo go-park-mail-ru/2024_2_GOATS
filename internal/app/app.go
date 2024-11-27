@@ -2,15 +2,10 @@ package app
 
 import (
 	"context"
-	"crypto/tls"
-	"database/sql"
 	"errors"
 	"fmt"
 
-	"github.com/elastic/go-elasticsearch/v7"
-
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -19,7 +14,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
@@ -29,22 +23,19 @@ import (
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 
-	// movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/delivery"
-	// movieRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/repository"
-	// movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie_service/service"
+	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
+	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
+	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
 
 type App struct {
-	Database          *sql.DB
-	Redis             *redis.Client
 	Config            *config.Config
 	Logger            *zerolog.Logger
-	Es                *elasticsearch.Client
 	Server            *http.Server
 	AcceptConnections bool
 }
@@ -58,37 +49,8 @@ func New(isTest bool) (*App, error) {
 		return nil, fmt.Errorf("error initialize app cfg: %w", err)
 	}
 
-	// ctx := config.WrapContext(context.Background(), cfg)
-	// ctxDBTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
-	// defer cancel()
-
-	// database, err := db.SetupDatabase(ctxDBTimeout, cancel)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error initialize database: %w", err)
-	// }
-
-	addr := fmt.Sprintf("%s:%d", cfg.Databases.Redis.Host, cfg.Databases.Redis.Port)
-	rdb := redis.NewClient(&redis.Options{Addr: addr})
-
-	cfgEl := elasticsearch.Config{
-		Addresses: []string{"http://elasticsearch:9200"},
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost:   10,
-			ResponseHeaderTimeout: time.Second,
-			DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
-			TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12}}}
-
-	esClient, err := elasticsearch.NewClient(cfgEl)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Elasticsearch clients: %w", err)
-	}
-
 	return &App{
-		// Database: database,
-		Redis:  rdb,
 		Config: cfg,
-		Es:     esClient,
 		Logger: &logger,
 	}, nil
 }
@@ -115,18 +77,28 @@ func (a *App) Run() {
 
 	defer uGrpcConn.Close()
 
+	mGrpcConn, err := grpc.NewClient(
+		"movie_app:8083",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer mGrpcConn.Close()
+
 	sessManager := client.NewAuthClient(auth.NewSessionRPCClient(aGrpcConn))
 	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
+	mvManager := client.NewMovieClient(movie.NewMovieServiceClient(mGrpcConn))
 
-	srvUser := userServ.NewUserService(usrManager)
+	srvUser := userServ.NewUserService(usrManager, mvManager)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
 
 	srvAuth := authServ.NewAuthService(sessManager, usrManager)
 	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
 
-	// repoMov := movieRepo.NewMovieRepository(a.Database, rdb, esClient)
-	// srvMov := movieServ.NewMovieService(repoMov, repoUser)
-	// delMov := movieApi.NewMovieHandler(srvMov)
+	srvMov := movieServ.NewMovieService(mvManager)
+	delMov := movieApi.NewMovieHandler(srvMov)
 
 	// repoRoom := roomRepo.NewRepository(database, rdb)
 	// srvRoom := roomServ.NewService(repoRoom, srvMov)
@@ -141,7 +113,7 @@ func (a *App) Run() {
 	router.SetupCsrf(mx)
 	router.SetupAuth(delAuth, mx)
 	router.SetupUser(delUser, mx)
-	// router.SetupMovie(delMov, mx)
+	router.SetupMovie(delMov, mx)
 	ctxValues := config.FromContext(ctx)
 
 	srv := &http.Server{
@@ -177,39 +149,6 @@ func (a *App) Run() {
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
 	a.Logger.Info().Msg("Starting graceful shutdown")
-
-	// var wg sync.WaitGroup
-	// errChan := make(chan error, 2)
-
-	// shutdownFuncs := []func() error{
-	// 	a.Database.Close,
-	// 	a.Redis.Close,
-	// }
-
-	// wg.Add(len(shutdownFuncs))
-
-	// for _, shutdownFunc := range shutdownFuncs {
-	// 	go func(shutdownFunc func() error) {
-	// 		defer wg.Done()
-	// 		if err := shutdownFunc(); err != nil {
-	// 			errChan <- err
-	// 		}
-	// 	}(shutdownFunc)
-	// }
-
-	// wg.Wait()
-	// close(errChan)
-
-	// var errs []error
-	// for err := range errChan {
-	// 	if err != nil {
-	// 		errs = append(errs, err)
-	// 	}
-	// }
-
-	// if len(errs) > 0 {
-	// 	return fmt.Errorf("shutdown errors: %v", errs)
-	// }
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

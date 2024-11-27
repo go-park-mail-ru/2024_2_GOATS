@@ -151,3 +151,31 @@ func ScanActorMoviesConnections(rows *sql.Rows) ([]*dto.RepoMovieShortInfo, erro
 
 	return actMvs, nil
 }
+
+func ScanMovieShortConnection(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
+	var movies []*models.MovieShortInfo
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			errMsg := fmt.Errorf("cannot close rows while taking favorites: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+		}
+	}()
+
+	for rows.Next() {
+		var movie = &models.MovieShortInfo{}
+
+		err := rows.Scan(&movie.ID, &movie.Title, &movie.CardURL, &movie.AlbumURL, &movie.Rating, &movie.ReleaseDate, &movie.MovieType, &movie.Country)
+
+		if err != nil {
+			errMsg := fmt.Errorf("error while scanning favorites: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+
+			return nil, errMsg
+		}
+
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
+}

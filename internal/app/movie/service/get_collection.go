@@ -11,9 +11,11 @@ import (
 func (s *MovieService) GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError) {
 	collections, err := s.movieClient.GetCollection(ctx, filter)
 
-	return nil, &errVals.ServiceError{
-		Code:  "GetCollection",
-		Error: fmt.Errorf("error GetCollection: %w", err),
+	if err != nil {
+		return nil, &errVals.ServiceError{
+			Code:  "GetCollection",
+			Error: fmt.Errorf("error GetCollection: %w", err),
+		}
 	}
 
 	return &models.CollectionsRespData{Collections: collections}, nil

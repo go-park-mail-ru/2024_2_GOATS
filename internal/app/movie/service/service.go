@@ -12,8 +12,8 @@ type MovieService struct {
 	userClient  client.UserClientInterface
 }
 
-func NewUserService(usrClient client.MovieClientInterface) delivery.MovieServiceInterface {
+func NewMovieService(mvClient client.MovieClientInterface) delivery.MovieServiceInterface {
 	return &MovieService{
-		movieClient: usrClient,
+		movieClient: mvClient,
 	}
 }
