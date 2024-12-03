@@ -31,39 +31,39 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 
 // TODO раскоментить к 4му РК
 
-// func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
-// 	logger := log.Ctx(r.Context())
-// 	genre := r.URL.Query().Get("genre")
-
-// 	if genre == "" {
-// 		errMsg := errors.New("incorrect genre was given")
-// 		err := errVals.NewDeliveryError(
-// 			http.StatusBadRequest,
-// 			[]errVals.ErrorItem{
-// 				errVals.NewErrorItem("bad_request", errVals.NewCustomError(errMsg.Error())),
-// 			},
-// 		)
-
-// 		logger.Error().Err(errMsg).Interface("getMovieByGenre", err).Msg("request_failed")
-// 		api.Response(r.Context(), w, err.HTTPStatus, err)
-
-// 		return
-// 	}
-
-// 	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
-// 	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
-// 	if errResp != nil {
-// 		errMsg := errors.New("failed to get movies by genre")
-// 		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
-// 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
-
-// 		return
-// 	}
-
-// 	logger.Info().Interface("getMovieByGenre", resp).Msg("byGenre success")
-
-// 	api.Response(r.Context(), w, http.StatusOK, resp)
-// }
+//func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
+//	logger := log.Ctx(r.Context())
+//	genre := r.URL.Query().Get("genre")
+//
+//	if genre == "" {
+//		errMsg := errors.New("incorrect genre was given")
+//		err := errVals.NewDeliveryError(
+//			http.StatusBadRequest,
+//			[]errVals.ErrorItem{
+//				errVals.NewErrorItem("bad_request", errVals.NewCustomError(errMsg.Error())),
+//			},
+//		)
+//
+//		logger.Error().Err(errMsg).Interface("getMovieByGenre", err).Msg("request_failed")
+//		api.Response(r.Context(), w, err.HTTPStatus, err)
+//
+//		return
+//	}
+//
+//	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
+//	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
+//	if errResp != nil {
+//		errMsg := errors.New("failed to get movies by genre")
+//		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
+//		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+//
+//		return
+//	}
+//
+//	logger.Info().Interface("getMovieByGenre", resp).Msg("byGenre success")
+//
+//	api.Response(r.Context(), w, http.StatusOK, resp)
+//}
 
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
 	m.collectMovieData(w, r, "")

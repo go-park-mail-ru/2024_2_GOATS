@@ -26,6 +26,9 @@ type statusRecorder struct {
 }
 
 func (rec *statusRecorder) WriteHeader(code int) {
+	if rec.Status != http.StatusOK {
+		return
+	}
 	rec.Status = code
 	rec.ResponseWriter.WriteHeader(code)
 }
@@ -65,7 +68,11 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
+			if rw, ok := w.(*statusRecorder); ok {
+				rw.WriteHeader(http.StatusNoContent)
+			} else {
+				w.WriteHeader(http.StatusNoContent)
+			}
 			return
 		}
 
