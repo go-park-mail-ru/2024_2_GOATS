@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
+	"github.com/go-redis/redis/v8"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"log"
 	"net/http"
@@ -24,6 +27,9 @@ import (
 
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
+	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
+	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
 	payApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery"
 	payServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
@@ -35,7 +41,6 @@ import (
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	payment "github.com/go-park-mail-ru/2024_2_GOATS/payment_service/pkg/payment_v1"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // App root facade struct
@@ -141,12 +146,17 @@ func (a *App) Run() {
 	srvSub := subServ.NewSubscriptionService(payManager, usrManager)
 	delSub := subApi.NewSubscriptionHandler(srvSub)
 
-	// repoRoom := roomRepo.NewRepository(database, rdb)
-	// srvRoom := roomServ.NewService(repoRoom, srvMov)
-	// roomHub := ws.NewRoomHub()
-	// delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+	addr := fmt.Sprintf("%s:%d", a.Config.Databases.Redis.Host, a.Config.Databases.Redis.Port)
+	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
-	// go roomHub.Run() // Запуск обработчика Hub'a
+	repoRoom := roomRepo.NewRepository(rdb)
+	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager)
+	roomHub := ws.NewRoomHub()
+	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+
+	log.Println("XZXZXZ")
+	go roomHub.Run()
+	log.Println("XZ2XZ2XZ2")
 
 	mx := mux.NewRouter()
 	authMW := middleware.NewSessionMiddleware(srvAuth)
@@ -163,6 +173,8 @@ func (a *App) Run() {
 	}).Methods(http.MethodGet)
 
 	ctxValues := config.FromContext(ctx)
+
+	router.SetupRoom(roomHub, delRoom, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", ctxValues.Listener.Port),

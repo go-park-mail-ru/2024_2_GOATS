@@ -13,13 +13,13 @@ start_compose_service() {
 
     pushd "$service_path" > /dev/null
     docker-compose down -v
-    docker-compose up --build -d
+    docker-compose up --build
     popd > /dev/null
 }
 
 echo "Сборка Docker образа для корня проекта"
 docker-compose down -v
-docker-compose up --build -d
+docker-compose up --build
 
 services=("user_service" "auth_service" "movie_service" "payment_service")
 for service in "${services[@]}"; do

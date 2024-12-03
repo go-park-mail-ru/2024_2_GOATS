@@ -67,6 +67,15 @@ services:
     depends_on:
       - facade_app
 
+  redis:
+    image: 'redis:latest'
+    command: redis-server
+    container_name: redis
+    volumes:
+      - redis:/data
+    networks:
+      - cassette-world
+
 networks:
   cassette-world:
     external:
