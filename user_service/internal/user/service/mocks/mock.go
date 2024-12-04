@@ -51,6 +51,21 @@ func (mr *MockUserRepoInterfaceMockRecorder) CheckFavorite(ctx, favData interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFavorite", reflect.TypeOf((*MockUserRepoInterface)(nil).CheckFavorite), ctx, favData)
 }
 
+// CreateSubscription mocks base method.
+func (m *MockUserRepoInterface) CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscriptionData) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSubscription", ctx, subData)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSubscription indicates an expected call of CreateSubscription.
+func (mr *MockUserRepoInterfaceMockRecorder) CreateSubscription(ctx, subData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubscription", reflect.TypeOf((*MockUserRepoInterface)(nil).CreateSubscription), ctx, subData)
+}
+
 // CreateUser mocks base method.
 func (m *MockUserRepoInterface) CreateUser(ctx context.Context, registerData *dto.RepoCreateData) (*dto0.User, error) {
 	m.ctrl.T.Helper()
@@ -150,6 +165,20 @@ func (m *MockUserRepoInterface) UpdateProfileData(ctx context.Context, profileDa
 func (mr *MockUserRepoInterfaceMockRecorder) UpdateProfileData(ctx, profileData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileData", reflect.TypeOf((*MockUserRepoInterface)(nil).UpdateProfileData), ctx, profileData)
+}
+
+// UpdateSubscribtionStatus mocks base method.
+func (m *MockUserRepoInterface) UpdateSubscribtionStatus(ctx context.Context, subID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSubscribtionStatus", ctx, subID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSubscribtionStatus indicates an expected call of UpdateSubscribtionStatus.
+func (mr *MockUserRepoInterfaceMockRecorder) UpdateSubscribtionStatus(ctx, subID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscribtionStatus", reflect.TypeOf((*MockUserRepoInterface)(nil).UpdateSubscribtionStatus), ctx, subID)
 }
 
 // UserByEmail mocks base method.

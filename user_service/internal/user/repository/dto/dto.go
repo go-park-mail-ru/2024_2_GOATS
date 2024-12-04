@@ -7,6 +7,11 @@ type RepoCreateData struct {
 	PasswordConfirmation string
 }
 
+type RepoCreateSubscriptionData struct {
+	UserID uint64
+	Amount uint64
+}
+
 type RepoUser struct {
 	ID        uint64
 	Email     string

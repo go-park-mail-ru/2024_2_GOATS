@@ -151,6 +151,26 @@ type Favorite struct {
 	MovieID int
 }
 
+type SubscriptionData struct {
+	UserID int
+	Amount uint64
+}
+
+type PaymentCallbackData struct {
+	NotificationType string
+	OperationID      string
+	Amount           int64
+	Currency         string
+	Sender           string
+	Label            string
+	Unaccepted       bool
+}
+
+type CreatePaymentData struct {
+	SubscriptionID int
+	Amount         uint64
+}
+
 func (p Person) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
 }

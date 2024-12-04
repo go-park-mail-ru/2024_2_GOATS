@@ -56,3 +56,12 @@ generate-movie-api:
 	--go-grpc_out=movie_service/pkg/movie_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=/Users/rugarov/GolandProjects/validation-rule-flex/bin/protoc-gen-go-grpc \
 	movie_service/proto/movie.proto
+
+generate-payment-api:
+	mkdir -p payment_service/pkg/payment_v1
+	protoc --proto_path payment_service/proto \
+	--go_out=payment_service/pkg/payment_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=/Users/unicoyal/go/bin/protoc-gen-go \
+	--go-grpc_out=payment_service/pkg/payment_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=/Users/unicoyal/go/bin/protoc-gen-go-grpc \
+	payment_service/proto/payment.proto

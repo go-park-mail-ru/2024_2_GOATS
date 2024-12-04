@@ -1,0 +1,14 @@
+listener:
+  port: ":8087"
+
+databases:
+  postgres:
+    host: localhost
+    port: 5434
+    user: test_user
+    password: test_password
+    name: test_payment_db
+
+  localStorage:
+    userAvatarsFullURL: images/user_avatars/
+    userAvatarsRelativeURL: images/user_avatars/

@@ -2,6 +2,7 @@ package api
 
 import (
 	"mime/multipart"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
@@ -108,4 +109,30 @@ type User struct {
 type FavReq struct {
 	UserID  int `json:"user_id"`
 	MovieID int `json:"movie_id"`
+}
+
+type PaymentCallback struct {
+	NotificationType string    `json:"notification_type"`
+	OperationID      string    `json:"operation_id"`
+	Amount           int64     `json:"amount"`
+	WithdrawAmount   int64     `json:"withdraw_amount"`
+	Currency         string    `json:"currency"`
+	DateTime         time.Time `json:"date_time"`
+	Sender           string    `json:"sender"`
+	Codepro          bool      `json:"codepro"`
+	Label            string    `json:"label"`
+	Signature        string    `json:"sha1_hash"`
+	Unaccepted       bool      `json:"unaccepted"`
+}
+
+type SubscriptionStatus struct {
+	Status string `json:"status"`
+}
+
+type SubscribeRequest struct {
+	Amount int64 `json:"amount"`
+}
+
+type SubscribeResponse struct {
+	SubscriptionIDP string `json:"subscription_idp"`
 }

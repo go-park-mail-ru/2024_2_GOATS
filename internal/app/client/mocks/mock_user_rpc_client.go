@@ -176,6 +176,26 @@ func (mr *MockUserRPCClientMockRecorder) SetFavorite(arg0, arg1 interface{}, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFavorite", reflect.TypeOf((*MockUserRPCClient)(nil).SetFavorite), varargs...)
 }
 
+// Subscribe mocks base method.
+func (m *MockUserRPCClient) Subscribe(arg0 context.Context, arg1 *__.CreateSubscriptionRequest, arg2 ...grpc.CallOption) (*__.SubscriptionID, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Subscribe", varargs...)
+	ret0, _ := ret[0].(*__.SubscriptionID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Subscribe indicates an expected call of Subscribe.
+func (mr *MockUserRPCClientMockRecorder) Subscribe(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockUserRPCClient)(nil).Subscribe), varargs...)
+}
+
 // UpdatePassword mocks base method.
 func (m *MockUserRPCClient) UpdatePassword(arg0 context.Context, arg1 *__.UpdatePasswordRequest, arg2 ...grpc.CallOption) (*__.Nothing, error) {
 	m.ctrl.T.Helper()
@@ -214,4 +234,24 @@ func (mr *MockUserRPCClientMockRecorder) UpdateProfile(arg0, arg1 interface{}, a
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserRPCClient)(nil).UpdateProfile), varargs...)
+}
+
+// UpdateSubscribtionStatus mocks base method.
+func (m *MockUserRPCClient) UpdateSubscribtionStatus(arg0 context.Context, arg1 *__.SubscriptionID, arg2 ...grpc.CallOption) (*__.Nothing, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateSubscribtionStatus", varargs...)
+	ret0, _ := ret[0].(*__.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateSubscribtionStatus indicates an expected call of UpdateSubscribtionStatus.
+func (mr *MockUserRPCClientMockRecorder) UpdateSubscribtionStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscribtionStatus", reflect.TypeOf((*MockUserRPCClient)(nil).UpdateSubscribtionStatus), varargs...)
 }

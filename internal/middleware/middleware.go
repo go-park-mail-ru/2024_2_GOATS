@@ -147,7 +147,7 @@ var store = sessions.NewCookieStore([]byte("secret-key"))
 // CsrfMiddleware проверяет CSRF токен из сессии и заголовка запроса
 func CsrfMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
+		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" || strings.HasPrefix(r.URL.Path, "/api/payments") {
 			next.ServeHTTP(w, r)
 			return
 		}
