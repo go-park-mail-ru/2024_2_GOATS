@@ -27,7 +27,7 @@ func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddle
 
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/api/users") && !strings.HasPrefix(r.URL.Path, "/api/movies") {
+		if !strings.HasPrefix(r.URL.Path, "/api/users") && !strings.HasPrefix(r.URL.Path, "/api/movies") && !strings.HasPrefix(r.URL.Path, "/api/subscription") {
 			next.ServeHTTP(w, r)
 			return
 		}

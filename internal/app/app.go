@@ -25,11 +25,16 @@ import (
 
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	payApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery"
+	payServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
+	subApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/delivery"
+	subServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/service"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	payment "github.com/go-park-mail-ru/2024_2_GOATS/payment_service/pkg/payment_v1"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -88,9 +93,20 @@ func (a *App) Run() {
 
 	defer mGrpcConn.Close()
 
+	pGrpcConn, err := grpc.NewClient(
+		"payment_app:8084",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer pGrpcConn.Close()
+
 	sessManager := client.NewAuthClient(auth.NewSessionRPCClient(aGrpcConn))
 	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
 	mvManager := client.NewMovieClient(movie.NewMovieServiceClient(mGrpcConn))
+	payManager := client.NewPaymentClient(payment.NewPaymentRPCClient(pGrpcConn))
 
 	srvUser := userServ.NewUserService(usrManager, mvManager)
 	delUser := userApi.NewUserHandler(ctx, srvUser)
@@ -100,6 +116,12 @@ func (a *App) Run() {
 
 	srvMov := movieServ.NewMovieService(mvManager, usrManager)
 	delMov := movieApi.NewMovieHandler(srvMov)
+
+	srvPay := payServ.NewPaymentService(payManager, usrManager)
+	delPay := payApi.NewPaymentHandler(ctx, srvPay)
+
+	srvSub := subServ.NewSubscriptionService(payManager, usrManager)
+	delSub := subApi.NewSubscriptionHandler(ctx, srvSub)
 
 	// repoRoom := roomRepo.NewRepository(database, rdb)
 	// srvRoom := roomServ.NewService(repoRoom, srvMov)
@@ -115,6 +137,8 @@ func (a *App) Run() {
 	router.SetupAuth(delAuth, mx)
 	router.SetupUser(delUser, mx)
 	router.SetupMovie(delMov, mx)
+	router.SetupPayment(delPay, mx)
+	router.SetupSubscription(delSub, mx)
 
 	mx.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)

@@ -11,6 +11,15 @@ message CreateUserRequest {
   string PasswordConfirmation = 4;
 }
 
+message CreateSubscriptionRequest {
+  uint64 UserID = 1;
+  uint64 Amount = 2;
+}
+
+message SubscriptionID {
+  uint64 ID = 1;
+}
+
 message UserData {
   uint64 UserID = 1;
   string Email = 2;
@@ -19,6 +28,7 @@ message UserData {
   string AvatarURL = 5;
   string AvatarName = 6;
   bytes AvatarFile = 7;
+  bool SubscriptionStatus = 8;
 }
 
 message UpdatePasswordRequest {
@@ -63,4 +73,6 @@ service UserRPC {
 	rpc CheckFavorite(HandleFavorite) returns (Nothing);
 	rpc FindByID(ID) returns (UserData);
 	rpc FindByEmail(Email) returns (UserData);
+  rpc Subscribe(CreateSubscriptionRequest) returns (SubscriptionID);
+  rpc UpdateSubscribtionStatus(SubscriptionID) returns (Nothing);
 }

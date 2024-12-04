@@ -47,6 +47,20 @@ func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
 }
 
+func SetupPayment(delLayer handlers.PaymentHandlerInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	paymentRouter := apiMux.PathPrefix("/payments").Subrouter()
+
+	paymentRouter.HandleFunc("/notify_yoo_money", delLayer.NotifyYooMoney).Methods(http.MethodPost, http.MethodOptions)
+}
+
+func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	subscrRouter := apiMux.PathPrefix("/subscription").Subrouter()
+
+	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions)
+}
+
 //func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 //	apiMux := router.PathPrefix("/api").Subrouter()
 //	roomRouter := apiMux.PathPrefix("/room").Subrouter()

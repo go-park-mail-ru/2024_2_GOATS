@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/dto"
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
 	"github.com/rs/zerolog/log"
-	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
 )
 
 const (

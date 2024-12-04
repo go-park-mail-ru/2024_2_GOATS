@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = ".";
+
+package payment;
+
+message CreateRequest {
+  uint64 SubscriptionID = 1;
+  uint64 Amount = 2;
+}
+
+message PaymentID {
+  uint64 ID = 1;
+}
+
+message Nothing {
+  bool Dummy = 1;
+}
+
+service PaymentRPC {
+  rpc Create(CreateRequest) returns (PaymentID);
+  rpc MarkPaid(PaymentID) returns (Nothing);
+}

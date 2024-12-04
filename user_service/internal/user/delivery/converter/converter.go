@@ -18,6 +18,17 @@ func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData 
 	}
 }
 
+func ConvertToSrvCreateSubscription(req *user.CreateSubscriptionRequest) *srvDTO.CreateSubscriptionData {
+	if req == nil {
+		return nil
+	}
+
+	return &srvDTO.CreateSubscriptionData{
+		UserID: req.UserID,
+		Amount: req.Amount,
+	}
+}
+
 func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.PasswordData {
 	if req == nil {
 		return nil
@@ -37,10 +48,10 @@ func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 	}
 
 	return &srvDTO.User{
-		ID: req.UserID,
-		Email: req.Email,
-		Username: req.Username,
-		AvatarURL: req.AvatarURL,
+		ID:         req.UserID,
+		Email:      req.Email,
+		Username:   req.Username,
+		AvatarURL:  req.AvatarURL,
 		AvatarName: req.AvatarName,
 		AvatarFile: req.AvatarFile,
 	}

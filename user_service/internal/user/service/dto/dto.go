@@ -28,3 +28,8 @@ type CreateUserData struct {
 	Password             string
 	PasswordConfirmation string
 }
+
+type CreateSubscriptionData struct {
+	UserID uint64
+	Amount uint64
+}

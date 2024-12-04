@@ -18,7 +18,7 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// UserRPCClient is the clients API for UserRPC service.
+// UserRPCClient is the client API for UserRPC service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserRPCClient interface {
@@ -31,6 +31,8 @@ type UserRPCClient interface {
 	CheckFavorite(ctx context.Context, in *HandleFavorite, opts ...grpc.CallOption) (*Nothing, error)
 	FindByID(ctx context.Context, in *ID, opts ...grpc.CallOption) (*UserData, error)
 	FindByEmail(ctx context.Context, in *Email, opts ...grpc.CallOption) (*UserData, error)
+	Subscribe(ctx context.Context, in *CreateSubscriptionRequest, opts ...grpc.CallOption) (*SubscriptionID, error)
+	UpdateSubscribtionStatus(ctx context.Context, in *SubscriptionID, opts ...grpc.CallOption) (*Nothing, error)
 }
 
 type userRPCClient struct {
@@ -122,6 +124,24 @@ func (c *userRPCClient) FindByEmail(ctx context.Context, in *Email, opts ...grpc
 	return out, nil
 }
 
+func (c *userRPCClient) Subscribe(ctx context.Context, in *CreateSubscriptionRequest, opts ...grpc.CallOption) (*SubscriptionID, error) {
+	out := new(SubscriptionID)
+	err := c.cc.Invoke(ctx, "/user.UserRPC/Subscribe", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userRPCClient) UpdateSubscribtionStatus(ctx context.Context, in *SubscriptionID, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/user.UserRPC/UpdateSubscribtionStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserRPCServer is the server API for UserRPC service.
 // All implementations must embed UnimplementedUserRPCServer
 // for forward compatibility
@@ -135,6 +155,8 @@ type UserRPCServer interface {
 	CheckFavorite(context.Context, *HandleFavorite) (*Nothing, error)
 	FindByID(context.Context, *ID) (*UserData, error)
 	FindByEmail(context.Context, *Email) (*UserData, error)
+	Subscribe(context.Context, *CreateSubscriptionRequest) (*SubscriptionID, error)
+	UpdateSubscribtionStatus(context.Context, *SubscriptionID) (*Nothing, error)
 	mustEmbedUnimplementedUserRPCServer()
 }
 
@@ -168,6 +190,12 @@ func (UnimplementedUserRPCServer) FindByID(context.Context, *ID) (*UserData, err
 }
 func (UnimplementedUserRPCServer) FindByEmail(context.Context, *Email) (*UserData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByEmail not implemented")
+}
+func (UnimplementedUserRPCServer) Subscribe(context.Context, *CreateSubscriptionRequest) (*SubscriptionID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+}
+func (UnimplementedUserRPCServer) UpdateSubscribtionStatus(context.Context, *SubscriptionID) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSubscribtionStatus not implemented")
 }
 func (UnimplementedUserRPCServer) mustEmbedUnimplementedUserRPCServer() {}
 
@@ -344,6 +372,42 @@ func _UserRPC_FindByEmail_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserRPC_Subscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserRPCServer).Subscribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserRPC/Subscribe",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserRPCServer).Subscribe(ctx, req.(*CreateSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserRPC_UpdateSubscribtionStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubscriptionID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserRPCServer).UpdateSubscribtionStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserRPC/UpdateSubscribtionStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserRPCServer).UpdateSubscribtionStatus(ctx, req.(*SubscriptionID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserRPC_ServiceDesc is the grpc.ServiceDesc for UserRPC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +450,14 @@ var UserRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindByEmail",
 			Handler:    _UserRPC_FindByEmail_Handler,
+		},
+		{
+			MethodName: "Subscribe",
+			Handler:    _UserRPC_Subscribe_Handler,
+		},
+		{
+			MethodName: "UpdateSubscribtionStatus",
+			Handler:    _UserRPC_UpdateSubscribtionStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
