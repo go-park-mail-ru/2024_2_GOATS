@@ -18,7 +18,7 @@ const (
 		RETURNING id
 	`
 
-	markPaidSQL = "UPDATE subscriptions SET status = $1 WHERE id = $2"
+	markPaidSQL = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
 
 	pendingStatus = "pending"
 	activeStatus  = "active"
@@ -53,7 +53,7 @@ func UpdateSubscription(ctx context.Context, subID uint64, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	_, err := db.ExecContext(ctx, markPaidSQL, activeStatus, subID)
+	_, err := db.ExecContext(ctx, markPaidSQL, activeStatus, time.Now().AddDate(0, 1, 0), subID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "update_subscription_status", "subscriptions")
