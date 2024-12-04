@@ -41,7 +41,6 @@ func (ph *PaymentHandler) NotifyYooMoney(w http.ResponseWriter, r *http.Request)
 		api.Response(r.Context(), w, http.StatusBadRequest, nil)
 	}
 
-	return
 	amount, _ := convertToCopeck(r.FormValue("amount"))
 	wAmount, _ := convertToCopeck(r.FormValue("withdraw_amount"))
 	datetime, _ := parseDatetime(r.FormValue("datetime"))
