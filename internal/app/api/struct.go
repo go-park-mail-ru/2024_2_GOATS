@@ -134,5 +134,5 @@ type SubscribeRequest struct {
 }
 
 type SubscribeResponse struct {
-	SubscriptionIDP string `json:"subscription_idp`
+	SubscriptionIDP string `json:"subscription_idp"`
 }
