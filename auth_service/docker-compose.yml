@@ -7,6 +7,8 @@ services:
       context: ..
       dockerfile: auth_service/Dockerfile
     restart: always
+    ports:
+      - 8081:8081
     networks:
       - cassette-world
   redis:
