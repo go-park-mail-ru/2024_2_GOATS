@@ -29,6 +29,7 @@ message UserData {
   string AvatarName = 6;
   bytes AvatarFile = 7;
   bool SubscriptionStatus = 8;
+  string SubscriptionExpirationDate = 9;
 }
 
 message UpdatePasswordRequest {

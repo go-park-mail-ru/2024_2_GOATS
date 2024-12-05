@@ -74,11 +74,13 @@ func ConvertToGRPCUser(su *srvDTO.User) *user.UserData {
 	}
 
 	return &user.UserData{
-		UserID:     su.ID,
-		Email:      su.Email,
-		Username:   su.Username,
-		Password:   su.Password,
-		AvatarURL:  su.AvatarURL,
-		AvatarName: su.AvatarName,
+		UserID:                     su.ID,
+		Email:                      su.Email,
+		Username:                   su.Username,
+		Password:                   su.Password,
+		AvatarURL:                  su.AvatarURL,
+		AvatarName:                 su.AvatarName,
+		SubscriptionStatus:         su.SubscriptionStatus,
+		SubscriptionExpirationDate: su.SubscriptionExpirationDate,
 	}
 }

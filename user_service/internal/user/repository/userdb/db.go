@@ -19,8 +19,16 @@ const (
 		RETURNING id, email
 	`
 
-	usrFindByEmail       = "SELECT id, email, username, password_hash FROM USERS WHERE email = $1"
-	usrFindByID          = "SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = $1"
+	usrFindByID = `
+		SELECT users.id, users.email, users.username, users.password_hash, users.avatar_url, subscriptions.status, subscriptions.expiration_date
+		FROM users
+		LEFT JOIN subscriptions on subscriptions.user_id = users.id
+		WHERE users.id = $1
+		ORDER BY subscriptions.expiration_date DESC
+		LIMIT 1
+	`
+
+	usrFindByEmail       = "SELECT id, email, username, password_hash FROM users WHERE email = $1"
 	usrUpdatePasswordSQL = "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
 )
 
@@ -70,25 +78,34 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, 
 	return &usr, nil
 }
 
-func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, error) {
+func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, *dto.RepoSubscription, error) {
 	var usr dto.RepoUser
+	var subs dto.RepoSubscription
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarURL)
+	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(
+		&usr.ID,
+		&usr.Email,
+		&usr.Username,
+		&usr.Password,
+		&usr.AvatarURL,
+		&subs.Status,
+		&subs.ExpirationDate,
+	)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "find_user_by_id", "users")
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
-		return nil, errMsg
+		return nil, nil, errMsg
 	}
 
 	metricsutils.SaveSuccessMetric(start, "find_user_by_id", "users")
 	logger.Info().Msgf("postgres: user with id %d found", usr.ID)
 
-	return &usr, nil
+	return &usr, &subs, nil
 }
 
 func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB) error {

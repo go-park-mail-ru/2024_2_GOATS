@@ -100,10 +100,12 @@ type Actor struct {
 }
 
 type User struct {
-	ID        int    `json:"id"`
-	Email     string `json:"email"`
-	Username  string `json:"username"`
-	AvatarURL string `json:"avatar_url"`
+	ID                         int    `json:"id"`
+	Email                      string `json:"email"`
+	Username                   string `json:"username"`
+	AvatarURL                  string `json:"avatar_url"`
+	SubscriptionStatus         bool   `json:"subscription_status"`
+	SubscriptionExpirationDate string `json:"subscription_expiration_date"`
 }
 
 type FavReq struct {

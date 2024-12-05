@@ -13,7 +13,7 @@ import (
 )
 
 func (u *UserRepo) UserByID(ctx context.Context, userID uint64) (*srvDTO.User, error) {
-	usr, err := userdb.FindByID(ctx, userID, u.Database)
+	usr, subs, err := userdb.FindByID(ctx, userID, u.Database)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New(fmt.Sprint(errVals.ErrUserNotFoundCode, err))
@@ -22,5 +22,5 @@ func (u *UserRepo) UserByID(ctx context.Context, userID uint64) (*srvDTO.User, e
 		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)
 	}
 
-	return converter.ToUserFromRepoUser(usr), nil
+	return converter.ToUserFromRepoUser(usr, subs), nil
 }
