@@ -29,5 +29,5 @@ func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.RepoCreateD
 		return nil, fmt.Errorf("%s: %w", errors.ErrCreateUserCode, err)
 	}
 
-	return converter.ToUserFromRepoUser(usr), nil
+	return converter.ToUserShortFromRepoUser(usr), nil
 }

@@ -92,10 +92,12 @@ func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 
 	return &api.SessionResponse{
 		UserData: api.User{
-			ID:        sr.UserData.ID,
-			Email:     sr.UserData.Email,
-			Username:  sr.UserData.Username,
-			AvatarURL: sr.UserData.AvatarURL,
+			ID:                         sr.UserData.ID,
+			Email:                      sr.UserData.Email,
+			Username:                   sr.UserData.Username,
+			AvatarURL:                  sr.UserData.AvatarURL,
+			SubscriptionStatus:         sr.UserData.SubscriptionStatus,
+			SubscriptionExpirationDate: sr.UserData.SubscriptionExpirationDate,
 		},
 	}
 }

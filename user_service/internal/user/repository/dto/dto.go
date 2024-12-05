@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"database/sql"
+)
+
 type RepoCreateData struct {
 	Email                string
 	Username             string
@@ -23,4 +27,9 @@ type RepoUser struct {
 type RepoFavorite struct {
 	UserID  uint64
 	MovieID uint64
+}
+
+type RepoSubscription struct {
+	Status         sql.NullString
+	ExpirationDate sql.NullTime
 }

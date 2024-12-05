@@ -34,13 +34,15 @@ type CollectionsRespData struct {
 }
 
 type User struct {
-	ID         int
-	Email      string
-	Username   string
-	Password   string
-	AvatarURL  string
-	AvatarName string
-	AvatarFile multipart.File
+	ID                         int
+	Email                      string
+	Username                   string
+	Password                   string
+	AvatarURL                  string
+	AvatarName                 string
+	AvatarFile                 multipart.File
+	SubscriptionStatus         bool
+	SubscriptionExpirationDate string
 }
 
 type Collection struct {

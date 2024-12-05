@@ -68,12 +68,14 @@ func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, er
 	}
 
 	return &models.User{
-		ID:         int(resp.UserID),
-		Email:      resp.Email,
-		Username:   resp.Username,
-		Password:   resp.Password,
-		AvatarURL:  resp.AvatarURL,
-		AvatarName: resp.AvatarName,
+		ID:                         int(resp.UserID),
+		Email:                      resp.Email,
+		Username:                   resp.Username,
+		Password:                   resp.Password,
+		AvatarURL:                  resp.AvatarURL,
+		AvatarName:                 resp.AvatarName,
+		SubscriptionStatus:         resp.SubscriptionStatus,
+		SubscriptionExpirationDate: resp.SubscriptionExpirationDate,
 	}, nil
 }
 

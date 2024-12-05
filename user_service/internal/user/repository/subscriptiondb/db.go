@@ -20,8 +20,8 @@ const (
 
 	markPaidSQL = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
 
-	pendingStatus = "pending"
-	activeStatus  = "active"
+	PendingStatus = "pending"
+	ActiveStatus  = "active"
 )
 
 func CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscriptionData, db *sql.DB) (uint64, error) {
@@ -32,7 +32,7 @@ func CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscription
 	err := db.QueryRowContext(
 		ctx,
 		subCreateSQL,
-		subData.UserID, subData.Amount, pendingStatus,
+		subData.UserID, subData.Amount, PendingStatus,
 	).Scan(&subID)
 
 	if err != nil {
@@ -53,7 +53,7 @@ func UpdateSubscription(ctx context.Context, subID uint64, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	_, err := db.ExecContext(ctx, markPaidSQL, activeStatus, time.Now().AddDate(0, 1, 0), subID)
+	_, err := db.ExecContext(ctx, markPaidSQL, ActiveStatus, time.Now().AddDate(0, 1, 0), subID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "update_subscription_status", "subscriptions")
