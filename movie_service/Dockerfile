@@ -1,13 +1,30 @@
-FROM golang:1.22.7 AS builder
+############################
+# STEP 1 build executable binary
+############################
+FROM golang:alpine AS builder
+RUN apk update && apk add --no-cache git
 
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY movie_service/ ./movie_service
+
 WORKDIR /app/movie_service
 
-RUN go build cmd/main.go
-EXPOSE 8083
+ENV CGO_ENABLED=0
+RUN go build -o /app/movie_service/cmd/main cmd/main.go
 
-CMD [ "./main" ]
+############################
+# STEP 2 build a small image
+############################
+FROM scratch
+
+COPY --from=builder /app/movie_service/cmd/main /bin/main
+COPY --from=builder /app/movie_service/.env /app/movie_service/.env
+COPY --from=builder /app/movie_service/internal/config/config.yml /app/movie_service/internal/config/config.yml
+COPY --from=builder /app/movie_service/internal/db /app/movie_service/internal/db
+
+WORKDIR /app/movie_service
+
+ENTRYPOINT ["/bin/main"]

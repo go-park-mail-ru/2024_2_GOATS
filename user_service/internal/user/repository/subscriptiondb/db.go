@@ -3,6 +3,7 @@ package subscriptiondb
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -18,7 +19,8 @@ const (
 		RETURNING id
 	`
 
-	markPaidSQL = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
+	markPaidSQL     = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
+	findByUserIDSQL = "SELECT status, expiration_date FROM subscriptions WHERE user_id = $1"
 
 	PendingStatus = "pending"
 	ActiveStatus  = "active"
@@ -67,4 +69,32 @@ func UpdateSubscription(ctx context.Context, subID uint64, db *sql.DB) error {
 	logger.Info().Msg("postgres: subscription status updated successfully")
 
 	return nil
+}
+
+func FindByUserID(ctx context.Context, usrID uint64, db *sql.DB) (*dto.RepoSubscription, error) {
+	start := time.Now()
+	logger := log.Ctx(ctx)
+
+	var sub = &dto.RepoSubscription{}
+	row := db.QueryRowContext(ctx, findByUserIDSQL, usrID)
+
+	err := row.Scan(
+		&sub.Status,
+		&sub.ExpirationDate,
+	)
+
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			metricsutils.SaveErrorMetric(start, "get_actor_by_id", "actors")
+			errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
+			logger.Error().Err(errMsg).Msg("pg_error")
+
+			return nil, errMsg
+		}
+	}
+
+	metricsutils.SaveSuccessMetric(start, "update_subscription_status", "subscriptions")
+	logger.Info().Msg("postgres: subscription status updated successfully")
+
+	return sub, nil
 }
