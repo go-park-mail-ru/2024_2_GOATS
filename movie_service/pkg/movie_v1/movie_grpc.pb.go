@@ -30,6 +30,9 @@ type MovieServiceClient interface {
 	GetActor(ctx context.Context, in *GetActorRequest, opts ...grpc.CallOption) (*GetActorResponse, error)
 	GetMovieActors(ctx context.Context, in *GetMovieActorsRequest, opts ...grpc.CallOption) (*GetMovieActorsResponse, error)
 	GetFavorites(ctx context.Context, in *GetFavoritesRequest, opts ...grpc.CallOption) (*GetFavoritesResponse, error)
+	GetUserRating(ctx context.Context, in *GetUserRatingRequest, opts ...grpc.CallOption) (*GetUserRatingResponse, error)
+	AddOrUpdateRating(ctx context.Context, in *AddOrUpdateRatingRequest, opts ...grpc.CallOption) (*AddOrUpdateRatingResponse, error)
+	DeleteRating(ctx context.Context, in *DeleteRatingRequest, opts ...grpc.CallOption) (*DeleteRatingResponse, error)
 }
 
 type movieServiceClient struct {
@@ -112,6 +115,33 @@ func (c *movieServiceClient) GetFavorites(ctx context.Context, in *GetFavoritesR
 	return out, nil
 }
 
+func (c *movieServiceClient) GetUserRating(ctx context.Context, in *GetUserRatingRequest, opts ...grpc.CallOption) (*GetUserRatingResponse, error) {
+	out := new(GetUserRatingResponse)
+	err := c.cc.Invoke(ctx, "/movie.MovieService/GetUserRating", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) AddOrUpdateRating(ctx context.Context, in *AddOrUpdateRatingRequest, opts ...grpc.CallOption) (*AddOrUpdateRatingResponse, error) {
+	out := new(AddOrUpdateRatingResponse)
+	err := c.cc.Invoke(ctx, "/movie.MovieService/AddOrUpdateRating", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) DeleteRating(ctx context.Context, in *DeleteRatingRequest, opts ...grpc.CallOption) (*DeleteRatingResponse, error) {
+	out := new(DeleteRatingResponse)
+	err := c.cc.Invoke(ctx, "/movie.MovieService/DeleteRating", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MovieServiceServer is the server API for MovieService service.
 // All implementations must embed UnimplementedMovieServiceServer
 // for forward compatibility
@@ -124,6 +154,9 @@ type MovieServiceServer interface {
 	GetActor(context.Context, *GetActorRequest) (*GetActorResponse, error)
 	GetMovieActors(context.Context, *GetMovieActorsRequest) (*GetMovieActorsResponse, error)
 	GetFavorites(context.Context, *GetFavoritesRequest) (*GetFavoritesResponse, error)
+	GetUserRating(context.Context, *GetUserRatingRequest) (*GetUserRatingResponse, error)
+	AddOrUpdateRating(context.Context, *AddOrUpdateRatingRequest) (*AddOrUpdateRatingResponse, error)
+	DeleteRating(context.Context, *DeleteRatingRequest) (*DeleteRatingResponse, error)
 	mustEmbedUnimplementedMovieServiceServer()
 }
 
@@ -154,6 +187,15 @@ func (UnimplementedMovieServiceServer) GetMovieActors(context.Context, *GetMovie
 }
 func (UnimplementedMovieServiceServer) GetFavorites(context.Context, *GetFavoritesRequest) (*GetFavoritesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFavorites not implemented")
+}
+func (UnimplementedMovieServiceServer) GetUserRating(context.Context, *GetUserRatingRequest) (*GetUserRatingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserRating not implemented")
+}
+func (UnimplementedMovieServiceServer) AddOrUpdateRating(context.Context, *AddOrUpdateRatingRequest) (*AddOrUpdateRatingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddOrUpdateRating not implemented")
+}
+func (UnimplementedMovieServiceServer) DeleteRating(context.Context, *DeleteRatingRequest) (*DeleteRatingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRating not implemented")
 }
 func (UnimplementedMovieServiceServer) mustEmbedUnimplementedMovieServiceServer() {}
 
@@ -312,6 +354,60 @@ func _MovieService_GetFavorites_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MovieService_GetUserRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRatingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetUserRating(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.MovieService/GetUserRating",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetUserRating(ctx, req.(*GetUserRatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_AddOrUpdateRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddOrUpdateRatingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).AddOrUpdateRating(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.MovieService/AddOrUpdateRating",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).AddOrUpdateRating(ctx, req.(*AddOrUpdateRatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_DeleteRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRatingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).DeleteRating(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.MovieService/DeleteRating",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).DeleteRating(ctx, req.(*DeleteRatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MovieService_ServiceDesc is the grpc.ServiceDesc for MovieService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +446,18 @@ var MovieService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFavorites",
 			Handler:    _MovieService_GetFavorites_Handler,
+		},
+		{
+			MethodName: "GetUserRating",
+			Handler:    _MovieService_GetUserRating_Handler,
+		},
+		{
+			MethodName: "AddOrUpdateRating",
+			Handler:    _MovieService_AddOrUpdateRating_Handler,
+		},
+		{
+			MethodName: "DeleteRating",
+			Handler:    _MovieService_DeleteRating_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

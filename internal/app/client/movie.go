@@ -13,6 +13,7 @@ import (
 //
 //go:generate mockgen -source=movie.go -destination=../user/service/mocks/movie_mock.go
 //go:generate mockgen -source=movie.go -destination=../movie/service/mocks/mock.go
+
 type MovieClientInterface interface {
 	// GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error)
@@ -21,6 +22,9 @@ type MovieClientInterface interface {
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetCollection(ctx context.Context, filter string) ([]models.Collection, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error)
+	GetUserRating(ctx context.Context, movieID, userID int) (int, error)
+	AddOrUpdateRating(ctx context.Context, movieID, userID, rating int) error
+	DeleteUserRating(ctx context.Context, movieID, userID int) error
 }
 
 // MovieClient struct implements MovieClientInterface
@@ -135,6 +139,7 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	respp.Actors = actors
 
 	var seasons []*models.Season
+
 	for _, season := range respMov.Seasons {
 		sn := season.SeasonNumber
 		var eps []*models.Episode
@@ -326,4 +331,51 @@ func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models
 	}
 
 	return ans, nil
+}
+
+func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int) (int, error) {
+	start := time.Now()
+	method := "GetUserRating"
+
+	resp, err := m.movieMS.GetUserRating(ctx, &movie.GetUserRatingRequest{
+		MovieId: int32(movieID),
+		UserId:  int32(userID),
+	})
+
+	saveMetric(start, movieClient, method, err)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int(resp.Rating.Rating), nil
+}
+
+func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rating int) error {
+	start := time.Now()
+	method := "AddOrUpdateRating"
+
+	_, err := m.movieMS.AddOrUpdateRating(ctx, &movie.AddOrUpdateRatingRequest{
+		MovieId: int32(movieID),
+		UserId:  int32(userID),
+		Rating:  int32(rating),
+	})
+
+	saveMetric(start, movieClient, method, err)
+
+	return err
+}
+
+func (m *MovieClient) DeleteUserRating(ctx context.Context, userID, movieID int) error {
+	start := time.Now()
+	method := "AddOrUpdateRating"
+
+	_, err := m.movieMS.DeleteRating(ctx, &movie.DeleteRatingRequest{
+		MovieId: int32(movieID),
+		UserId:  int32(userID),
+	})
+
+	saveMetric(start, movieClient, method, err)
+
+	return err
 }

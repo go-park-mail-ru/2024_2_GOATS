@@ -71,6 +71,7 @@ type MovieShortInfos struct {
 // MovieResponse json struct
 type MovieResponse struct {
 	MovieInfo *MovieInfo `json:"movie_info"`
+	//Rating    int64      `json:"rating_info"`
 }
 
 // MovieInfo json struct
@@ -92,6 +93,7 @@ type MovieInfo struct {
 	Seasons          []*models.Season `json:"seasons"`
 	IsFavorite       bool             `json:"is_favorite"`
 	WithSubscription bool             `json:"with_subscription"`
+	RatingUser       int64            `json:"rating_user"`
 }
 
 // ActorResponse json struct

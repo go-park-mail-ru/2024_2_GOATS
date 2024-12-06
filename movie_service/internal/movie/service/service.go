@@ -21,6 +21,10 @@ type MovieRepositoryInterface interface {
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
+	GetUserRating(ctx context.Context, userId int, movieId int) (float32, error)
+	AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error
+	DeleteUserRating(ctx context.Context, userID, movieID int) error
+	UpdateMovieRating(ctx context.Context, movieId int) error
 }
 
 // MovieService is a movie_service service layer struct
@@ -115,4 +119,36 @@ func (s *MovieService) GetFavorites(ctx context.Context, mvIDs []uint64) ([]*mod
 	}
 
 	return mvs, nil
+}
+
+func (s *MovieService) GetUserRating(ctx context.Context, userId int, movieId int) (float32, error) {
+	rating, err := s.movieRepository.GetUserRating(ctx, userId, movieId)
+	if err != nil {
+		return 0, fmt.Errorf("movieService.GetUserRating: %w", err)
+	}
+
+	log.Println("rating", rating)
+	return rating, nil
+}
+
+func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error {
+	err := s.movieRepository.AddOrUpdateRating(ctx, userId, movieId, rating)
+	if err != nil {
+		return fmt.Errorf("movieService.AddOrUpdateRating: %w", err)
+	}
+
+	err = s.movieRepository.UpdateMovieRating(ctx, movieId)
+	if err != nil {
+		return fmt.Errorf("movieService.AddOrUpdateRating (update movie rating): %w", err)
+	}
+
+	return nil
+}
+
+func (s *MovieService) DeleteRating(ctx context.Context, userID, movieID int) error {
+	err := s.movieRepository.DeleteUserRating(ctx, userID, movieID)
+	if err != nil {
+		return fmt.Errorf("movieService.DeleteRating: %w", err)
+	}
+	return nil
 }
