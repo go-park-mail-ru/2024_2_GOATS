@@ -20,12 +20,9 @@ const (
 	`
 
 	usrFindByID = `
-		SELECT users.id, users.email, users.username, users.password_hash, users.avatar_url, subscriptions.status, subscriptions.expiration_date
+		SELECT users.id, users.email, users.username, users.password_hash, users.avatar_url
 		FROM users
-		LEFT JOIN subscriptions on subscriptions.user_id = users.id
 		WHERE users.id = $1
-		ORDER BY subscriptions.expiration_date DESC
-		LIMIT 1
 	`
 
 	usrFindByEmail       = "SELECT id, email, username, password_hash FROM users WHERE email = $1"
@@ -78,9 +75,8 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, 
 	return &usr, nil
 }
 
-func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, *dto.RepoSubscription, error) {
+func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, error) {
 	var usr dto.RepoUser
-	var subs dto.RepoSubscription
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
@@ -90,8 +86,6 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, *d
 		&usr.Username,
 		&usr.Password,
 		&usr.AvatarURL,
-		&subs.Status,
-		&subs.ExpirationDate,
 	)
 
 	if err != nil {
@@ -99,13 +93,13 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, *d
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
-		return nil, nil, errMsg
+		return nil, errMsg
 	}
 
 	metricsutils.SaveSuccessMetric(start, "find_user_by_id", "users")
 	logger.Info().Msgf("postgres: user with id %d found", usr.ID)
 
-	return &usr, &subs, nil
+	return &usr, nil
 }
 
 func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB) error {
