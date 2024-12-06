@@ -106,13 +106,23 @@ type Msg struct {
 //	Sex        sql.NullString `json:"sex"`
 //}
 
+//type User struct {
+//	ID         int
+//	Email      string
+//	Username   string
+//	Password   string
+//	AvatarURL  string
+//	AvatarName string
+//	AvatarFile multipart.File
+//}
+
 type User struct {
-	ID         int
-	Email      string
-	Username   string
-	Password   string
-	AvatarURL  string
-	AvatarName string
+	ID         int    `json:"id"`
+	Email      string `json:"email"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	AvatarURL  string `json:"avatar_url"`
+	AvatarName string `json:"avatar_name"`
 	AvatarFile multipart.File
 }
 
