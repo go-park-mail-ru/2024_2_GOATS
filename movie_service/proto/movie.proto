@@ -146,6 +146,46 @@ message GetMovieByGenreResponse {
   repeated MovieShortInfo movies = 1;
 }
 
+message GetUserRatingRequest {
+  int32 movie_id = 1;
+  int32 user_id = 2;
+}
+
+message GetUserRatingResponse {
+  UserRating rating = 1;
+}
+
+message AddOrUpdateRatingRequest {
+  int32 movie_id = 1;
+  int32 user_id = 2;
+  int32 rating = 3;
+}
+
+message AddOrUpdateRatingResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message Nothing {
+  bool Dummy = 1;
+}
+
+message UserRating {
+  int32 user_id = 1;
+  int32 movie_id = 2;
+  float rating = 3;
+}
+
+message DeleteRatingRequest {
+  int32 user_id = 1;
+  int32 movie_id = 2;
+}
+
+message DeleteRatingResponse {
+    bool success = 1;
+    string message = 2;
+}
+
 service MovieService {
   rpc GetMovie(GetMovieRequest) returns (GetMovieResponse);
 
@@ -162,4 +202,12 @@ service MovieService {
   rpc GetMovieActors(GetMovieActorsRequest) returns (GetMovieActorsResponse);
 
   rpc GetFavorites(GetFavoritesRequest) returns (GetFavoritesResponse);
+
+  rpc GetUserRating(GetUserRatingRequest) returns (GetUserRatingResponse);
+
+  rpc AddOrUpdateRating(AddOrUpdateRatingRequest) returns (AddOrUpdateRatingResponse);
+
+  rpc DeleteRating(DeleteRatingRequest) returns (DeleteRatingResponse);
 }
+
+

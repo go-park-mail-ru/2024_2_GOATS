@@ -5,7 +5,6 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	"mime/multipart"
-	"time"
 )
 
 // TODO раскоментить к 4му РК
@@ -33,21 +32,56 @@ type Room struct {
 //}
 
 // ////////////Movie теперь такой
+//type MovieInfo struct {
+//	Id               int          `json:"id"`
+//	Title            string       `json:"title"`
+//	ShortDescription string       `json:"short_description"`
+//	FullDescription  string       `json:"full_description"`
+//	CardUrl          string       `json:"card_url"`
+//	AlbumUrl         string       `json:"album_url"`
+//	TitleUrl         string       `json:"title_url"`
+//	Rating           float32      `json:"rating"`
+//	ReleaseDate      time.Time    `json:"release_date"`
+//	MovieType        string       `json:"movie_type"`
+//	Country          string       `json:"country"`
+//	VideoUrl         string       `json:"video_url"`
+//	Actors           []*StaffInfo `json:"actors_info"`
+//	Directors        []*StaffInfo `json:"directors_info"`
+//}
+
 type MovieInfo struct {
-	Id               int          `json:"id"`
+	ID               int          `json:"id"`
 	Title            string       `json:"title"`
 	ShortDescription string       `json:"short_description"`
 	FullDescription  string       `json:"full_description"`
-	CardUrl          string       `json:"card_url"`
-	AlbumUrl         string       `json:"album_url"`
-	TitleUrl         string       `json:"title_url"`
+	CardURL          string       `json:"card_url"`
+	AlbumURL         string       `json:"album_url"`
+	TitleURL         string       `json:"title_url"`
 	Rating           float32      `json:"rating"`
-	ReleaseDate      time.Time    `json:"release_date"`
+	ReleaseDate      string       `json:"release_date"`
 	MovieType        string       `json:"movie_type"`
 	Country          string       `json:"country"`
-	VideoUrl         string       `json:"video_url"`
+	VideoURL         string       `json:"video_url"`
 	Actors           []*StaffInfo `json:"actors_info"`
-	Directors        []*StaffInfo `json:"directors_info"`
+	Director         *StaffInfo   `json:"director_info"`
+	Seasons          []*Season    `json:"seasons"`
+	IsFavorite       bool         `json:"is_favorite"`
+}
+
+type Season struct {
+	SeasonNumber int        `json:"season_number"`
+	Episodes     []*Episode `json:"episodes"`
+}
+
+type Episode struct {
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	Description   string  `json:"description"`
+	EpisodeNumber int     `json:"episode_number"`
+	ReleaseDate   string  `json:"release_date"`
+	Rating        float32 `json:"rating"`
+	PreviewURL    string  `json:"preview_url"`
+	VideoURL      string  `json:"video_url"`
 }
 
 type StaffInfo struct {
@@ -74,14 +108,17 @@ type RoomState struct {
 	Id       string    `json:"id"`
 	Status   string    `json:"status"` // paused, playing
 	TimeCode float64   `json:"time_code"`
-	Movie    MovieInfo `json:"movie_service"`
+	Movie    MovieInfo `json:"movie"`
 	Message  Msg       `json:"message"`
+	//TimerQuit chan struct{} `json:"timerQuit"`
 }
 
 type Action struct {
-	Name     string  `json:"name"` // pause, play, rewind
-	TimeCode float64 `json:"time_code"`
-	Message  Msg     `json:"message"`
+	Name     string    `json:"name"` // pause, play, rewind
+	TimeCode float64   `json:"time_code"`
+	Message  Msg       `json:"message"`
+	MovieId  int       `json:"movie_id"`
+	Movie    MovieInfo `json:"movie"`
 }
 
 //	type ActionMsg struct {
@@ -106,13 +143,23 @@ type Msg struct {
 //	Sex        sql.NullString `json:"sex"`
 //}
 
+//type User struct {
+//	ID         int
+//	Email      string
+//	Username   string
+//	Password   string
+//	AvatarURL  string
+//	AvatarName string
+//	AvatarFile multipart.File
+//}
+
 type User struct {
-	ID         int
-	Email      string
-	Username   string
-	Password   string
-	AvatarURL  string
-	AvatarName string
+	ID         int    `json:"id"`
+	Email      string `json:"email"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	AvatarURL  string `json:"avatar_url"`
+	AvatarName string `json:"avatar_name"`
 	AvatarFile multipart.File
 }
 

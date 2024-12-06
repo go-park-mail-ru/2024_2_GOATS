@@ -56,37 +56,21 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
-	//logger := zlog.Ctx(r.Context())
 	userID := r.URL.Query().Get("user_id")
 	if userID == "" {
 		http.Error(w, "Missing user_id", http.StatusBadRequest)
 		return
 	}
-	log.Println("XZXZ6 = ", userID)
 
 	cfg, err := config.New(false)
-	//
+
 	ctx := config.WrapContext(r.Context(), cfg)
 
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
-	//Too many arguments in call to 'h.roomService.Session'
-	//var ctx context.Context = config. WrapContext(r. Context(), cfg)
-
-	//sessionResp, errResp := converter.ToApiSessionResponseForRoom(sessionSrvResp), converter.ToApiErrorResponseForRoom(errSrvResp)
-	log.Println("XZXZ6")
 
 	if errSrvResp != nil {
-		log.Println("XZXZ7 = ", errSrvResp)
 		return
 	}
-
-	//if errResp != nil {
-	//	errMsg := errors.New("failed to update password")
-	//	logger.Error().Err(errMsg).Interface("updatePasswdResp", errResp).Msg("request_failed")
-	//	api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
-	//
-	//	return
-	//}
 
 	user := model.User{
 		ID:        sessionSrvResp.UserData.ID,
@@ -100,17 +84,13 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing room_id", http.StatusBadRequest)
 		return
 	}
-	log.Println("XZqwerty =", roomID)
 
 	// Обновление соединения до WebSocket
-	log.Println("XZXZ3")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("XZXZ5 = ", err)
 		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
 		return
 	}
-	log.Println("XZXZ4")
 
 	defer conn.Close()
 
@@ -182,7 +162,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 //}
 
 func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
-	// Получаем список пользователей только для комнаты roomID
 	userList := make([]model.User, 0)
 	for conn := range h.roomHub.GetClients(roomID) {
 		if user, ok := h.roomHub.Users[conn]; ok {
@@ -190,13 +169,10 @@ func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID stri
 		}
 	}
 
-	// Отправляем список пользователей всем подключенным клиентам в комнате
 	for conn := range h.roomHub.GetClients(roomID) {
-		//if conn != excludeConn { // исключаем соединение, не нуждающееся в обновлении
 		if err := conn.WriteJSON(userList); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)
 		}
-		//}
 	}
 }
