@@ -34,9 +34,19 @@ func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*
 	logger := log.Ctx(ctx)
 
 	usr := dto.RepoUser{}
-	err := db.QueryRowContext(
+	stmt, err := db.Prepare(usrCreateSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#createUser: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(
 		ctx,
-		usrCreateSQL,
 		registerData.Email, registerData.Username, registerData.Password,
 	).Scan(&usr.ID, &usr.Email)
 
@@ -106,7 +116,18 @@ func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB)
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	_, err := db.ExecContext(ctx, usrUpdatePasswordSQL, pass, time.Now(), userID)
+	stmt, err := db.Prepare(usrUpdatePasswordSQL)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#updatePassword: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	_, err = stmt.ExecContext(ctx, pass, time.Now(), userID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "update_password", "users")
@@ -159,7 +180,18 @@ func UpdateProfile(ctx context.Context, usrData *dto.RepoUser, db *sql.DB) error
 	sqlStatement += strings.Join(sets, ", ") + fmt.Sprintf(" WHERE id = $%d", argCount)
 	args = append(args, usrData.ID)
 
-	_, err := db.ExecContext(ctx, sqlStatement, args...)
+	stmt, err := db.Prepare(sqlStatement)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#updateUser: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "update_profile", "users")
 		errMsg := fmt.Errorf("postgres: error while updating user profile - %w", err)

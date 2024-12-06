@@ -50,6 +50,8 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 		return nil, errMsg
 	}
 
+	DB.SetMaxOpenConns(10)
+
 	log.Info().Msg("Database connection opened successfully")
 	time.Sleep(5 * time.Second)
 
