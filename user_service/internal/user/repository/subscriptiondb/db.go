@@ -14,13 +14,16 @@ import (
 
 const (
 	subCreateSQL = `
-		INSERT INTO subscriptions (user_id, price, status)
-		VALUES ($1, $2, $3)
+		INSERT INTO subscriptions (user_id, price, status, expiration_date)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`
-
-	markPaidSQL     = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
-	findByUserIDSQL = "SELECT status, expiration_date FROM subscriptions WHERE user_id = $1"
+	findByUserIDSQL = `
+		SELECT status, expiration_date
+		FROM subscriptions
+		WHERE user_id = $1 and expiration_date > $2 and status = $3
+	`
+	markPaidSQL = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
 
 	PendingStatus = "pending"
 	ActiveStatus  = "active"
@@ -34,7 +37,7 @@ func CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscription
 	err := db.QueryRowContext(
 		ctx,
 		subCreateSQL,
-		subData.UserID, subData.Amount, PendingStatus,
+		subData.UserID, subData.Amount, PendingStatus, time.Now().AddDate(0, 1, 0),
 	).Scan(&subID)
 
 	if err != nil {
@@ -76,7 +79,7 @@ func FindByUserID(ctx context.Context, usrID uint64, db *sql.DB) (*dto.RepoSubsc
 	logger := log.Ctx(ctx)
 
 	var sub = &dto.RepoSubscription{}
-	row := db.QueryRowContext(ctx, findByUserIDSQL, usrID)
+	row := db.QueryRowContext(ctx, findByUserIDSQL, usrID, time.Now(), ActiveStatus)
 
 	err := row.Scan(
 		&sub.Status,
