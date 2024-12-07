@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/metrics"
 	"github.com/gorilla/sessions"
 	"github.com/spf13/viper"
@@ -52,7 +54,8 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		next.ServeHTTP(rec, r.WithContext(ctx))
 		status := rec.Status
-		logRequest(r, start, "accessLogMiddleware", reqID, status)
+		reqPath := requestPath(w, r)
+		logRequest(r, start, "accessLogMiddleware", reqID, status, reqPath)
 	})
 }
 
@@ -89,7 +92,7 @@ func PanicMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func logRequest(r *http.Request, start time.Time, msg string, requestID string, status int) {
+func logRequest(r *http.Request, start time.Time, msg string, requestID string, status int, path string) {
 	var bodyCopy bytes.Buffer
 	duration := time.Since(start)
 
@@ -117,8 +120,8 @@ func logRequest(r *http.Request, start time.Time, msg string, requestID string, 
 		Int64("duration_ms", duration.Milliseconds()).
 		Msg(msg)
 
-	metrics.HTTPRequestTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(status)).Inc()
-	metrics.HTTPRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration.Seconds())
+	metrics.HTTPRequestTotal.WithLabelValues(r.Method, path, strconv.Itoa(status)).Inc()
+	metrics.HTTPRequestDuration.WithLabelValues(r.Method, path).Observe(duration.Seconds())
 }
 
 func sanitizeInput(input string) string {
@@ -189,4 +192,14 @@ func realIP(r *http.Request) string {
 	}
 
 	return rIP
+}
+
+func requestPath(w http.ResponseWriter, r *http.Request) string {
+	route := mux.CurrentRoute(r)
+	if route == nil {
+		http.Error(w, "Route not found", http.StatusNotFound)
+		return ""
+	}
+
+	return route.GetName()
 }
