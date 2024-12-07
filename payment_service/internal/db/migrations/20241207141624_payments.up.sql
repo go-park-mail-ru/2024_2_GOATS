@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS payments CASCADE;
-
 CREATE TABLE public.payments(
   id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   subscription_id int,
