@@ -20,11 +20,15 @@ type Databases struct {
 }
 
 type Postgres struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Name     string `yaml:"name"`
+	Host            string `yaml:"host"`
+	Port            int    `yaml:"port"`
+	User            string `yaml:"user"`
+	Password        string `yaml:"password"`
+	Name            string `yaml:"name"`
+	MaxOpenConns    int    `yaml:"maxOpenConns"`
+	MaxIdleConns    int    `yaml:"maxIdleConns"`
+	ConnMaxLifetime int    `yaml:"connMaxLifetime"`
+	ConnMaxIdleTime int    `yaml:"connMaxIdleTime"`
 }
 
 func New(isTest bool) (*Config, error) {

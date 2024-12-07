@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/rs/zerolog/log"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
+	"github.com/rs/zerolog/log"
+
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 )
 
 const (
@@ -38,7 +39,19 @@ func GetMovieCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, getMovieCollectionsSQL)
+	stmt, err := db.Prepare(getMovieCollectionsSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#movieCollections: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx)
+
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "get_movie_collections", "collections")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_collections: %w", err)
@@ -57,7 +70,18 @@ func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, getGenresCollectionsSQL)
+	stmt, err := db.Prepare(getGenresCollectionsSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#genresCollections: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "get_genres", "genres")
 		errMsg := fmt.Errorf("postgres: error while selecting genre_collections: %w", err)
@@ -76,7 +100,18 @@ func GetMovieByGenre(ctx context.Context, genre string, db *sql.DB) (*sql.Rows, 
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, getByGenreSQL, genre)
+	stmt, err := db.Prepare(getByGenreSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#movieByGenre: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, genre)
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "get_movie_by_genre", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting movies by genre: %w", err)

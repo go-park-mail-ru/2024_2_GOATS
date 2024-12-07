@@ -5,6 +5,10 @@ databases:
   postgres:
     host: movie_db
     port: 5432
-    user: test
-    password: test
+    user: movie_user
+    password: movie_user_password
     name: movie_db
+    maxOpenConns: 100
+    maxIdleConns: 30
+    connMaxLifetime: 30
+    connMaxIdleTime: 5

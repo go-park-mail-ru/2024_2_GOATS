@@ -9,7 +9,7 @@ import (
 
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -86,7 +86,18 @@ func FindByID(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, movieFindByIDSQL, mvID)
+	stmt, err := db.Prepare(movieFindByIDSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#movieByID: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, mvID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "get_movie_by_id", "movies")
@@ -106,7 +117,18 @@ func GetMovieActors(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, getMovieActorsSQL, mvID)
+	stmt, err := db.Prepare(getMovieActorsSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#actorsByMovieID: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, mvID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "get_movie_actors", "actors")
@@ -126,7 +148,18 @@ func FindByActorID(ctx context.Context, actorID int, db *sql.DB) (*sql.Rows, err
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, findByActorIDSQL, actorID)
+	stmt, err := db.Prepare(findByActorIDSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#moviesByActorID: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, actorID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "find_by_actor_id", "movies")
@@ -144,7 +177,18 @@ func GetMoviesByIDs(ctx context.Context, mvIDs []uint64, db *sql.DB) (*sql.Rows,
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.Query(getFavoritesSQL, pq.Array(mvIDs))
+	stmt, err := db.Prepare(getFavoritesSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#moviesByIDs: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, pq.Array(mvIDs))
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "get_movie_by_ids", "movies")

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	"github.com/microcosm-cc/bluemonday"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,7 +26,7 @@ func (h *MovieHandler) GetMovieByGenre(ctx context.Context, req *movie.GetMovieB
 		return nil, status.Error(codes.InvalidArgument, "genre is required")
 	}
 
-	movies, err := h.movieService.GetMovieByGenre(ctx, req.Genre)
+	movies, err := h.movieService.GetMovieByGenre(ctx, sanitizeInput(req.Genre))
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +232,7 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 }
 
 func (h *MovieHandler) GetCollections(ctx context.Context, req *movie.GetCollectionsRequest) (*movie.GetCollectionsResponse, error) {
-	collections, err := h.movieService.GetCollection(ctx, req.Filter)
+	collections, err := h.movieService.GetCollection(ctx, sanitizeInput(req.Filter))
 	if err != nil {
 		return nil, err
 	}
@@ -288,4 +289,9 @@ func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavorites
 	}
 
 	return &movie.GetFavoritesResponse{Movies: respp}, nil
+}
+
+func sanitizeInput(input string) string {
+	policy := bluemonday.UGCPolicy()
+	return policy.Sanitize(input)
 }
