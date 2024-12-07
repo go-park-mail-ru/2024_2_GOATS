@@ -23,5 +23,5 @@ func (u *UserRepo) UserByEmail(ctx context.Context, email string) (*srvDTO.User,
 		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)
 	}
 
-	return converter.ToUserFromRepoUser(usr), nil
+	return converter.ToUserShortFromRepoUser(usr), nil
 }

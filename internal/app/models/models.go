@@ -34,13 +34,15 @@ type CollectionsRespData struct {
 }
 
 type User struct {
-	ID         int
-	Email      string
-	Username   string
-	Password   string
-	AvatarURL  string
-	AvatarName string
-	AvatarFile multipart.File
+	ID                         int
+	Email                      string
+	Username                   string
+	Password                   string
+	AvatarURL                  string
+	AvatarName                 string
+	AvatarFile                 multipart.File
+	SubscriptionStatus         bool
+	SubscriptionExpirationDate string
 }
 
 type Collection struct {
@@ -149,6 +151,26 @@ type Person struct {
 type Favorite struct {
 	UserID  int
 	MovieID int
+}
+
+type SubscriptionData struct {
+	UserID int
+	Amount uint64
+}
+
+type PaymentCallbackData struct {
+	NotificationType string
+	OperationID      string
+	Amount           int64
+	Currency         string
+	Sender           string
+	Label            string
+	Unaccepted       bool
+}
+
+type CreatePaymentData struct {
+	SubscriptionID int
+	Amount         uint64
 }
 
 func (p Person) FullName() string {

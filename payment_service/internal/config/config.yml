@@ -1,0 +1,10 @@
+listener:
+  port: ":8084"
+
+databases:
+  postgres:
+    host: payment_db
+    port: 5432
+    user: test
+    password: test
+    name: payment_db

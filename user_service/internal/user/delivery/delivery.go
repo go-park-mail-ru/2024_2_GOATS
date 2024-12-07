@@ -17,4 +17,6 @@ type UserServiceInterface interface {
 	FindByID(ctx context.Context, usrID uint64) (*srvDTO.User, error)
 	FindByEmail(ctx context.Context, email string) (*srvDTO.User, error)
 	CheckFavorite(ctx context.Context, favData *srvDTO.Favorite) (bool, error)
+	CreateSubscription(ctx context.Context, createData *srvDTO.CreateSubscriptionData) (uint64, error)
+	UpdateSubscribtionStatus(ctx context.Context, subID uint64) error
 }

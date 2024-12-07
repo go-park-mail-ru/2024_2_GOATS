@@ -21,6 +21,8 @@ type UserClientInterface interface {
 	ResetFavorite(ctx context.Context, favData *models.Favorite) error
 	CheckFavorite(ctx context.Context, favData *models.Favorite) (bool, error)
 	UpdateProfile(ctx context.Context, usrData *models.User) error
+	CreateSubscription(ctx context.Context, data *models.SubscriptionData) (int, error)
+	UpdateSubscriptionStatus(ctx context.Context, subID int) error
 }
 
 type UserClient struct {
@@ -66,12 +68,14 @@ func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, er
 	}
 
 	return &models.User{
-		ID:         int(resp.UserID),
-		Email:      resp.Email,
-		Username:   resp.Username,
-		Password:   resp.Password,
-		AvatarURL:  resp.AvatarURL,
-		AvatarName: resp.AvatarName,
+		ID:                         int(resp.UserID),
+		Email:                      resp.Email,
+		Username:                   resp.Username,
+		Password:                   resp.Password,
+		AvatarURL:                  resp.AvatarURL,
+		AvatarName:                 resp.AvatarName,
+		SubscriptionStatus:         resp.SubscriptionStatus,
+		SubscriptionExpirationDate: resp.SubscriptionExpirationDate,
 	}, nil
 }
 
@@ -218,6 +222,39 @@ func (uc *UserClient) toggleFavorite(ctx context.Context, favData *models.Favori
 
 	if err != nil {
 		return fmt.Errorf("userClientError#toggleFavorite: %w", err)
+	}
+
+	return nil
+}
+
+func (uc *UserClient) CreateSubscription(ctx context.Context, data *models.SubscriptionData) (int, error) {
+	start := time.Now()
+	method := "CreateSubscription"
+
+	resp, err := uc.UserMS.Subscribe(ctx, &user.CreateSubscriptionRequest{
+		UserID: uint64(data.UserID),
+		Amount: uint64(data.Amount),
+	})
+
+	saveMetric(start, userClient, method, err)
+
+	if err != nil {
+		return 0, fmt.Errorf("userClientError#createSubscription: %w", err)
+	}
+
+	return int(resp.ID), nil
+}
+
+func (uc *UserClient) UpdateSubscriptionStatus(ctx context.Context, subID int) error {
+	start := time.Now()
+	method := "UpdateSubscriptionStatus"
+
+	_, err := uc.UserMS.UpdateSubscribtionStatus(ctx, &user.SubscriptionID{ID: uint64(subID)})
+
+	saveMetric(start, userClient, method, err)
+
+	if err != nil {
+		return fmt.Errorf("userClientError#updateSubscriptionStatus: %w", err)
 	}
 
 	return nil

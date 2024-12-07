@@ -95,21 +95,6 @@ func (mr *MockMovieClientInterfaceMockRecorder) GetMovie(ctx, mvID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovie", reflect.TypeOf((*MockMovieClientInterface)(nil).GetMovie), ctx, mvID)
 }
 
-// GetMovieByGenre mocks base method.
-func (m *MockMovieClientInterface) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMovieByGenre", ctx, genre)
-	ret0, _ := ret[0].([]models.MovieShortInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMovieByGenre indicates an expected call of GetMovieByGenre.
-func (mr *MockMovieClientInterfaceMockRecorder) GetMovieByGenre(ctx, genre interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByGenre", reflect.TypeOf((*MockMovieClientInterface)(nil).GetMovieByGenre), ctx, genre)
-}
-
 // SearchActors mocks base method.
 func (m *MockMovieClientInterface) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
 	m.ctrl.T.Helper()

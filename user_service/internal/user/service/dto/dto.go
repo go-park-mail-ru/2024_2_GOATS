@@ -1,13 +1,15 @@
 package dto
 
 type User struct {
-	ID         uint64
-	Email      string
-	Username   string
-	Password   string
-	AvatarURL  string
-	AvatarName string
-	AvatarFile []byte
+	ID                         uint64
+	Email                      string
+	Username                   string
+	Password                   string
+	AvatarURL                  string
+	AvatarName                 string
+	AvatarFile                 []byte
+	SubscriptionStatus         bool
+	SubscriptionExpirationDate string
 }
 
 type Favorite struct {
@@ -27,4 +29,9 @@ type CreateUserData struct {
 	Username             string
 	Password             string
 	PasswordConfirmation string
+}
+
+type CreateSubscriptionData struct {
+	UserID uint64
+	Amount uint64
 }

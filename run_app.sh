@@ -21,7 +21,7 @@ echo "Сборка Docker образа для корня проекта"
 docker-compose down -v
 docker-compose up --build -d
 
-services=("user_service" "auth_service" "movie_service")
+services=("user_service" "auth_service" "movie_service" "payment_service")
 for service in "${services[@]}"; do
     start_compose_service "$service"
 done

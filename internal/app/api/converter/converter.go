@@ -39,6 +39,25 @@ func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 	}
 }
 
+func ToServCreateSubscription(rp *api.SubscribeRequest, usrID int) *models.SubscriptionData {
+	return &models.SubscriptionData{
+		UserID: usrID,
+		Amount: uint64(rp.Amount),
+	}
+}
+
+func ToServPaymentCallback(cb *api.PaymentCallback) *models.PaymentCallbackData {
+	return &models.PaymentCallbackData{
+		NotificationType: cb.NotificationType,
+		OperationID:      cb.OperationID,
+		Amount:           cb.Amount,
+		Currency:         cb.Currency,
+		Sender:           cb.Sender,
+		Label:            cb.Label,
+		Unaccepted:       cb.Unaccepted,
+	}
+}
+
 func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 	return &models.User{
 		ID:         pr.UserID,
@@ -73,10 +92,12 @@ func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 
 	return &api.SessionResponse{
 		UserData: api.User{
-			ID:        sr.UserData.ID,
-			Email:     sr.UserData.Email,
-			Username:  sr.UserData.Username,
-			AvatarURL: sr.UserData.AvatarURL,
+			ID:                         sr.UserData.ID,
+			Email:                      sr.UserData.Email,
+			Username:                   sr.UserData.Username,
+			AvatarURL:                  sr.UserData.AvatarURL,
+			SubscriptionStatus:         sr.UserData.SubscriptionStatus,
+			SubscriptionExpirationDate: sr.UserData.SubscriptionExpirationDate,
 		},
 	}
 }

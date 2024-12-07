@@ -21,12 +21,6 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*models.Sessi
 	}
 
 	return &models.SessionRespData{
-		UserData: models.User{
-			ID:         usr.ID,
-			Email:      usr.Email,
-			Username:   usr.Username,
-			AvatarURL:  usr.AvatarURL,
-			AvatarName: usr.AvatarName,
-		},
+		UserData: *usr,
 	}, nil
 }

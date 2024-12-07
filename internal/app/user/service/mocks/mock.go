@@ -65,6 +65,21 @@ func (mr *MockUserClientInterfaceMockRecorder) Create(ctx, regData interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserClientInterface)(nil).Create), ctx, regData)
 }
 
+// CreateSubscription mocks base method.
+func (m *MockUserClientInterface) CreateSubscription(ctx context.Context, data *models.SubscriptionData) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSubscription", ctx, data)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSubscription indicates an expected call of CreateSubscription.
+func (mr *MockUserClientInterfaceMockRecorder) CreateSubscription(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubscription", reflect.TypeOf((*MockUserClientInterface)(nil).CreateSubscription), ctx, data)
+}
+
 // FindByEmail mocks base method.
 func (m *MockUserClientInterface) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	m.ctrl.T.Helper()
@@ -164,4 +179,18 @@ func (m *MockUserClientInterface) UpdateProfile(ctx context.Context, usrData *mo
 func (mr *MockUserClientInterfaceMockRecorder) UpdateProfile(ctx, usrData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserClientInterface)(nil).UpdateProfile), ctx, usrData)
+}
+
+// UpdateSubscriptionStatus mocks base method.
+func (m *MockUserClientInterface) UpdateSubscriptionStatus(ctx context.Context, subID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSubscriptionStatus", ctx, subID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSubscriptionStatus indicates an expected call of UpdateSubscriptionStatus.
+func (mr *MockUserClientInterfaceMockRecorder) UpdateSubscriptionStatus(ctx, subID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSubscriptionStatus", reflect.TypeOf((*MockUserClientInterface)(nil).UpdateSubscriptionStatus), ctx, subID)
 }

@@ -33,3 +33,11 @@ type RoomImplementationInterface interface {
 	CreateRoom(w http.ResponseWriter, r *http.Request)
 	JoinRoom(w http.ResponseWriter, r *http.Request)
 }
+
+type PaymentHandlerInterface interface {
+	NotifyYooMoney(w http.ResponseWriter, r *http.Request)
+}
+
+type SubscriptionHandlerInterface interface {
+	Subscribe(w http.ResponseWriter, r *http.Request)
+}

@@ -20,6 +20,8 @@ type UserRepoInterface interface {
 	UserByEmail(ctx context.Context, email string) (*dto.User, error)
 	UserByID(ctx context.Context, userID uint64) (*dto.User, error)
 	CheckFavorite(ctx context.Context, favData *repoDTO.RepoFavorite) (bool, error)
+	CreateSubscription(ctx context.Context, subData *repoDTO.RepoCreateSubscriptionData) (uint64, error)
+	UpdateSubscribtionStatus(ctx context.Context, subID uint64) error
 }
 
 type UserService struct {

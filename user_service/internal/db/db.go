@@ -67,6 +67,10 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("error while migrating DB: %w", err)
 	}
 
+	if err = seed(DB); err != nil {
+		return nil, fmt.Errorf("error while seeding DB: %w", err)
+	}
+
 	return DB, nil
 }
 
@@ -88,5 +92,27 @@ func migrate(db *sql.DB) error {
 	}
 
 	log.Info().Msg("database successfully migrated")
+	return nil
+}
+
+func seed(db *sql.DB) error {
+	seedsFile, err := os.ReadFile(viper.GetString("SEEDS_PATH"))
+
+	if err != nil {
+		errMsg := fmt.Errorf("seed: error read sql script - %w", err)
+		log.Error().Err(errMsg).Msg("seed_db_error")
+
+		return errMsg
+	}
+
+	_, err = db.Exec(string(seedsFile))
+	if err != nil {
+		errMsg := fmt.Errorf("seed: error while exec seedsFile - %w", err)
+		log.Error().Err(errMsg).Msg("seed_db_error")
+
+		return errMsg
+	}
+
+	log.Info().Msg("database successfully seeded")
 	return nil
 }

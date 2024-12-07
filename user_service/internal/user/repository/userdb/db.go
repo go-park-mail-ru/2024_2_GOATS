@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/dto"
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
 	"github.com/rs/zerolog/log"
-	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
 )
 
 const (
@@ -19,8 +19,13 @@ const (
 		RETURNING id, email
 	`
 
-	usrFindByEmail       = "SELECT id, email, username, password_hash FROM USERS WHERE email = $1"
-	usrFindByID          = "SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = $1"
+	usrFindByID = `
+		SELECT users.id, users.email, users.username, users.password_hash, users.avatar_url
+		FROM users
+		WHERE users.id = $1
+	`
+
+	usrFindByEmail       = "SELECT id, email, username, password_hash FROM users WHERE email = $1"
 	usrUpdatePasswordSQL = "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
 )
 
@@ -75,7 +80,13 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, er
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password, &usr.AvatarURL)
+	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(
+		&usr.ID,
+		&usr.Email,
+		&usr.Username,
+		&usr.Password,
+		&usr.AvatarURL,
+	)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "find_user_by_id", "users")

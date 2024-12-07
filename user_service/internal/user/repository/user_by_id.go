@@ -8,6 +8,7 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/converter"
+	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/subscriptiondb"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/userdb"
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
@@ -22,5 +23,10 @@ func (u *UserRepo) UserByID(ctx context.Context, userID uint64) (*srvDTO.User, e
 		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)
 	}
 
-	return converter.ToUserFromRepoUser(usr), nil
+	subs, err := subscriptiondb.FindByUserID(ctx, usr.ID, u.Database)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)
+	}
+
+	return converter.ToUserFromRepoUser(usr, subs), nil
 }

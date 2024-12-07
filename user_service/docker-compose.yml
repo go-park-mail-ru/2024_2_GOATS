@@ -14,6 +14,8 @@ services:
       - DATABASE_NAME=user_db
     depends_on:
       - user_db
+    ports:
+      - 8082:8082
     networks:
       - cassette-world
 

@@ -193,3 +193,36 @@ func (uh *UserHandler) FindByEmail(ctx context.Context, usrEmail *user.Email) (*
 	logger.Error().Interface("findUserByEmailSuccess", usrData).Msg("successfully_find_user_by_email")
 	return converter.ConvertToGRPCUser(usrData), nil
 }
+
+func (uh *UserHandler) Subscribe(ctx context.Context, subData *user.CreateSubscriptionRequest) (*user.SubscriptionID, error) {
+	logger := log.Ctx(ctx)
+	if subData.UserID == 0 || subData.Amount == 0 {
+		return nil, errs.ErrBadRequest
+	}
+
+	srvData := converter.ConvertToSrvCreateSubscription(subData)
+	subID, err := uh.userService.CreateSubscription(ctx, srvData)
+	if err != nil {
+		logger.Error().Interface("createSubscriptionError", err).Msg("failed_to_create_subscription")
+		return nil, err
+	}
+
+	logger.Error().Uint64("createSubscriptionSuccess", subID).Msg("successfully_created_subscription")
+	return &user.SubscriptionID{ID: subID}, nil
+}
+
+func (uh *UserHandler) UpdateSubscribtionStatus(ctx context.Context, req *user.SubscriptionID) (*user.Nothing, error) {
+	logger := log.Ctx(ctx)
+	if req.ID == 0 {
+		return nil, errs.ErrBadRequest
+	}
+
+	err := uh.userService.UpdateSubscribtionStatus(ctx, req.ID)
+	if err != nil {
+		logger.Error().Interface("updateSubscribtionStatusError", err).Msg("failed_to_update_subscription")
+		return nil, err
+	}
+
+	logger.Error().Msg("successfully_updated_subscription")
+	return &user.Nothing{Dummy: true}, nil
+}

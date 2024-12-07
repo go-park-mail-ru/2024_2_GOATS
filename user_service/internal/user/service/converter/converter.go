@@ -42,3 +42,14 @@ func ConvertToRepoCreateData(cr *dto.CreateUserData) *repoDTO.RepoCreateData {
 		PasswordConfirmation: cr.PasswordConfirmation,
 	}
 }
+
+func ConvertToRepoCreateSubData(cr *dto.CreateSubscriptionData) *repoDTO.RepoCreateSubscriptionData {
+	if cr == nil {
+		return nil
+	}
+
+	return &repoDTO.RepoCreateSubscriptionData{
+		UserID: cr.UserID,
+		Amount: cr.Amount,
+	}
+}

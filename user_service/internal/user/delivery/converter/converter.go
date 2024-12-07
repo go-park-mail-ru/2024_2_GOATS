@@ -18,6 +18,17 @@ func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData 
 	}
 }
 
+func ConvertToSrvCreateSubscription(req *user.CreateSubscriptionRequest) *srvDTO.CreateSubscriptionData {
+	if req == nil {
+		return nil
+	}
+
+	return &srvDTO.CreateSubscriptionData{
+		UserID: req.UserID,
+		Amount: req.Amount,
+	}
+}
+
 func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.PasswordData {
 	if req == nil {
 		return nil
@@ -37,10 +48,10 @@ func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 	}
 
 	return &srvDTO.User{
-		ID: req.UserID,
-		Email: req.Email,
-		Username: req.Username,
-		AvatarURL: req.AvatarURL,
+		ID:         req.UserID,
+		Email:      req.Email,
+		Username:   req.Username,
+		AvatarURL:  req.AvatarURL,
 		AvatarName: req.AvatarName,
 		AvatarFile: req.AvatarFile,
 	}
@@ -63,11 +74,13 @@ func ConvertToGRPCUser(su *srvDTO.User) *user.UserData {
 	}
 
 	return &user.UserData{
-		UserID:     su.ID,
-		Email:      su.Email,
-		Username:   su.Username,
-		Password:   su.Password,
-		AvatarURL:  su.AvatarURL,
-		AvatarName: su.AvatarName,
+		UserID:                     su.ID,
+		Email:                      su.Email,
+		Username:                   su.Username,
+		Password:                   su.Password,
+		AvatarURL:                  su.AvatarURL,
+		AvatarName:                 su.AvatarName,
+		SubscriptionStatus:         su.SubscriptionStatus,
+		SubscriptionExpirationDate: su.SubscriptionExpirationDate,
 	}
 }
