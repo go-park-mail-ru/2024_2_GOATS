@@ -110,8 +110,9 @@ func (a *App) Run() {
 	rdb := redis.NewClient(&redis.Options{Addr: addr})
 
 	repoRoom := roomRepo.NewRepository(rdb)
-	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager)
 	roomHub := ws.NewRoomHub()
+	timer := roomServ.NewTimerManager(roomHub)
+	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager, roomHub, timer)
 	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
 
 	log.Println("XZXZXZ")

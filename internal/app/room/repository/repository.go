@@ -38,13 +38,13 @@ func NewRepository(rdb *redis.Client) RoomRepositoryInterface {
 }
 
 func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
-	room.Id = uuid.New().String() // Генерация уникального ID для комнаты
+	room.Id = uuid.New().String()
 	data, err := json.Marshal(room)
 	if err != nil {
 		return nil, err
 	}
 	log.Println("data", string(data))
-	err = r.Redis.Set(ctx, "room_state:"+room.Id, data, 0).Err() // Сохранение комнаты в Redis
+	err = r.Redis.Set(ctx, "room_state:"+room.Id, data, 0).Err()
 	if err != nil {
 		return nil, err
 	}

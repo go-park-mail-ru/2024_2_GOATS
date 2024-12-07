@@ -6,8 +6,6 @@ import (
 	"sync"
 )
 
-// TODO раскоментить к 4му РК
-
 type BroadcastMessage struct {
 	Action      interface{}
 	RoomID      string
