@@ -127,17 +127,124 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 	case "rewind":
 		roomState.TimeCode = action.TimeCode
 		s.timerManager.Stop(roomID)
-		s.timerManager.Start(roomID, int64(roomState.TimeCode), func(updatedTime int64) {
-			roomState.TimeCode = float64(updatedTime)
-			_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-		})
+		if roomState.Status == "playing" {
+			s.timerManager.Start(roomID, int64(roomState.TimeCode), func(updatedTime int64) {
+				roomState.TimeCode = float64(updatedTime)
+				_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
+			})
+		} else {
+			roomState.TimeCode = action.TimeCode
+		}
 
 	case "timer":
 		roomState.TimeCode = action.TimeCode
 
 	case "message":
 		roomState.Message.Text = action.Message.Text
+
+	case "change":
+		movie_service, errMovie := s.movieService.GetMovie(ctx, action.MovieId)
+		if errMovie != nil {
+			log.Println("errMovie", errMovie)
+		}
+		log.Println("movie_service==", movie_service.VideoURL)
+		//roomState.Message.Text = action.Message.Text
+		roomState.Movie.ID = movie_service.ID
+		roomState.Movie.MovieType = movie_service.MovieType
+		log.Println("MovieType==", roomState.Movie.MovieType)
+
+		if movie_service.MovieType == "serial" {
+			var seasons []*model.Season
+			for _, season := range movie_service.Seasons {
+				sn := season.SeasonNumber
+				var eps []*model.Episode
+				for _, ep := range season.Episodes {
+					cur := &model.Episode{
+						ID:            ep.ID,
+						Description:   ep.Description,
+						EpisodeNumber: ep.EpisodeNumber,
+						Title:         ep.Title,
+						Rating:        ep.Rating,
+						ReleaseDate:   ep.ReleaseDate,
+						VideoURL:      ep.VideoURL,
+						PreviewURL:    ep.PreviewURL,
+					}
+
+					eps = append(eps, cur)
+				}
+
+				curSeas := &model.Season{
+					SeasonNumber: sn,
+					Episodes:     eps,
+				}
+
+				seasons = append(seasons, curSeas)
+			}
+			roomState.Movie.Seasons = seasons
+			log.Println("SeasonNumber==")
+
+		}
+		roomState.Movie.AlbumURL = movie_service.AlbumURL
+		log.Println("roomState.Movie.AlbumURL==", roomState.Movie.AlbumURL)
+		roomState.Movie.CardURL = movie_service.CardURL
+		log.Println("roomState.Movie.CardURL==", roomState.Movie.CardURL)
+		roomState.Movie.TitleURL = movie_service.TitleURL
+		log.Println("roomState.Movie.TitleURL==", roomState.Movie.TitleURL)
+		roomState.Movie.Title = movie_service.Title
+		log.Println("roomState.Movie.Title==", roomState.Movie.Title)
+		roomState.Movie.VideoURL = movie_service.VideoURL
+		roomState.Movie.Rating = movie_service.Rating
+		roomState.Movie.ShortDescription = movie_service.ShortDescription
+		//s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
+		//roomState1, err1 := s.GetRoomState(ctx, roomID)
+		//if err1 != nil {
+		//	log.Println("Failed to get room state from Redis:", err)
+		//} else {
+		//if err := conn.WriteJSON(roomState); err != nil {
+		//	log.Println("Failed to send room state:", err)
+		//}
+		//}
 	}
+	log.Println("roomState.Movie==", roomState.Movie)
+
+	s.hub.Broadcast <- ws.BroadcastMessage{
+		Action: map[string]interface{}{
+			"type":   "timer",
+			"movie ": roomState.Movie,
+		},
+		RoomID: roomID,
+	}
+	//case "change":
+	//	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
+	//	roomState.Message.Text = action.Message.Text
+	//
+	//	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
+	//	if err != nil {
+	//	log.Println("Failed to get room state from Redis:", err)
+	//	} else {
+	//	if err := conn.WriteJSON(roomState); err != nil {
+	//	log.Println("Failed to send room state:", err)
+	//	return
+	//	}
+	//	}
+
+	//if errMovie != nil {
+	//return nil, fmt.Errorf("errMovie = %+v", errMovie)
+	//}
+	//}
+
+	//movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
+	//	if errMovie != nil {
+	//		return nil, fmt.Errorf("errMovie = %+v", errMovie)
+	//	}
+	//	roomState.Movie = model.MovieInfo{
+	//		ID:               movie_service.ID,
+	//		Title:            movie_service.Title,
+	//		TitleURL:         movie_service.TitleURL,
+	//		ShortDescription: movie_service.ShortDescription,
+	//		VideoURL:         movie_service.VideoURL,
+	//	}
+	//	return roomState, err
 
 	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
 }
@@ -378,7 +485,7 @@ func (tm *TimerManager) Stop(roomID string) {
 //			roomState.TimerQuit = make(chan struct{})
 //			go s.startTimer(ctx, roomID, roomState)
 //		}
-//
+
 //	case "timer":
 //		// Просто обновляем текущее время
 //		roomState.TimeCode = action.TimeCode

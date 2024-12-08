@@ -114,10 +114,11 @@ type RoomState struct {
 }
 
 type Action struct {
-	Name     string  `json:"name"` // pause, play, rewind
-	TimeCode float64 `json:"time_code"`
-	Message  Msg     `json:"message"`
-	MovieId  int     `json:"movie_id"`
+	Name     string    `json:"name"` // pause, play, rewind
+	TimeCode float64   `json:"time_code"`
+	Message  Msg       `json:"message"`
+	MovieId  int       `json:"movie_id"`
+	Movie    MovieInfo `json:"movie"`
 }
 
 //	type ActionMsg struct {
