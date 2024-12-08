@@ -192,3 +192,11 @@ func ToApiMovieShortInfos(mvs []models.MovieShortInfo) api.MovieShortInfos {
 
 	return api.MovieShortInfos{Movies: mvs}
 }
+
+func ToApiWatchedMovieInfos(mvs []models.WatchedMovieInfo) api.WatchedMovieInfos {
+	if mvs == nil {
+		return api.WatchedMovieInfos{}
+	}
+
+	return api.WatchedMovieInfos{Movies: mvs}
+}
