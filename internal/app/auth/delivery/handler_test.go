@@ -272,7 +272,7 @@ func TestDelivery_Session(t *testing.T) {
 					Username: "Tester",
 				},
 			},
-			resp:       `{"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
+			resp:       `{"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":"","subscription_expiration_date":"", "subscription_status":false}}`,
 			statusCode: http.StatusOK,
 		},
 		{
