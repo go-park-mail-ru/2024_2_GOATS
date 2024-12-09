@@ -37,7 +37,7 @@ func TestGetActor_Success(t *testing.T) {
 	}
 
 	// actor.FindByID
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			actors.id,
 			actors.first_name,
@@ -50,12 +50,13 @@ func TestGetActor_Success(t *testing.T) {
 		JOIN countries on countries.id = actors.country_id
 		WHERE actors.id = \$1
 	`).
+		ExpectQuery().
 		WithArgs(actorID).RowsWillBeClosed().
 		WillReturnRows(sqlmock.NewRows([]string{"id", "first_name", "second_name", "biography", "birthdate", "big_photo_url", "title"}).
 			AddRow(actorID, "John", "Doe", "Some biography", expectedActor.Birthdate, "some_photo_url", "USA"))
 
 	// movie_service.FindByActorID
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			movies.id,
 			movies.title,
@@ -69,6 +70,7 @@ func TestGetActor_Success(t *testing.T) {
 		JOIN countries ON movies.country_id = countries.id
 		WHERE actors.id = \$1
 	`).
+		ExpectQuery().
 		WithArgs(actorID).RowsWillBeClosed().
 		WillReturnRows(sqlmock.NewRows([]string{"id", "title", "card_url", "rating", "release_date", "country_title"}).
 			AddRow(1, "Movie 1", "https://example.com/movie1.jpg", 8.5, "2020-01-01", "Russia").
@@ -95,7 +97,7 @@ func TestGetActor_FindByIDError(t *testing.T) {
 	r := NewMovieRepository(db, nil)
 
 	actorID := 1
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			actors.id,
 			actors.first_name,
@@ -108,6 +110,7 @@ func TestGetActor_FindByIDError(t *testing.T) {
 		JOIN countries on countries.id = actors.country_id
 		WHERE actors.id = \$1
 	`).
+		ExpectQuery().
 		WithArgs(actorID).
 		WillReturnError(fmt.Errorf("some_error"))
 
@@ -126,7 +129,7 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 	r := NewMovieRepository(db, nil)
 
 	actorID := 1
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			actors.id,
 			actors.first_name,
@@ -139,11 +142,12 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 		JOIN countries on countries.id = actors.country_id
 		WHERE actors.id = \$1
 	`).
+		ExpectQuery().
 		WithArgs(actorID).RowsWillBeClosed().
 		WillReturnRows(sqlmock.NewRows([]string{"id", "first_name", "second_name", "biography", "birthdate", "big_photo_url", "title"}).
 			AddRow(actorID, "John", "Doe", "Some biography", "1980-03-10", "some_photo_url", "USA"))
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			movies.id,
 			movies.title,
@@ -157,6 +161,7 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 		JOIN countries ON movies.country_id = countries.id
 		WHERE actors.id = \$1
 	`).
+		ExpectQuery().
 		WithArgs(actorID).
 		WillReturnError(fmt.Errorf("some_error"))
 
@@ -192,7 +197,7 @@ func TestGetCollection_Success(t *testing.T) {
 
 	r := NewMovieRepository(db, nil)
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			collections.id,
 			collections.title,
@@ -208,7 +213,9 @@ func TestGetCollection_Success(t *testing.T) {
 		JOIN movie_collections ON movie_collections.collection_id = collections.id
 		JOIN movies ON movies.id = movie_collections.movie_id
 		JOIN countries ON countries.id = movies.country_id
-	`).RowsWillBeClosed().WillReturnRows(
+	`).
+		ExpectQuery().
+		RowsWillBeClosed().WillReturnRows(
 		sqlmock.NewRows([]string{
 			"id",
 			"title",
@@ -246,7 +253,7 @@ func TestGetCollection_ObtainError(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			collections.id,
 			collections.title,
@@ -262,7 +269,9 @@ func TestGetCollection_ObtainError(t *testing.T) {
 		JOIN movie_collections ON movie_collections.collection_id = collections.id
 		JOIN movies ON movies.id = movie_collections.movie_id
 		JOIN countries ON countries.id = movies.country_id
-	`).WillReturnError(fmt.Errorf("some_error"))
+	`).
+		ExpectQuery().
+		WillReturnError(fmt.Errorf("some_error"))
 
 	r := NewMovieRepository(db, nil)
 
@@ -300,7 +309,7 @@ func TestGetMovie_Success(t *testing.T) {
 		Seasons: []*models.Season{},
 	}
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			movies.id,
 			movies.title,
@@ -331,56 +340,59 @@ func TestGetMovie_Success(t *testing.T) {
 		LEFT JOIN seasons ON seasons.movie_id = movies.id AND movies.movie_type = 'serial'
 		LEFT JOIN episodes ON seasons.id = episodes.season_id AND movies.movie_type = 'serial'
 		WHERE movies.id = \$1
-	`).WithArgs(movieID).RowsWillBeClosed().WillReturnRows(sqlmock.NewRows(
-		[]string{
-			"id",
-			"title",
-			"short_description",
-			"long_description",
-			"card_url",
-			"album_url",
-			"rating",
-			"release_date",
-			"video_url",
-			"movie_type",
-			"title_url",
-			"directors_name",
-			"directors_surname",
-			"country_title",
-			"episode_id",
-			"episode_title",
-			"episode_description",
-			"season_number",
-			"episode_number",
-			"episode_release_date",
-			"episode_rating",
-			"episode_preview_url",
-			"episode_video_url",
-		}).AddRow(
-		1,
-		"test movie_service",
-		"short desc",
-		"long desc",
-		"card url",
-		"album url",
-		7.6,
-		"1980-03-10",
-		"video url",
-		"film",
-		"title url",
-		"Test",
-		"Tester",
-		"Russia",
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-	),
+	`).
+		ExpectQuery().
+		WithArgs(movieID).RowsWillBeClosed().WillReturnRows(sqlmock.NewRows(
+			[]string{
+				"id",
+				"title",
+				"short_description",
+				"long_description",
+				"card_url",
+				"album_url",
+				"rating",
+				"release_date",
+				"video_url",
+				"movie_type",
+				"title_url",
+				"directors_name",
+				"directors_surname",
+				"country_title",
+				"episode_id",
+				"episode_title",
+				"episode_description",
+				"season_number",
+				"episode_number",
+				"episode_release_date",
+				"episode_rating",
+				"episode_preview_url",
+				"episode_video_url",
+			}).
+		AddRow(
+			1,
+			"test movie_service",
+			"short desc",
+			"long desc",
+			"card url",
+			"album url",
+			7.6,
+			"1980-03-10",
+			"video url",
+			"film",
+			"title url",
+			"Test",
+			"Tester",
+			"Russia",
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+		),
 	)
 
 	r := NewMovieRepository(db, nil)
@@ -400,7 +412,7 @@ func TestGetMovie_FindByIDError(t *testing.T) {
 
 	movieID := 1
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			movies.id,
 			movies.title,
@@ -431,7 +443,7 @@ func TestGetMovie_FindByIDError(t *testing.T) {
 		LEFT JOIN seasons ON seasons.movie_id = movies.id AND movies.movie_type = 'serial'
 		LEFT JOIN episodes ON seasons.id = episodes.season_id AND movies.movie_type = 'serial'
 		WHERE movies.id = \$1
-	`).WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
+	`).ExpectQuery().WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
 
 	r := NewMovieRepository(db, nil)
 
@@ -458,7 +470,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 		SmallPhotoURL: "some_small_photo_link",
 	}}
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			actors.id,
 			actors.first_name,
@@ -469,7 +481,7 @@ func TestGetMovieActors_Success(t *testing.T) {
 		JOIN movie_actors on movie_actors.actor_id = actors.id
 		JOIN movies on movie_actors.movie_id = movies.id
 		WHERE movies.id = \$1
-	`).WithArgs(movieID).RowsWillBeClosed().WillReturnRows(sqlmock.NewRows(
+	`).ExpectQuery().WithArgs(movieID).RowsWillBeClosed().WillReturnRows(sqlmock.NewRows(
 		[]string{
 			"id",
 			"name",
@@ -495,7 +507,7 @@ func TestGetMovieActors_DbError(t *testing.T) {
 
 	movieID := 1
 
-	mock.ExpectQuery(`
+	mock.ExpectPrepare(`
 		SELECT
 			actors.id,
 			actors.first_name,
@@ -506,7 +518,7 @@ func TestGetMovieActors_DbError(t *testing.T) {
 		JOIN movie_actors on movie_actors.actor_id = actors.id
 		JOIN movies on movie_actors.movie_id = movies.id
 		WHERE movies.id = \$1
-	`).WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
+	`).ExpectQuery().WithArgs(movieID).WillReturnError(fmt.Errorf("some error"))
 
 	r := NewMovieRepository(db, nil)
 

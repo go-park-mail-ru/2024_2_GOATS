@@ -20,9 +20,9 @@ const (
 	`
 
 	usrFindByID = `
-		SELECT users.id, users.email, users.username, users.password_hash, users.avatar_url
+		SELECT id, email, username, password_hash, avatar_url
 		FROM users
-		WHERE users.id = $1
+		WHERE id = $1
 	`
 
 	usrFindByEmail       = "SELECT id, email, username, password_hash FROM users WHERE email = $1"
@@ -69,7 +69,18 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, 
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(ctx, usrFindByEmail, email).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password)
+	stmt, err := db.Prepare(usrFindByEmail)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#findByEmail: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(ctx, email).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "find_user_by_email", "users")
@@ -90,7 +101,18 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, er
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(ctx, usrFindByID, userID).Scan(
+	stmt, err := db.Prepare(usrFindByID)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#findByID: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(ctx, userID).Scan(
 		&usr.ID,
 		&usr.Email,
 		&usr.Username,
