@@ -25,6 +25,7 @@ const (
 	uploadFileSize = 5 * 1024 * 1024
 	destroyFavOp   = "destroy_favorite"
 	setFavOp       = "set_favorite"
+	addWatchedOp   = "add_watched"
 )
 
 type UserHandler struct {
@@ -294,4 +295,29 @@ func (u *UserHandler) GetWatchedMovies(w http.ResponseWriter, r *http.Request) {
 	logger.Info().Interface("GetWatchResp", resp).Msg("Watched movies success")
 
 	api.Response(r.Context(), w, http.StatusOK, resp)
+}
+
+func (u *UserHandler) AddWatchedMovie(w http.ResponseWriter, r *http.Request) {
+	var err *errVals.ServiceError
+	logger := log.Ctx(r.Context())
+
+	watchedReq := &api.WatchedMovieInfoRequest{}
+	api.DecodeBody(w, r, watchedReq)
+
+	watchedSrvData := converter.ToServWatchedData(watchedReq, config.CurrentUserID(r.Context()))
+
+	err = u.userService.AddWatchedMovie(r.Context(), watchedSrvData)
+
+	if err != nil {
+		errResp := errVals.ToDeliveryErrorFromService(err)
+		errMsg := fmt.Errorf("failed to get user watched movies", err)
+		logger.Error().Err(errMsg).Interface("watchedResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Msgf("%s success", addWatchedOp)
+
+	api.Response(r.Context(), w, http.StatusOK, nil)
 }

@@ -200,3 +200,10 @@ func ToApiWatchedMovieInfos(mvs []models.WatchedMovieInfo) api.WatchedMovieInfos
 
 	return api.WatchedMovieInfos{Movies: mvs}
 }
+
+func ToServWatchedData(fr *api.WatchedMovieInfoRequest, usrID int) *models.OwnWatchedMovie {
+	return &models.OwnWatchedMovie{
+		UserID:       usrID,
+		WatchedMovie: fr.Movie,
+	}
+}

@@ -185,3 +185,8 @@ type WatchedMovieInfo struct {
 	Duration      int64  `json:"duration"`
 	SavingSeconds int64  `json:"saving_seconds"`
 }
+
+type OwnWatchedMovie struct {
+	UserID       int
+	WatchedMovie WatchedMovieInfo
+}

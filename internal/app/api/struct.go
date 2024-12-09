@@ -139,6 +139,10 @@ type SubscribeResponse struct {
 	SubscriptionIDP string `json:"subscription_idp"`
 }
 
+type WatchedMovieInfoRequest struct {
+	Movie models.WatchedMovieInfo `json:"watched_movie"`
+}
+
 type WatchedMovieInfos struct {
 	Movies []models.WatchedMovieInfo `json:"watched_movies"`
 }
