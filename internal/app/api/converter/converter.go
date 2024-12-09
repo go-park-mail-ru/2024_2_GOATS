@@ -192,3 +192,25 @@ func ToApiMovieShortInfos(mvs []models.MovieShortInfo) api.MovieShortInfos {
 
 	return api.MovieShortInfos{Movies: mvs}
 }
+
+func ToApiWatchedMovieInfos(mvs []models.WatchedMovieInfo) api.WatchedMovieInfos {
+	if mvs == nil {
+		return api.WatchedMovieInfos{}
+	}
+
+	return api.WatchedMovieInfos{Movies: mvs}
+}
+
+func ToServWatchedData(fr *api.WatchedMovieInfos, usrID int) *models.OwnWatchedMovie {
+	return &models.OwnWatchedMovie{
+		UserID:        usrID,
+		WatchedMovies: fr.Movies,
+	}
+}
+
+func ToServDeleteWatchedData(fr *api.WatchedMovieDeleteRequest, usrID int) *models.DeletedWatchedMovie {
+	return &models.DeletedWatchedMovie{
+		UserID:         usrID,
+		WatchedMovieID: fr.MovieID,
+	}
+}

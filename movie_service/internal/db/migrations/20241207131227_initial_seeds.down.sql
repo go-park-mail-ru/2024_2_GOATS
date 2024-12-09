@@ -1,0 +1,11 @@
+DELETE FROM public.genres;
+DELETE FROM public.countries;
+DELETE FROM public.directors;
+DELETE FROM public.movies;
+DELETE FROM public.movie_genres;
+DELETE FROM public.collections;
+DELETE FROM public.movie_collections;
+DELETE FROM public.actors;
+DELETE FROM public.movie_actors;
+DELETE FROM public.seasons;
+DELETE FROM public.episodes;
