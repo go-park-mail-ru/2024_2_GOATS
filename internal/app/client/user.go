@@ -25,6 +25,7 @@ type UserClientInterface interface {
 	UpdateSubscriptionStatus(ctx context.Context, subID int) error
 	GetWatchedMovies(ctx context.Context, usrID int) ([]models.WatchedMovieInfo, error)
 	AddWatchedMovie(ctx context.Context, watchedData *models.OwnWatchedMovie) error
+	DeleteWatchedMovie(ctx context.Context, watchedData *models.DeletedWatchedMovie) error
 }
 
 type UserClient struct {
@@ -308,6 +309,23 @@ func (uc *UserClient) AddWatchedMovie(ctx context.Context, watchedData *models.O
 
 	if err != nil {
 		return fmt.Errorf("userClientError#AddWatchedMovie: %w", err)
+	}
+
+	saveMetric(start, userClient, method, err)
+
+	return err
+}
+
+func (uc *UserClient) DeleteWatchedMovie(ctx context.Context, watchedData *models.DeletedWatchedMovie) error {
+	start := time.Now()
+	method := "DeleteWatchedMovie"
+	println("CLIENT WAS CALLED", watchedData.UserID, watchedData.WatchedMovieID)
+
+	var err error
+	// TODO: поход в микросервис
+
+	if err != nil {
+		return fmt.Errorf("userClientError#DeleteWatchedMovie: %w", err)
 	}
 
 	saveMetric(start, userClient, method, err)

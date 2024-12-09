@@ -143,6 +143,10 @@ type WatchedMovieInfoRequest struct {
 	Movie models.WatchedMovieInfo `json:"watched_movie"`
 }
 
+type WatchedMovieDeleteRequest struct {
+	MovieID int `json:"movie_id"`
+}
+
 type WatchedMovieInfos struct {
 	Movies []models.WatchedMovieInfo `json:"watched_movies"`
 }

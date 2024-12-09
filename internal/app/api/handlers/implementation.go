@@ -29,6 +29,7 @@ type UserHandlerInterface interface {
 	ResetFavorite(w http.ResponseWriter, r *http.Request)
 	GetWatchedMovies(w http.ResponseWriter, r *http.Request)
 	AddWatchedMovie(w http.ResponseWriter, r *http.Request)
+	DeleteWatchedMovie(w http.ResponseWriter, r *http.Request)
 }
 
 type RoomImplementationInterface interface {

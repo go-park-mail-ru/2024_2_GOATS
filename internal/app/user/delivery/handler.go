@@ -20,12 +20,13 @@ import (
 var _ handlers.UserHandlerInterface = (*UserHandler)(nil)
 
 const (
-	rParseErr      = "user_request_parse_error"
-	vlErr          = "user_validation_error"
-	uploadFileSize = 5 * 1024 * 1024
-	destroyFavOp   = "destroy_favorite"
-	setFavOp       = "set_favorite"
-	addWatchedOp   = "add_watched"
+	rParseErr       = "user_request_parse_error"
+	vlErr           = "user_validation_error"
+	uploadFileSize  = 5 * 1024 * 1024
+	destroyFavOp    = "destroy_favorite"
+	setFavOp        = "set_favorite"
+	addWatchedOp    = "add_watched"
+	deleteWatchedOp = "delete_watched"
 )
 
 type UserHandler struct {
@@ -310,14 +311,39 @@ func (u *UserHandler) AddWatchedMovie(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		errResp := errVals.ToDeliveryErrorFromService(err)
-		errMsg := fmt.Errorf("failed to get user watched movies", err)
-		logger.Error().Err(errMsg).Interface("watchedResp", errResp).Msg("request_failed")
+		errMsg := fmt.Errorf("failed to add watched movie", err)
+		logger.Error().Err(errMsg).Interface("watchedAddResp", errResp).Msg("request_failed")
 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
 
 	logger.Info().Msgf("%s success", addWatchedOp)
+
+	api.Response(r.Context(), w, http.StatusOK, nil)
+}
+
+func (u *UserHandler) DeleteWatchedMovie(w http.ResponseWriter, r *http.Request) {
+	var err *errVals.ServiceError
+	logger := log.Ctx(r.Context())
+
+	watchedReq := &api.WatchedMovieDeleteRequest{}
+	api.DecodeBody(w, r, watchedReq)
+
+	watchedSrvData := converter.ToServDeleteWatchedData(watchedReq, config.CurrentUserID(r.Context()))
+
+	err = u.userService.DeleteWatchedMovie(r.Context(), watchedSrvData)
+
+	if err != nil {
+		errResp := errVals.ToDeliveryErrorFromService(err)
+		errMsg := fmt.Errorf("failed to delete watched movie", err)
+		logger.Error().Err(errMsg).Interface("watchedDeleteResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Msgf("%s success", deleteWatchedOp)
 
 	api.Response(r.Context(), w, http.StatusOK, nil)
 }

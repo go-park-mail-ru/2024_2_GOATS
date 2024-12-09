@@ -47,6 +47,7 @@ func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
 	userRouter.HandleFunc("/{id:[0-9]+}/watched", delLayer.GetWatchedMovies).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc("/{id:[0-9]+}/watched", delLayer.AddWatchedMovie).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/watched", delLayer.DeleteWatchedMovie).Methods(http.MethodDelete, http.MethodOptions)
 }
 
 func SetupPayment(delLayer handlers.PaymentHandlerInterface, router *mux.Router) {

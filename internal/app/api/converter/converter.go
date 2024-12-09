@@ -207,3 +207,10 @@ func ToServWatchedData(fr *api.WatchedMovieInfoRequest, usrID int) *models.OwnWa
 		WatchedMovie: fr.Movie,
 	}
 }
+
+func ToServDeleteWatchedData(fr *api.WatchedMovieDeleteRequest, usrID int) *models.DeletedWatchedMovie {
+	return &models.DeletedWatchedMovie{
+		UserID:         usrID,
+		WatchedMovieID: fr.MovieID,
+	}
+}
