@@ -302,7 +302,7 @@ func (uc *UserClient) GetWatchedMovies(ctx context.Context, usrID int) ([]models
 func (uc *UserClient) AddWatchedMovie(ctx context.Context, watchedData *models.OwnWatchedMovie) error {
 	start := time.Now()
 	method := "AddWatchedMovie"
-	println("CLIENT WAS CALLED", watchedData.UserID, watchedData.WatchedMovie.Title)
+	println("CLIENT WAS CALLED", watchedData.UserID, watchedData.WatchedMovies[0].Title)
 
 	var err error
 	// TODO: поход в микросервис

@@ -187,8 +187,8 @@ type WatchedMovieInfo struct {
 }
 
 type OwnWatchedMovie struct {
-	UserID       int
-	WatchedMovie WatchedMovieInfo
+	UserID        int
+	WatchedMovies []WatchedMovieInfo
 }
 
 type DeletedWatchedMovie struct {

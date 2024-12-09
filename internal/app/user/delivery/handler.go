@@ -302,7 +302,7 @@ func (u *UserHandler) AddWatchedMovie(w http.ResponseWriter, r *http.Request) {
 	var err *errVals.ServiceError
 	logger := log.Ctx(r.Context())
 
-	watchedReq := &api.WatchedMovieInfoRequest{}
+	watchedReq := &api.WatchedMovieInfos{}
 	api.DecodeBody(w, r, watchedReq)
 
 	watchedSrvData := converter.ToServWatchedData(watchedReq, config.CurrentUserID(r.Context()))

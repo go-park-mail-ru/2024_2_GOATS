@@ -139,10 +139,6 @@ type SubscribeResponse struct {
 	SubscriptionIDP string `json:"subscription_idp"`
 }
 
-type WatchedMovieInfoRequest struct {
-	Movie models.WatchedMovieInfo `json:"watched_movie"`
-}
-
 type WatchedMovieDeleteRequest struct {
 	MovieID int `json:"movie_id"`
 }
