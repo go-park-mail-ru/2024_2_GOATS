@@ -24,7 +24,18 @@ func FindById(ctx context.Context, staffId int, post string, db *sql.DB) *sql.Ro
 		WHERE movie_staff.id = $1 and movie_staff.post = $2
 	`
 
-	row := db.QueryRowContext(ctx, actorSqlStatement, staffId, post)
+	stmt, err := db.Prepare(actorSqlStatement)
+	if err != nil {
+		return nil
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	row := stmt.QueryRowContext(ctx, staffId, post)
 
 	logger.Info().Msg("postgres: successfully select staff info")
 

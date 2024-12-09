@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/dto"
-	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/metrics_utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -37,9 +37,19 @@ func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(
+	stmt, err := db.Prepare(favCreateSQL)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#createFavorite: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(
 		ctx,
-		favCreateSQL,
 		favReq.UserID, favReq.MovieID,
 	).Err()
 
@@ -61,9 +71,19 @@ func Destroy(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	err := db.QueryRowContext(
+	stmt, err := db.Prepare(favDestroySQL)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#destroyFavorite: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(
 		ctx,
-		favDestroySQL,
 		favReq.UserID, favReq.MovieID,
 	).Err()
 
@@ -85,7 +105,18 @@ func FindByUserID(ctx context.Context, userID uint64, db *sql.DB) (*sql.Rows, er
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, favGetSQL, userID)
+	stmt, err := db.Prepare(favGetSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#favoritesByUserID: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "find_user_favorites", "favorites")
 		errMsg := fmt.Errorf("postgres: error while scanning favorites by user_id - %w", err)
@@ -104,7 +135,18 @@ func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, er
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	rows, err := db.QueryContext(ctx, favCheckSQL, favData.UserID, favData.MovieID)
+	stmt, err := db.Prepare(favCheckSQL)
+	if err != nil {
+		return false, fmt.Errorf("prepareStatement#checkFavorite: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, favData.UserID, favData.MovieID)
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "check_favorite_existence", "favorites")
 		errMsg := fmt.Errorf("postgres: failed to check favorite existence: %w", err)
