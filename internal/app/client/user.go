@@ -274,19 +274,29 @@ func (uc *UserClient) GetWatchedMovies(ctx context.Context, usrID int) ([]models
 	mockMovies := []models.WatchedMovieInfo{
 		{
 			ID:            1,
-			Title:         "Movie 1",
-			AlbumURL:      "http://example.com/album1",
-			TimeCode:      123456789,
-			Duration:      90000, // 90 секунд
-			SavingSeconds: 10000, // 10 секунд
+			Title:         "Бесславные ублюдки",
+			AlbumURL:      "https://cassette-world.ru//static/movies_all/inglourious-basterds/poster.webp",
+			TimeCode:      76.643052,
+			Duration:      129.798889,
+			SavingSeconds: 1733843174990,
 		},
 		{
 			ID:            2,
-			Title:         "Movie 2",
-			AlbumURL:      "http://example.com/album2",
-			TimeCode:      987654321,
-			Duration:      120000, // 120 секунд
-			SavingSeconds: 15000,  // 15 секунд
+			Title:         "Аватар",
+			AlbumURL:      "https://cassette-world.ru//static/movies_all/avatar/poster.webp",
+			TimeCode:      67.252389,
+			Duration:      204.89288,
+			SavingSeconds: 1733843091350,
+		},
+		{
+			ID:            3,
+			Title:         "Кухня",
+			AlbumURL:      "https://cassette-world.ru//static/movies_all/kitchen/poster.webp",
+			TimeCode:      69.252389,
+			Duration:      504.89288,
+			SavingSeconds: 1733843091350,
+			Season:        2,
+			Series:        4,
 		},
 	}
 
