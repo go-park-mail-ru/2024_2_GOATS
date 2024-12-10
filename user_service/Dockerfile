@@ -9,6 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY user_service/ ./user_service
+COPY .env ./user_service
 
 WORKDIR /app/user_service
 
@@ -21,10 +22,11 @@ RUN go build -o /app/user_service/cmd/main cmd/main.go
 FROM scratch
 
 COPY --from=builder /app/user_service/cmd/main /bin/main
-COPY --from=builder /app/user_service/.env /app/user_service/.env
+COPY --from=builder /app/user_service/.env /app/.env
 COPY --from=builder /app/user_service/internal/config/config.yml /app/user_service/internal/config/config.yml
 COPY --from=builder /app/user_service/internal/db /app/user_service/internal/db
 
 WORKDIR /app/user_service
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 CMD wget --spider http://localhost:8082/health || exit 1
 
 ENTRYPOINT ["/bin/main"]
