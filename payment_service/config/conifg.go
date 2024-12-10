@@ -49,7 +49,7 @@ func New(isTest bool) (*Config, error) {
 func setupViper(isTest bool) error {
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath("..")
 
 	err := viper.ReadInConfig()
 	if err != nil {
