@@ -10,7 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/dto"
 	"github.com/rs/zerolog/log"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 )
 
 const (
@@ -34,10 +34,21 @@ func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, err
 	logger := log.Ctx(ctx)
 	actorInfo := &dto.RepoActor{}
 
-	row := db.QueryRowContext(ctx, actorFindByIDSQL, actorID)
+	stmt, err := db.Prepare(actorFindByIDSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#actorFindById: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	row := stmt.QueryRowContext(ctx, actorID)
 	logger.Info().Msg("postgres: successfully select actor info")
 
-	err := row.Scan(
+	err = row.Scan(
 		&actorInfo.ID,
 		&actorInfo.Name,
 		&actorInfo.Surname,

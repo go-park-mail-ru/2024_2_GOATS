@@ -3,6 +3,7 @@ package converter
 import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData {
@@ -11,10 +12,10 @@ func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData 
 	}
 
 	return &srvDTO.CreateUserData{
-		Email:                req.Email,
-		Username:             req.Username,
-		Password:             req.Password,
-		PasswordConfirmation: req.PasswordConfirmation,
+		Email:                sanitizeInput(req.Email),
+		Username:             sanitizeInput(req.Username),
+		Password:             sanitizeInput(req.Password),
+		PasswordConfirmation: sanitizeInput(req.PasswordConfirmation),
 	}
 }
 
@@ -36,9 +37,9 @@ func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.Passwor
 
 	return &srvDTO.PasswordData{
 		UserID:               req.UserID,
-		OldPassword:          req.OldPassword,
-		Password:             req.Password,
-		PasswordConfirmation: req.PasswordConfirmation,
+		OldPassword:          sanitizeInput(req.OldPassword),
+		Password:             sanitizeInput(req.Password),
+		PasswordConfirmation: sanitizeInput(req.PasswordConfirmation),
 	}
 }
 
@@ -49,10 +50,10 @@ func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 
 	return &srvDTO.User{
 		ID:         req.UserID,
-		Email:      req.Email,
-		Username:   req.Username,
-		AvatarURL:  req.AvatarURL,
-		AvatarName: req.AvatarName,
+		Email:      sanitizeInput(req.Email),
+		Username:   sanitizeInput(req.Username),
+		AvatarURL:  sanitizeInput(req.AvatarURL),
+		AvatarName: sanitizeInput(req.AvatarName),
 		AvatarFile: req.AvatarFile,
 	}
 }
@@ -83,4 +84,9 @@ func ConvertToGRPCUser(su *srvDTO.User) *user.UserData {
 		SubscriptionStatus:         su.SubscriptionStatus,
 		SubscriptionExpirationDate: su.SubscriptionExpirationDate,
 	}
+}
+
+func sanitizeInput(input string) string {
+	policy := bluemonday.UGCPolicy()
+	return policy.Sanitize(input)
 }

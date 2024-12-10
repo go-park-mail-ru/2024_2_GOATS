@@ -23,6 +23,9 @@ type UserClientInterface interface {
 	UpdateProfile(ctx context.Context, usrData *models.User) error
 	CreateSubscription(ctx context.Context, data *models.SubscriptionData) (int, error)
 	UpdateSubscriptionStatus(ctx context.Context, subID int) error
+	GetWatchedMovies(ctx context.Context, usrID int) ([]models.WatchedMovieInfo, error)
+	AddWatchedMovie(ctx context.Context, watchedData *models.OwnWatchedMovie) error
+	DeleteWatchedMovie(ctx context.Context, watchedData *models.DeletedWatchedMovie) error
 }
 
 type UserClient struct {
@@ -258,4 +261,84 @@ func (uc *UserClient) UpdateSubscriptionStatus(ctx context.Context, subID int) e
 	}
 
 	return nil
+}
+
+// TODO: Поменять на []uint64
+func (uc *UserClient) GetWatchedMovies(ctx context.Context, usrID int) ([]models.WatchedMovieInfo, error) {
+	// start := time.Now()
+	// method := "GetWatchedMovies"
+
+	// resp, err := uc.UserMS.GetWatchedMovies(ctx, &user.ID{ID: uint64(usrID)})
+	// saveMetric(start, userClient, method, err)
+
+	mockMovies := []models.WatchedMovieInfo{
+		{
+			ID:            1,
+			Title:         "Бесславные ублюдки",
+			AlbumURL:      "https://cassette-world.ru//static/movies_all/inglourious-basterds/poster.webp",
+			TimeCode:      76.643052,
+			Duration:      129.798889,
+			SavingSeconds: 1733843174990,
+		},
+		{
+			ID:            2,
+			Title:         "Аватар",
+			AlbumURL:      "https://cassette-world.ru//static/movies_all/avatar/poster.webp",
+			TimeCode:      67.252389,
+			Duration:      204.89288,
+			SavingSeconds: 1733843091350,
+		},
+		{
+			ID:            3,
+			Title:         "Кухня",
+			AlbumURL:      "https://cassette-world.ru//static/movies_all/kitchen/poster.webp",
+			TimeCode:      69.252389,
+			Duration:      504.89288,
+			SavingSeconds: 1733843091350,
+			Season:        2,
+			Series:        4,
+		},
+	}
+
+	// if err != nil {
+	// 	return nil, fmt.Errorf("userClientError#GetWatchedMovies: %w", err)
+	// }
+
+	// return resp.MovieIDs, nil
+	// return []uint64{}, nil
+	return mockMovies, nil
+}
+
+func (uc *UserClient) AddWatchedMovie(ctx context.Context, watchedData *models.OwnWatchedMovie) error {
+	start := time.Now()
+	method := "AddWatchedMovie"
+	println("CLIENT WAS CALLED", watchedData.UserID, watchedData.WatchedMovies[0].Title)
+
+	var err error
+	// TODO: поход в микросервис
+
+	if err != nil {
+		return fmt.Errorf("userClientError#AddWatchedMovie: %w", err)
+	}
+
+	saveMetric(start, userClient, method, err)
+
+	return err
+}
+
+func (uc *UserClient) DeleteWatchedMovie(ctx context.Context, watchedData *models.DeletedWatchedMovie) error {
+	start := time.Now()
+	method := "DeleteWatchedMovie"
+	println("CLIENT WAS CALLED", watchedData.UserID, watchedData.WatchedMovieID)
+
+	var err error
+	// TODO: поход в микросервис
+
+	if err != nil {
+		return fmt.Errorf("userClientError#DeleteWatchedMovie: %w", err)
+	}
+
+	saveMetric(start, userClient, method, err)
+
+	return err
 }

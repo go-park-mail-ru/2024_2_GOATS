@@ -14,4 +14,7 @@ type UserServiceInterface interface {
 	AddFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
 	ResetFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
 	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.ServiceError)
+	GetWatchedMovies(ctx context.Context, usrID int) ([]models.WatchedMovieInfo, *errVals.ServiceError)
+	AddWatchedMovie(ctx context.Context, favData *models.OwnWatchedMovie) *errVals.ServiceError
+	DeleteWatchedMovie(ctx context.Context, favData *models.DeletedWatchedMovie) *errVals.ServiceError
 }

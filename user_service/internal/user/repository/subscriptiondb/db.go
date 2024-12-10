@@ -34,9 +34,19 @@ func CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscription
 	logger := log.Ctx(ctx)
 
 	var subID uint64
-	err := db.QueryRowContext(
+	stmt, err := db.Prepare(subCreateSQL)
+	if err != nil {
+		return 0, fmt.Errorf("prepareStatement#createSubscription: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(
 		ctx,
-		subCreateSQL,
 		subData.UserID, subData.Amount, PendingStatus, time.Now().AddDate(0, 1, 0),
 	).Scan(&subID)
 
@@ -58,7 +68,18 @@ func UpdateSubscription(ctx context.Context, subID uint64, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	_, err := db.ExecContext(ctx, markPaidSQL, ActiveStatus, time.Now().AddDate(0, 1, 0), subID)
+	stmt, err := db.Prepare(markPaidSQL)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#updateSubscription: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	_, err = stmt.ExecContext(ctx, ActiveStatus, time.Now().AddDate(0, 1, 0), subID)
 
 	if err != nil {
 		metricsutils.SaveErrorMetric(start, "update_subscription_status", "subscriptions")
@@ -79,9 +100,20 @@ func FindByUserID(ctx context.Context, usrID uint64, db *sql.DB) (*dto.RepoSubsc
 	logger := log.Ctx(ctx)
 
 	var sub = &dto.RepoSubscription{}
-	row := db.QueryRowContext(ctx, findByUserIDSQL, usrID, time.Now(), ActiveStatus)
+	stmt, err := db.Prepare(findByUserIDSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#subscriptionByUserID: %w", err)
+	}
 
-	err := row.Scan(
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	row := stmt.QueryRowContext(ctx, usrID, time.Now(), ActiveStatus)
+
+	err = row.Scan(
 		&sub.Status,
 		&sub.ExpirationDate,
 	)

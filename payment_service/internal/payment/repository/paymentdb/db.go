@@ -26,9 +26,19 @@ func Create(ctx context.Context, paymentData *dto.RepoPaymentData, db *sql.DB) (
 	logger := log.Ctx(ctx)
 
 	var pID uint64
-	err := db.QueryRowContext(
+	stmt, err := db.Prepare(usrCreateSQL)
+	if err != nil {
+		return 0, fmt.Errorf("prepareStatement#createPayment: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(
 		ctx,
-		usrCreateSQL,
 		paymentData.SubscriptionID, paymentData.Amount,
 	).Scan(&pID)
 
@@ -50,9 +60,19 @@ func MarkPaid(ctx context.Context, pID uint64, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	_, err := db.ExecContext(
+	stmt, err := db.Prepare(markPaidSQL)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#markPaid: %w", err)
+	}
+
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error().Err(err).Msg("failed_to_close_statement")
+		}
+	}()
+
+	_, err = stmt.ExecContext(
 		ctx,
-		markPaidSQL,
 		time.Now(), pID,
 	)
 

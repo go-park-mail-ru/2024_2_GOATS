@@ -20,11 +20,13 @@ import (
 var _ handlers.UserHandlerInterface = (*UserHandler)(nil)
 
 const (
-	rParseErr      = "user_request_parse_error"
-	vlErr          = "user_validation_error"
-	uploadFileSize = 5 * 1024 * 1024
-	destroyFavOp   = "destroy_favorite"
-	setFavOp       = "set_favorite"
+	rParseErr       = "user_request_parse_error"
+	vlErr           = "user_validation_error"
+	uploadFileSize  = 5 * 1024 * 1024
+	destroyFavOp    = "destroy_favorite"
+	setFavOp        = "set_favorite"
+	addWatchedOp    = "add_watched"
+	deleteWatchedOp = "delete_watched"
 )
 
 type UserHandler struct {
@@ -265,4 +267,83 @@ func getUserID(vars map[string]string) (int, error) {
 		return 0, err
 	}
 	return usrID, nil
+}
+
+func (u *UserHandler) GetWatchedMovies(w http.ResponseWriter, r *http.Request) {
+
+	logger := log.Ctx(r.Context())
+	vars := mux.Vars(r)
+	usrID, err := getUserID(vars)
+
+	if err != nil {
+		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
+		api.RequestError(r.Context(), w, rParseErr, http.StatusBadRequest, errMsg)
+
+		return
+	}
+
+	srvResp, srvRespErr := u.userService.GetWatchedMovies(r.Context(), usrID)
+	resp, respErr := converter.ToApiWatchedMovieInfos(srvResp), errVals.ToDeliveryErrorFromService(srvRespErr)
+
+	if respErr != nil {
+		errMsg := errors.New("failed to get user watched movies")
+		logger.Error().Err(errMsg).Interface("watchResp", respErr).Msg("request_failed")
+		api.Response(r.Context(), w, respErr.HTTPStatus, respErr)
+
+		return
+	}
+
+	logger.Info().Interface("GetWatchResp", resp).Msg("Watched movies success")
+
+	api.Response(r.Context(), w, http.StatusOK, resp)
+}
+
+func (u *UserHandler) AddWatchedMovie(w http.ResponseWriter, r *http.Request) {
+	var err *errVals.ServiceError
+	logger := log.Ctx(r.Context())
+
+	watchedReq := &api.WatchedMovieInfos{}
+	api.DecodeBody(w, r, watchedReq)
+
+	watchedSrvData := converter.ToServWatchedData(watchedReq, config.CurrentUserID(r.Context()))
+
+	err = u.userService.AddWatchedMovie(r.Context(), watchedSrvData)
+
+	if err != nil {
+		errResp := errVals.ToDeliveryErrorFromService(err)
+		errMsg := fmt.Errorf("failed to add watched movie", err)
+		logger.Error().Err(errMsg).Interface("watchedAddResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Msgf("%s success", addWatchedOp)
+
+	api.Response(r.Context(), w, http.StatusOK, nil)
+}
+
+func (u *UserHandler) DeleteWatchedMovie(w http.ResponseWriter, r *http.Request) {
+	var err *errVals.ServiceError
+	logger := log.Ctx(r.Context())
+
+	watchedReq := &api.WatchedMovieDeleteRequest{}
+	api.DecodeBody(w, r, watchedReq)
+
+	watchedSrvData := converter.ToServDeleteWatchedData(watchedReq, config.CurrentUserID(r.Context()))
+
+	err = u.userService.DeleteWatchedMovie(r.Context(), watchedSrvData)
+
+	if err != nil {
+		errResp := errVals.ToDeliveryErrorFromService(err)
+		errMsg := fmt.Errorf("failed to delete watched movie", err)
+		logger.Error().Err(errMsg).Interface("watchedDeleteResp", errResp).Msg("request_failed")
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+
+		return
+	}
+
+	logger.Info().Msgf("%s success", deleteWatchedOp)
+
+	api.Response(r.Context(), w, http.StatusOK, nil)
 }

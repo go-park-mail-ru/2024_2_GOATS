@@ -176,3 +176,24 @@ type CreatePaymentData struct {
 func (p Person) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
 }
+
+type WatchedMovieInfo struct {
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	AlbumURL      string  `json:"album_url"`
+	TimeCode      float64 `json:"timecode"`
+	Duration      float64 `json:"duration"`
+	SavingSeconds int64   `json:"saving_seconds"`
+	Season        int64   `json:"season"`
+	Series        int64   `json:"series"`
+}
+
+type OwnWatchedMovie struct {
+	UserID        int
+	WatchedMovies []WatchedMovieInfo
+}
+
+type DeletedWatchedMovie struct {
+	UserID         int
+	WatchedMovieID int
+}
