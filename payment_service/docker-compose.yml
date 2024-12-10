@@ -3,6 +3,8 @@ volumes:
 
 services:
   payment_app:
+    container_name: payment_app
+    image: unicoyal/payment_app:latest
     build:
       context: ..
       dockerfile: payment_service/Dockerfile

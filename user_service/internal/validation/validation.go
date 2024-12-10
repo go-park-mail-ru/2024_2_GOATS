@@ -20,7 +20,7 @@ const (
 	usernameLength            = 6
 )
 
-var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var emailRegex = regexp.MustCompile(`^[$\/@ "'.!#\$%&'*+\-=?^_{|}~a-zA-z0-9]+@[a-z]+\.[a-z]{2,10}$`)
 
 func ValidateFavoriteRequest(favReq *user.HandleFavorite) error {
 	if favReq.MovieID == 0 || favReq.UserID == 0 {
