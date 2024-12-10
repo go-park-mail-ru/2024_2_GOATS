@@ -26,6 +26,7 @@ func TestCreateUser_Success(t *testing.T) {
 	usrUsername := "mr tester"
 	pass := "test_password"
 	usrPassword, err := password.HashAndSalt(context.Background(), pass)
+	assert.NoError(t, err)
 
 	expectedUsr := &dto.RepoUser{
 		ID:       uint64(usrID),
@@ -41,7 +42,8 @@ func TestCreateUser_Success(t *testing.T) {
 		PasswordConfirmation: pass,
 	}
 
-	mock.ExpectQuery(`INSERT INTO users \(email, username, password_hash\) VALUES \(\$1, \$2, \$3\) RETURNING id, email`).
+	mock.ExpectPrepare(`INSERT INTO users \(email, username, password_hash\) VALUES \(\$1, \$2, \$3\) RETURNING id, email`).
+		ExpectQuery().
 		WithArgs(usrEmail, usrUsername, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
 			AddRow(usrID, usrEmail))
@@ -72,7 +74,8 @@ func TestCreateUser_DbError(t *testing.T) {
 		PasswordConfirmation: pass,
 	}
 
-	mock.ExpectQuery(`INSERT INTO users \(email, username, password_hash\) VALUES \(\$1, \$2, \$3\) RETURNING id, email`).
+	mock.ExpectPrepare(`INSERT INTO users \(email, username, password_hash\) VALUES \(\$1, \$2, \$3\) RETURNING id, email`).
+		ExpectQuery().
 		WithArgs(usrEmail, usrUsername, sqlmock.AnyArg()).WillReturnError(fmt.Errorf("some_error"))
 
 	usr, errObj := r.CreateUser(context.Background(), regData)
@@ -92,7 +95,8 @@ func TestUpdatePassword_Success(t *testing.T) {
 	usrID := 1
 	pass := "test_password"
 
-	mock.ExpectExec(`UPDATE users SET password_hash = \$1, updated_at = \$2 WHERE id = \$3`).
+	mock.ExpectPrepare(`UPDATE users SET password_hash = \$1, updated_at = \$2 WHERE id = \$3`).
+		ExpectExec().
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), usrID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -112,7 +116,8 @@ func TestUpdatePassword_DbError(t *testing.T) {
 	usrID := 1
 	pass := "test_password"
 
-	mock.ExpectExec(`UPDATE users SET password_hash = \$1, updated_at = \$2 WHERE id = \$3`).
+	mock.ExpectPrepare(`UPDATE users SET password_hash = \$1, updated_at = \$2 WHERE id = \$3`).
+		ExpectExec().
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), usrID).
 		WillReturnError(fmt.Errorf("some_error"))
 
@@ -135,7 +140,8 @@ func TestUserByEmail_Success(t *testing.T) {
 	passHash, err := password.HashAndSalt(context.Background(), "test_password")
 	assert.NoError(t, err)
 
-	mock.ExpectQuery(`SELECT id, email, username, password_hash FROM USERS WHERE email = \$1`).
+	mock.ExpectPrepare(`SELECT id, email, username, password_hash FROM users WHERE email = \$1`).
+		ExpectQuery().
 		WithArgs(usrEmail).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "username", "password_hash"}).
 		AddRow(usrID, usrEmail, usrUsername, passHash))
 
@@ -158,7 +164,8 @@ func TestUserByEmail_NotFound(t *testing.T) {
 
 	usrEmail := "test@mail.ru"
 
-	mock.ExpectQuery(`SELECT id, email, username, password_hash FROM USERS WHERE email = \$1`).
+	mock.ExpectPrepare(`SELECT id, email, username, password_hash FROM users WHERE email = \$1`).
+		ExpectQuery().
 		WithArgs(usrEmail).WillReturnError(sql.ErrNoRows)
 
 	usr, errObj := r.UserByEmail(context.Background(), usrEmail)
@@ -181,9 +188,14 @@ func TestUserByID_Success(t *testing.T) {
 	passHash, err := password.HashAndSalt(context.Background(), "test_password")
 	assert.NoError(t, err)
 
-	mock.ExpectQuery(`SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = \$1`).
+	mock.ExpectPrepare(`SELECT id, email, username, password_hash, avatar_url FROM users WHERE id = \$1`).
+		ExpectQuery().
 		WithArgs(usrID).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "username", "password_hash", "avatar_url"}).
 		AddRow(usrID, usrEmail, usrUsername, passHash, "test.png"))
+
+	mock.ExpectPrepare(`SELECT status, expiration_date FROM subscriptions WHERE user_id = \$1 and expiration_date > \$2 and status = \$3`).
+		ExpectQuery().
+		WithArgs(usrID, sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnRows(sqlmock.NewRows([]string{"status", "expiration_date"}))
 
 	usr, errObj := r.UserByID(context.Background(), uint64(usrID))
 
@@ -204,7 +216,8 @@ func TestUserByID_NotFound(t *testing.T) {
 
 	usrID := 1
 
-	mock.ExpectQuery(`SELECT id, email, username, password_hash, avatar_url FROM USERS WHERE id = \$1`).
+	mock.ExpectPrepare(`SELECT id, email, username, password_hash, avatar_url FROM users WHERE id = \$1`).
+		ExpectQuery().
 		WithArgs(usrID).WillReturnError(sql.ErrNoRows)
 
 	usr, errObj := r.UserByID(context.Background(), uint64(usrID))
@@ -227,7 +240,8 @@ func TestUpdateProfileData_Success(t *testing.T) {
 		AvatarURL: "some_avatar_url",
 	}
 
-	mock.ExpectExec(`UPDATE users SET email = \$1, username = \$2, avatar_url = \$3, updated_at = \$4 WHERE id = \$5`).
+	mock.ExpectPrepare(`UPDATE users SET email = \$1, username = \$2, avatar_url = \$3, updated_at = \$4 WHERE id = \$5`).
+		ExpectExec().
 		WithArgs(profileData.Email, profileData.Username, profileData.AvatarURL, sqlmock.AnyArg(), profileData.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -250,7 +264,8 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 		AvatarURL: "some_avatar_url",
 	}
 
-	mock.ExpectExec(`UPDATE users SET email = \$1, username = \$2, avatar_url = \$3, updated_at = \$4 WHERE id = \$5`).
+	mock.ExpectPrepare(`UPDATE users SET email = \$1, username = \$2, avatar_url = \$3, updated_at = \$4 WHERE id = \$5`).
+		ExpectExec().
 		WithArgs(profileData.Email, profileData.Username, profileData.AvatarURL, sqlmock.AnyArg(), profileData.ID).
 		WillReturnError(fmt.Errorf("some database error"))
 
@@ -273,7 +288,8 @@ func TestCheckFavorite_Success(t *testing.T) {
 	}
 
 	mockRows := sqlmock.NewRows([]string{"movie_id"}).AddRow(1)
-	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+		ExpectQuery().
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnRows(mockRows)
 
@@ -296,7 +312,8 @@ func TestCheckFavorite_FalseSuccess(t *testing.T) {
 	}
 
 	mockRows := sqlmock.NewRows([]string{"movie_id"})
-	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+		ExpectQuery().
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnRows(mockRows)
 
@@ -318,7 +335,8 @@ func TestCheckFavorite_Error(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+		ExpectQuery().
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnError(errors.New("some_database_error"))
 
@@ -339,7 +357,8 @@ func TestGetFavorites_Success(t *testing.T) {
 	usrId := 1
 
 	mockRows := sqlmock.NewRows([]string{"movie_id"}).AddRow(1).AddRow(2)
-	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1`).
+	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1`).
+		ExpectQuery().
 		WithArgs(usrId).
 		WillReturnRows(mockRows)
 
@@ -358,7 +377,8 @@ func TestGetFavorites_Error(t *testing.T) {
 	r := NewUserRepository(db)
 	usrId := 1
 
-	mock.ExpectQuery(`SELECT movie_id FROM favorites WHERE user_id = \$1`).
+	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1`).
+		ExpectQuery().
 		WithArgs(usrId).
 		WillReturnError(errors.New("some_database_error"))
 
@@ -380,7 +400,8 @@ func TestSetFavorite_Success(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mock.ExpectQuery(`INSERT INTO favorites \(user_id, movie_id\) VALUES \(\$1, \$2\)`).
+	mock.ExpectPrepare(`INSERT INTO favorites \(user_id, movie_id\) VALUES \(\$1, \$2\)`).
+		ExpectQuery().
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnRows(sqlmock.NewRows(nil))
 
@@ -401,7 +422,8 @@ func TestSetFavorite_Error(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mock.ExpectQuery(`INSERT INTO favorites \(user_id, movie_id\) VALUES \(\$1, \$2\)`).
+	mock.ExpectPrepare(`INSERT INTO favorites \(user_id, movie_id\) VALUES \(\$1, \$2\)`).
+		ExpectQuery().
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnError(errors.New("some_database_error"))
 
@@ -422,7 +444,8 @@ func TestResetFavorite_Success(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mock.ExpectQuery(`DELETE FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+	mock.ExpectPrepare(`DELETE FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+		ExpectQuery().
 		WithArgs(favData.UserID, favData.MovieID).
 		WillReturnRows(sqlmock.NewRows(nil))
 
@@ -443,9 +466,10 @@ func TestResetFavorite_Error(t *testing.T) {
 		MovieID: 1,
 	}
 
-	mock.ExpectQuery(`DELETE FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
-	WithArgs(favData.UserID, favData.MovieID).
-	WillReturnError(errors.New("some_database_error"))
+	mock.ExpectPrepare(`DELETE FROM favorites WHERE user_id = \$1 and movie_id = \$2`).
+		ExpectQuery().
+		WithArgs(favData.UserID, favData.MovieID).
+		WillReturnError(errors.New("some_database_error"))
 
 	err = r.ResetFavorite(context.Background(), favData)
 

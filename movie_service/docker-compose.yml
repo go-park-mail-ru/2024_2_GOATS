@@ -4,6 +4,8 @@ volumes:
 
 services:
   movie_app:
+    container_name: movie_app
+    image: unicoyal/movie_app:latest
     build:
       context: ..
       dockerfile: movie_service/Dockerfile

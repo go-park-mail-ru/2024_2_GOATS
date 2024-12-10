@@ -1,5 +1,7 @@
 services:
   user_app:
+    container_name: user_app
+    image: unicoyal/user_app:latest
     build:
       context: ..
       dockerfile: user_service/Dockerfile
