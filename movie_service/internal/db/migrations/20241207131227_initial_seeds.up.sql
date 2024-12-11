@@ -357,7 +357,7 @@ VALUES
 INSERT INTO public.seasons (movie_id, season_number, title, description, release_date)
 VALUES
   (3, 1, 'Кухня 1', 'Кухня: Начало', '2024-09-25'),
-  (3, 2, 'Кухня 2', 'Кухня 2', '2024-01-25');
+  (3, 2, 'Кухня 2', 'Кухня: Продолжение', '2024-01-25');
 
 INSERT INTO public.episodes (season_id, episode_number, title, description, release_date, rating, preview_url, video_url)
 VALUES
