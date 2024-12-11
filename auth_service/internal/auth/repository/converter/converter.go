@@ -5,6 +5,7 @@ import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/service/dto"
 )
 
+// ToCookieFromRepo converts from repo Token to srv Cookie
 func ToCookieFromRepo(title string, token *dto.TokenData) *srvDTO.Cookie {
 	if token == nil {
 		return nil

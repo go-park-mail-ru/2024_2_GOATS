@@ -9,10 +9,13 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/config"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
+
+	// migration driver
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/rs/zerolog/log"
 )
 
+// SetupDatabase connects to Postgres and returns instance of sql.DB
 func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, error) {
 	ctxVals := config.FromContext(ctx)
 	defer cancel()
@@ -22,7 +25,7 @@ func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, err
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			DB, err := ConnectDB(ctxVals)
+			DB, err := connectDB(ctxVals)
 			if err == nil {
 				return DB, nil
 			}
@@ -33,7 +36,7 @@ func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, err
 	}
 }
 
-func ConnectDB(cfg *config.Config) (*sql.DB, error) {
+func connectDB(cfg *config.Config) (*sql.DB, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Databases.Postgres.Host,

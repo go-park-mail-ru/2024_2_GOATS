@@ -10,11 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
-type RepoFavorite struct {
-	UserID  uint64
-	MovieID uint64
-}
-
+// GetMovie gets movie by id
 func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.ServiceError) {
 	mv, err := s.movieClient.GetMovie(ctx, mvID)
 

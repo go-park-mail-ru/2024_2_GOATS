@@ -6,6 +6,7 @@ import (
 
 const serviceStoppedMsg = "Services is not started"
 
+// AppReadyMiddleware sets ready flag
 func (a *App) AppReadyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !a.AcceptConnections {

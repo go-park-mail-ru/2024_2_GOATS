@@ -2,6 +2,7 @@ package dto
 
 import "database/sql"
 
+// RepoMovieShortInfo repo layer movie short info
 type RepoMovieShortInfo struct {
 	ID          int
 	Title       string
@@ -13,6 +14,7 @@ type RepoMovieShortInfo struct {
 	Country     string
 }
 
+// RepoActor repo layer actor info
 type RepoActor struct {
 	ID            int
 	Name          string

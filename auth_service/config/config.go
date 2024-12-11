@@ -7,30 +7,36 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config contains auth_service configuration
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
 }
 
+// Databases contains auth_service databases configuration
 type Databases struct {
 	Redis Redis `yaml:"redis"`
 }
 
+// Redis contains auth_service redis configuration
 type Redis struct {
 	Host   string `yaml:"host"`
 	Port   int    `yaml:"port"`
 	Cookie Cookie `yaml:"cookie"`
 }
 
+// Cookie contains auth_service cookie params
 type Cookie struct {
 	Name   string        `yaml:"name"`
 	MaxAge time.Duration `yaml:"maxAge"`
 }
 
+// Listener contains auth_service listener port
 type Listener struct {
 	Port string `yaml:"port"`
 }
 
+// New returns an instance of Config
 func New(isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {

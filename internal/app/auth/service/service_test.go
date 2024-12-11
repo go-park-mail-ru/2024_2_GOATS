@@ -4,22 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	servAuthMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	servUserMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestService_Register(t *testing.T) {
-	ctx := testContext(t)
-
 	tests := []struct {
 		name string
 		args *struct {
@@ -40,7 +35,7 @@ func TestService_Register(t *testing.T) {
 				ctx          context.Context
 				registerData *models.RegisterData
 			}{
-				ctx: ctx,
+				ctx: context.Background(),
 				registerData: &models.RegisterData{
 					Email:                "test@mail.ru",
 					Username:             "tester",
@@ -76,7 +71,7 @@ func TestService_Register(t *testing.T) {
 				ctx          context.Context
 				registerData *models.RegisterData
 			}{
-				ctx: ctx,
+				ctx: context.Background(),
 				registerData: &models.RegisterData{
 					Email:                "test@mail.ru",
 					Username:             "tester",
@@ -98,7 +93,7 @@ func TestService_Register(t *testing.T) {
 				ctx          context.Context
 				registerData *models.RegisterData
 			}{
-				ctx: ctx,
+				ctx: context.Background(),
 				registerData: &models.RegisterData{
 					Email:                "test@mail.ru",
 					Username:             "tester",
@@ -134,7 +129,7 @@ func TestService_Register(t *testing.T) {
 				mAuthRepo.EXPECT().CreateSession(gomock.Any(), gomock.Any()).Return(test.mockSetCookie, test.mockCookieErr)
 			}
 
-			response, err := s.Register(ctx, test.args.registerData)
+			response, err := s.Register(context.Background(), test.args.registerData)
 
 			if test.expectedError != nil {
 				assert.Nil(t, response)
@@ -258,8 +253,6 @@ func TestService_Login(t *testing.T) {
 		loginData *models.LoginData
 	}
 
-	ctx := testContext(t)
-
 	tests := []struct {
 		name                  string
 		args                  *args
@@ -276,7 +269,7 @@ func TestService_Login(t *testing.T) {
 		{
 			name: "Success",
 			args: &args{
-				ctx: ctx,
+				ctx: context.Background(),
 				loginData: &models.LoginData{
 					Email:    "test@mail.ru",
 					Password: "A123456bb",
@@ -313,7 +306,7 @@ func TestService_Login(t *testing.T) {
 		{
 			name: "Failed to destroy session",
 			args: &args{
-				ctx: ctx,
+				ctx: context.Background(),
 				loginData: &models.LoginData{
 					Email:    "test@mail.ru",
 					Password: "A123456bb",
@@ -335,7 +328,7 @@ func TestService_Login(t *testing.T) {
 		{
 			name: "Failed to set new cookie",
 			args: &args{
-				ctx: ctx,
+				ctx: context.Background(),
 				loginData: &models.LoginData{
 					Email:    "test@mail.ru",
 					Password: "A123456bb",
@@ -361,7 +354,7 @@ func TestService_Login(t *testing.T) {
 		{
 			name: "Failed to get user",
 			args: &args{
-				ctx: ctx,
+				ctx: context.Background(),
 				loginData: &models.LoginData{
 					Email:    "test@mail.ru",
 					Password: "A123456bb",
@@ -375,7 +368,7 @@ func TestService_Login(t *testing.T) {
 		{
 			name: "Wrong password error",
 			args: &args{
-				ctx: ctx,
+				ctx: context.Background(),
 				loginData: &models.LoginData{
 					Email:    "test@mail.ru",
 					Password: "some different password",
@@ -433,8 +426,6 @@ func TestService_Logout(t *testing.T) {
 		cookie string
 	}
 
-	ctx := testContext(t)
-
 	tests := []struct {
 		name                  string
 		args                  *args
@@ -445,7 +436,7 @@ func TestService_Logout(t *testing.T) {
 		{
 			name: "Success",
 			args: &args{
-				ctx:    ctx,
+				ctx:    context.Background(),
 				cookie: "some cookie",
 			},
 			expectedResponse: &models.AuthRespData{},
@@ -453,7 +444,7 @@ func TestService_Logout(t *testing.T) {
 		{
 			name: "Destroy session error",
 			args: &args{
-				ctx:    ctx,
+				ctx:    context.Background(),
 				cookie: "some cookie",
 			},
 			mockDestroySessionErr: errors.New("some redis error"),
@@ -483,13 +474,4 @@ func TestService_Logout(t *testing.T) {
 			}
 		})
 	}
-}
-
-func testContext(t *testing.T) context.Context {
-	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
-
-	cfg, err := config.New(true)
-	require.NoError(t, err, "failed to read config from auth service_test")
-
-	return config.WrapRedisContext(context.Background(), &cfg.Databases.Redis)
 }

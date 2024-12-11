@@ -8,6 +8,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// AuthClientInterface defines client methods to transmit to Auth microservice
+//
 //go:generate mockgen -source=auth.go -destination=../auth/service/mocks/mock.go
 type AuthClientInterface interface {
 	CreateSession(ctx context.Context, usrID int) (*models.CookieData, error)
@@ -15,16 +17,19 @@ type AuthClientInterface interface {
 	Session(ctx context.Context, cookie string) (uint64, error)
 }
 
+// AuthClient struct implements AuthClientInterface
 type AuthClient struct {
 	authMS auth.SessionRPCClient
 }
 
+// NewAuthClient returns an instance of AuthClientInterface
 func NewAuthClient(authMS auth.SessionRPCClient) AuthClientInterface {
 	return &AuthClient{
 		authMS: authMS,
 	}
 }
 
+// CreateSession creates new session
 func (cl *AuthClient) CreateSession(ctx context.Context, usrID int) (*models.CookieData, error) {
 	start := time.Now()
 	method := "CreateSession"
@@ -46,6 +51,7 @@ func (cl *AuthClient) CreateSession(ctx context.Context, usrID int) (*models.Coo
 	}, nil
 }
 
+// DestroySession destroys session
 func (cl *AuthClient) DestroySession(ctx context.Context, cookie string) error {
 	start := time.Now()
 	method := "DestroySession"
@@ -60,6 +66,7 @@ func (cl *AuthClient) DestroySession(ctx context.Context, cookie string) error {
 	return nil
 }
 
+// Session checks active session
 func (cl *AuthClient) Session(ctx context.Context, cookie string) (uint64, error) {
 	start := time.Now()
 	method := "Session"

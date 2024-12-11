@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// GetCollection gets movie collections by calling movieClient
 func (s *MovieService) GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError) {
 	collections, err := s.movieClient.GetCollection(ctx, filter)
 

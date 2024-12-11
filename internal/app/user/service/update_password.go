@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// UpdatePassword updates user password by calling userClient methods
 func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errVals.ServiceError {
 	logger := log.Ctx(ctx)
 	usr, err := u.userClient.FindByID(ctx, uint64(passwordData.UserID))

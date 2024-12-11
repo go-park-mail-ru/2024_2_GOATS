@@ -19,10 +19,12 @@ const (
 	genresFilter = "genres"
 )
 
+// MovieHandler http movie handler
 type MovieHandler struct {
 	movieService MovieServiceInterface
 }
 
+// NewMovieHandler returns an instance of MovieHandlerInterface
 func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 	return &MovieHandler{
 		movieService: srv,
@@ -51,7 +53,7 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 // 	}
 
 // 	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
-// 	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
+// 	resp, errResp := converter.ToAPIMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
 // 	if errResp != nil {
 // 		errMsg := errors.New("failed to get movies by genre")
 // 		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
@@ -65,10 +67,12 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 // 	api.Response(r.Context(), w, http.StatusOK, resp)
 // }
 
+// GetCollections gets movie collections handler
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
 	m.collectMovieData(w, r, "")
 }
 
+// GetGenres gets genres collections handler
 func (m *MovieHandler) GetGenres(w http.ResponseWriter, r *http.Request) {
 	m.collectMovieData(w, r, genresFilter)
 }
@@ -77,7 +81,7 @@ func (m *MovieHandler) collectMovieData(w http.ResponseWriter, r *http.Request, 
 	logger := log.Ctx(r.Context())
 
 	collectionsServResp, errServResp := m.movieService.GetCollection(r.Context(), filter)
-	collectionsResp, errResp := converter.ToApiCollectionsResponse(collectionsServResp), errVals.ToDeliveryErrorFromService(errServResp)
+	collectionsResp, errResp := converter.ToAPICollectionsResponse(collectionsServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to get collections")
@@ -92,6 +96,7 @@ func (m *MovieHandler) collectMovieData(w http.ResponseWriter, r *http.Request, 
 	api.Response(r.Context(), w, http.StatusOK, collectionsResp)
 }
 
+// GetMovie gets movie handler
 func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
@@ -104,7 +109,7 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	movieServResp, errServResp := m.movieService.GetMovie(r.Context(), mvID)
-	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), errVals.ToDeliveryErrorFromService(errServResp)
+	movieResp, errResp := converter.ToAPIGetMovieResponse(movieServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to get movie_service")
@@ -119,6 +124,7 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, movieResp)
 }
 
+// GetActor gets actor handler
 func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	actorID, err := strconv.Atoi(mux.Vars(r)["actor_id"])
@@ -131,7 +137,7 @@ func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	actorServResp, errServResp := m.movieService.GetActor(r.Context(), actorID)
-	actorResp, errResp := converter.ToApiGetActorResponse(actorServResp), errVals.ToDeliveryErrorFromService(errServResp)
+	actorResp, errResp := converter.ToAPIGetActorResponse(actorServResp), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to getActor")
@@ -146,14 +152,15 @@ func (m *MovieHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, actorResp)
 }
 
-func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
+// SearchMovies search movies handler
+func (m *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	if query == "" {
 		http.Error(w, "query parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	movies, err := h.movieService.SearchMovies(r.Context(), query)
+	movies, err := m.movieService.SearchMovies(r.Context(), query)
 	if err != nil {
 		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -182,14 +189,15 @@ func (h *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
+// SearchActors search actors handler
+func (m *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	if query == "" {
 		http.Error(w, "query parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	actors, err := h.movieService.SearchActors(r.Context(), query)
+	actors, err := m.movieService.SearchActors(r.Context(), query)
 	if err != nil {
 		http.Error(w, "search error: "+err.Error(), http.StatusInternalServerError)
 		return

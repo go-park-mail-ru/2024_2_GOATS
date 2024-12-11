@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"context"
 	"crypto/sha1"
 	"fmt"
 	"math"
@@ -18,16 +17,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+// PaymentHandler is a payments handler struct
 type PaymentHandler struct {
 	paymentService PaymentServiceInterface
 }
 
-func NewPaymentHandler(ctx context.Context, srv PaymentServiceInterface) handlers.PaymentHandlerInterface {
+// NewPaymentHandler returns an instance of PaymentHandlerInterface
+func NewPaymentHandler(srv PaymentServiceInterface) handlers.PaymentHandlerInterface {
 	return &PaymentHandler{
 		paymentService: srv,
 	}
 }
 
+// NotifyYooMoney processes YooMoney callback
 func (ph *PaymentHandler) NotifyYooMoney(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	err := r.ParseForm()

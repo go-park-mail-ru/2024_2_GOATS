@@ -7,22 +7,25 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config contains movie_service configuration
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
 }
 
+// Databases contains movies_service databases configuration
 type Databases struct {
 	Postgres     Postgres     `yaml:"postgres"`
-	Redis        Redis        `yaml:"redis"`
 	LocalStorage LocalStorage `yaml:"localStorage"`
 }
 
+// LocalStorage contains movies_service local storage configuration
 type LocalStorage struct {
 	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
 	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
 }
 
+// Postgres contains movies_service postgres configuration
 type Postgres struct {
 	Host            string `yaml:"host"`
 	Port            int    `yaml:"port"`
@@ -35,17 +38,7 @@ type Postgres struct {
 	ConnMaxIdleTime int    `yaml:"connMaxIdleTime"`
 }
 
-type Redis struct {
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
-	Cookie Cookie `yaml:"cookie"`
-}
-
-type Cookie struct {
-	Name   string        `yaml:"name"`
-	MaxAge time.Duration `yaml:"maxAge"`
-}
-
+// Listener contains movies_service listener configuration
 type Listener struct {
 	Address     string        `yaml:"address"`
 	Port        string        `yaml:"port"`
@@ -53,6 +46,7 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
+// New returns an instance of Config
 func New(isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {

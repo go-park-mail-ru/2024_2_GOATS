@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// SetupAuth setups auth subrouter
 func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
@@ -19,6 +20,7 @@ func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
 }
 
+// SetupMovie setups movie, actors, genres and movie_collections subrouters
 func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	movieRouter := apiMux.PathPrefix("/movies").Subrouter()
@@ -36,6 +38,7 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	movieRouter.HandleFunc("/actors/search", delLayer.SearchActors).Methods(http.MethodGet, http.MethodOptions)
 }
 
+// SetupUser setups users subrouter
 func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
@@ -47,6 +50,7 @@ func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
 }
 
+// SetupPayment setups payments subrouter
 func SetupPayment(delLayer handlers.PaymentHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	paymentRouter := apiMux.PathPrefix("/payments").Subrouter()
@@ -54,6 +58,7 @@ func SetupPayment(delLayer handlers.PaymentHandlerInterface, router *mux.Router)
 	paymentRouter.HandleFunc("/notify_yoo_money", delLayer.NotifyYooMoney).Methods(http.MethodPost, http.MethodOptions)
 }
 
+// SetupSubscription setups subscription subrouter
 func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	subscrRouter := apiMux.PathPrefix("/subscription").Subrouter()
@@ -68,16 +73,18 @@ func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *m
 //	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
 //}
 
+// UseCommonMiddlewares activates common middlewares
 func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) {
 	mx.Use(middleware.AccessLogMiddleware)
 	mx.Use(middleware.WithLogger)
 	mx.Use(middleware.PanicMiddleware)
 	mx.Use(middleware.CorsMiddleware)
 	mx.Use(middleware.CsrfMiddleware)
-	mx.Use(middleware.XssMiddleware)
+	mx.Use(middleware.XSSMiddleware)
 	mx.Use(authMW.AuthMiddleware)
 }
 
+// SetupCsrf setups csrf router
 func SetupCsrf(router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	apiMux.HandleFunc("/csrf-token", csrf_handle.GenerateCSRFTokenHandler).Methods(http.MethodGet)

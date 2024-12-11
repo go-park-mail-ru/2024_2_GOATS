@@ -9,6 +9,7 @@ import (
 	movieCollectionDB "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/movie_collectiondb"
 )
 
+// GetMovieByGenre get movie by genres using db GetMovieByGenre
 func (r *MovieRepo) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error) {
 	var rows *sql.Rows
 	var err error

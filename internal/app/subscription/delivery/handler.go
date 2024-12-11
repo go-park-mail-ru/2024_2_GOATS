@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
@@ -13,16 +12,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// SubscriptionHandler struct
 type SubscriptionHandler struct {
 	subscriptionService SubscriptionServiceInterface
 }
 
-func NewSubscriptionHandler(ctx context.Context, srv SubscriptionServiceInterface) handlers.SubscriptionHandlerInterface {
+// NewSubscriptionHandler returns an instance of SubscriptionHandlerInterface
+func NewSubscriptionHandler(srv SubscriptionServiceInterface) handlers.SubscriptionHandlerInterface {
 	return &SubscriptionHandler{
 		subscriptionService: srv,
 	}
 }
 
+// Subscribe handles create_subscription request
 func (sh *SubscriptionHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	createSubReq := &api.SubscribeRequest{}

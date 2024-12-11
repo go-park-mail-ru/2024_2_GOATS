@@ -11,11 +11,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ErrorDetails custom error struct
 type ErrorDetails struct {
 	Success bool
 	Message string
 }
 
+// Response prepares http response
 func Response(ctx context.Context, w http.ResponseWriter, code int, obj interface{}) {
 	if obj == nil {
 		w.WriteHeader(code)
@@ -50,6 +52,7 @@ func Response(ctx context.Context, w http.ResponseWriter, code int, obj interfac
 	}
 }
 
+// DecodeBody decodes http request body
 func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 	err := json.NewDecoder(r.Body).Decode(obj)
 	if err != nil {
@@ -61,11 +64,13 @@ func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 	}
 }
 
+// PreparedDefaultError is a prepared default http error
 func PreparedDefaultError(code string, err error) *errVals.DeliveryError {
 	errs := []errVals.ErrorItem{errVals.NewErrorItem(code, errVals.NewCustomError(err.Error()))}
 	return errVals.NewDeliveryError(http.StatusForbidden, errs)
 }
 
+// RequestError is a common http request error method
 func RequestError(ctx context.Context, w http.ResponseWriter, code string, status int, err error) {
 	logger := log.Ctx(ctx)
 	logger.Error().Err(err).Msg("request error")

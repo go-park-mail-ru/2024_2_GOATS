@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// CreateSubscription creates user's subscription by calling userRepo CreateSubscription
 func (u *UserService) CreateSubscription(ctx context.Context, createData *dto.CreateSubscriptionData) (uint64, error) {
 	logger := log.Ctx(ctx)
 	repoData := converter.ConvertToRepoCreateSubData(createData)

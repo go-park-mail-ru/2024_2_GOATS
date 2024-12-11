@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/payment_service/internal/payment/repository/paymentdb"
 )
 
+// CreatePayment returns created payment id or error
 func (u *PaymentRepo) CreatePayment(ctx context.Context, paymentData *dto.RepoPaymentData) (uint64, error) {
 	pID, err := paymentdb.Create(ctx, paymentData, u.Database)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// UserByID finds user by id by calling db FindByID
 func (u *UserRepo) UserByID(ctx context.Context, userID uint64) (*srvDTO.User, error) {
 	usr, err := userdb.FindByID(ctx, userID, u.Database)
 	if err != nil {

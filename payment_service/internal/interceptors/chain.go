@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// ChainUnaryInterceptors creates a chain of interceptors
 func ChainUnaryInterceptors(interceptors ...grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,

@@ -35,6 +35,7 @@ const (
 	`
 )
 
+// GetMovieCollections gets movie collections from db
 func GetMovieCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -45,15 +46,15 @@ func GetMovieCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_movie_collections", "collections")
+		metricsutils.SaveErrorMetric("get_movie_collections", "collections")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_collections: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -66,6 +67,7 @@ func GetMovieCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	return rows, nil
 }
 
+// GetGenreCollections gets genre collections from db
 func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -76,14 +78,14 @@ func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_genres", "genres")
+		metricsutils.SaveErrorMetric("get_genres", "genres")
 		errMsg := fmt.Errorf("postgres: error while selecting genre_collections: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -96,6 +98,7 @@ func GetGenreCollections(ctx context.Context, db *sql.DB) (*sql.Rows, error) {
 	return rows, nil
 }
 
+// GetMovieByGenre gets movie by genre from db
 func GetMovieByGenre(ctx context.Context, genre string, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -106,14 +109,14 @@ func GetMovieByGenre(ctx context.Context, genre string, db *sql.DB) (*sql.Rows, 
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, genre)
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_movie_by_genre", "movies")
+		metricsutils.SaveErrorMetric("get_movie_by_genre", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting movies by genre: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 

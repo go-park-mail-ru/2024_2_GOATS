@@ -9,6 +9,8 @@ import (
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 )
 
+// MovieClientInterface defines client methods to transmit to Movie Microservice
+//
 //go:generate mockgen -source=movie.go -destination=../user/service/mocks/movie_mock.go
 //go:generate mockgen -source=movie.go -destination=../movie/service/mocks/mock.go
 type MovieClientInterface interface {
@@ -21,16 +23,19 @@ type MovieClientInterface interface {
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error)
 }
 
+// MovieClient struct implements MovieClientInterface
 type MovieClient struct {
 	movieMS movie.MovieServiceClient
 }
 
+// NewMovieClient returns an instance of MovieClientInterface
 func NewMovieClient(movieMS movie.MovieServiceClient) MovieClientInterface {
 	return &MovieClient{
 		movieMS: movieMS,
 	}
 }
 
+// GetCollection get movie collections
 func (m MovieClient) GetCollection(ctx context.Context, filter string) ([]models.Collection, error) {
 	start := time.Now()
 	method := "GetCollection"
@@ -71,6 +76,7 @@ func (m MovieClient) GetCollection(ctx context.Context, filter string) ([]models
 	return ans, nil
 }
 
+// GetMovie get movie
 func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error) {
 	start := time.Now()
 	method := "GetMovie"
@@ -159,6 +165,7 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	return respp, nil
 }
 
+// GetActor get actor
 func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	start := time.Now()
 	method := "GetActor"
@@ -228,6 +235,7 @@ func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorIn
 // 	return respp, nil
 // }
 
+// SearchMovies search movies
 func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
 	start := time.Now()
 	method := "SearchMovies"
@@ -256,6 +264,7 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 	return respp, nil
 }
 
+// SearchActors search actors
 func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
 	start := time.Now()
 	method := "SearchActors"
@@ -285,6 +294,7 @@ func (m MovieClient) SearchActors(ctx context.Context, query string) ([]models.A
 	return respp, nil
 }
 
+// GetFavorites get favorites info
 func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error) {
 	start := time.Now()
 	method := "GetFavorites"

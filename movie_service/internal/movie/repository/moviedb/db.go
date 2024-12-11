@@ -82,6 +82,7 @@ const (
 	`
 )
 
+// FindByID finds movie by id in db
 func FindByID(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -92,15 +93,15 @@ func FindByID(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, mvID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_movie_by_id", "movies")
+		metricsutils.SaveErrorMetric("get_movie_by_id", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_service info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -113,6 +114,7 @@ func FindByID(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
 	return rows, nil
 }
 
+// GetMovieActors finds movie's actors in db
 func GetMovieActors(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -123,15 +125,15 @@ func GetMovieActors(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, mvID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_movie_actors", "actors")
+		metricsutils.SaveErrorMetric("get_movie_actors", "actors")
 		errMsg := fmt.Errorf("postgres: error while selecting movie_service actors info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -144,6 +146,7 @@ func GetMovieActors(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error
 	return rows, nil
 }
 
+// FindByActorID finds movies by actor_id in db
 func FindByActorID(ctx context.Context, actorID int, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -154,15 +157,15 @@ func FindByActorID(ctx context.Context, actorID int, db *sql.DB) (*sql.Rows, err
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, actorID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "find_by_actor_id", "movies")
+		metricsutils.SaveErrorMetric("find_by_actor_id", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting actor's movies: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -173,6 +176,7 @@ func FindByActorID(ctx context.Context, actorID int, db *sql.DB) (*sql.Rows, err
 	return rows, nil
 }
 
+// GetMoviesByIDs finds movies by ids in db
 func GetMoviesByIDs(ctx context.Context, mvIDs []uint64, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -183,15 +187,15 @@ func GetMoviesByIDs(ctx context.Context, mvIDs []uint64, db *sql.DB) (*sql.Rows,
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, pq.Array(mvIDs))
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_movie_by_ids", "movies")
+		metricsutils.SaveErrorMetric("get_movie_by_ids", "movies")
 		errMsg := fmt.Errorf("postgres: error while selecting favorite movies: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 

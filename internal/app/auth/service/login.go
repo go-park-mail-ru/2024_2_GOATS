@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login logins user by given params
 func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *errVals.ServiceError) {
 	logger := log.Ctx(ctx)
 	usr, err := s.userClient.FindByEmail(ctx, loginData.Email)

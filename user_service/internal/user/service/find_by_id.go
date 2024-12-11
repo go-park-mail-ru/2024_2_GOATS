@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// FindByID finds user by ID
 func (u *UserService) FindByID(ctx context.Context, usrID uint64) (*dto.User, error) {
 	logger := log.Ctx(ctx)
 	repResp, err := u.userRepo.UserByID(ctx, usrID)

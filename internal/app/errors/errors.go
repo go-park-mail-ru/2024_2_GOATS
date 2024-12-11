@@ -8,6 +8,7 @@ import (
 	"github.com/lib/pq"
 )
 
+// Internal Error Codes
 const (
 	DuplicateErrKey        = "23505"
 	DuplicateErrCode       = "db_duplicate_entry"
@@ -39,6 +40,7 @@ const (
 	ErrCheckSessionCode    = "failed_to_get_session_data"
 )
 
+// ErrorCodeToHTTPStatus errors map
 var ErrorCodeToHTTPStatus = map[string]int{
 	DuplicateErrCode:       http.StatusUnprocessableEntity,
 	ErrBrokenCookieCode:    http.StatusBadRequest,
@@ -69,6 +71,7 @@ var ErrorCodeToHTTPStatus = map[string]int{
 	ErrCheckSessionCode:    http.StatusInternalServerError,
 }
 
+// CustomErrors
 var (
 	ErrInvalidEmail          = NewCustomError("email is incorrect")
 	ErrInvalidPassword       = NewCustomError("password is too short. The minimal len is 8")
@@ -80,44 +83,52 @@ var (
 	ErrSaveFile              = NewCustomError("cannot save file")
 )
 
+// CustomError is a struct for internal error
 type CustomError struct {
 	Err error
 }
 
+// ErrorItem is a struct for internal error with code
 type ErrorItem struct {
 	Code  string      `json:"code"`
 	Error CustomError `json:"error"`
 }
 
+// DeliveryError is a struct for error response with http code
 type DeliveryError struct {
 	HTTPStatus int         `json:"-"`
 	Errors     []ErrorItem `json:"errors"`
 }
 
+// ServiceError is a struct for service layer
 type ServiceError struct {
 	Code  string
 	Error error
 }
 
+// RepoError is a struct for repo layer
 type RepoError struct {
 	Code  string
 	Error CustomError
 }
 
-// Функции для работы с ошибками
+// IsDuplicateError checks pg duplicate error
 func IsDuplicateError(err error) bool {
 	var pqErr *pq.Error
 	return errs.As(err, &pqErr) && pqErr.Code == DuplicateErrKey
 }
 
+// MarshalJSON marshal custom error
 func (ce *CustomError) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ce.Err.Error())
 }
 
+// NewCustomError returns an instance of CustomError
 func NewCustomError(message string) CustomError {
 	return CustomError{Err: errs.New(message)}
 }
 
+// NewRepoError returns an instance of RepoError
 func NewRepoError(code string, err CustomError) *RepoError {
 	return &RepoError{
 		Code:  code,
@@ -125,6 +136,7 @@ func NewRepoError(code string, err CustomError) *RepoError {
 	}
 }
 
+// NewServiceError returns an instance of ServiceError
 func NewServiceError(code string, err error) *ServiceError {
 	return &ServiceError{
 		Code:  code,
@@ -132,6 +144,7 @@ func NewServiceError(code string, err error) *ServiceError {
 	}
 }
 
+// NewDeliveryError returns an instance of DeliveryError
 func NewDeliveryError(status int, errs []ErrorItem) *DeliveryError {
 	return &DeliveryError{
 		HTTPStatus: status,
@@ -139,6 +152,7 @@ func NewDeliveryError(status int, errs []ErrorItem) *DeliveryError {
 	}
 }
 
+// NewErrorItem returns an instance of ErrorItem
 func NewErrorItem(code string, err CustomError) ErrorItem {
 	return ErrorItem{
 		Code:  code,
@@ -153,6 +167,7 @@ func matchStatus(code string) int {
 	return http.StatusInternalServerError
 }
 
+// ToDeliveryErrorFromService converts ServiceError to DeliveryError
 func ToDeliveryErrorFromService(se *ServiceError) *DeliveryError {
 	if se == nil {
 		return nil

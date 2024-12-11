@@ -7,41 +7,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config contains facade configuration
 type Config struct {
-	Listener  Listener  `yaml:"listener"`
-	Databases Databases `yaml:"databases"`
+	Listener Listener `yaml:"listener"`
 }
 
-type Databases struct {
-	Postgres     Postgres     `yaml:"postgres"`
-	Redis        Redis        `yaml:"redis"`
-	LocalStorage LocalStorage `yaml:"localStorage"`
-}
-
-type LocalStorage struct {
-	UserAvatarsFullURL     string `yaml:"userAvatarsFullURL"`
-	UserAvatarsRelativeURL string `yaml:"userAvatarsRelativeURL"`
-}
-
-type Postgres struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Name     string `yaml:"name"`
-}
-
-type Redis struct {
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
-	Cookie Cookie `yaml:"cookie"`
-}
-
-type Cookie struct {
-	Name   string        `yaml:"name"`
-	MaxAge time.Duration `yaml:"maxAge"`
-}
-
+// Listener contains facade listener params
 type Listener struct {
 	Address     string        `yaml:"address"`
 	Port        int           `yaml:"port"`
@@ -49,6 +20,7 @@ type Listener struct {
 	IdleTimeout time.Duration `yaml:"idleTimeout"`
 }
 
+// New returns an instance of Config
 func New(isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {

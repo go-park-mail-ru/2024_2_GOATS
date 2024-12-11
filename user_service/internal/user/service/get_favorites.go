@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GetFavorites gets user favorites
 func (u *UserService) GetFavorites(ctx context.Context, usrID uint64) ([]uint64, error) {
 	logger := log.Ctx(ctx)
 	repResp, err := u.userRepo.GetFavorites(ctx, usrID)

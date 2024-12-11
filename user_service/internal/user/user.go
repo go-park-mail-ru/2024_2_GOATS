@@ -17,7 +17,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+
+	// postgres driver
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -25,14 +27,16 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-type UserApp struct {
+// AppUser is a root struct of user_service
+type AppUser struct {
 	logger   *zerolog.Logger
 	database *sql.DB
 	config   *config.Config
 	srv      *grpc.Server
 }
 
-func New(isTest bool) (*UserApp, error) {
+// New returns an instance of AppUser
+func New(isTest bool) (*AppUser, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
@@ -65,10 +69,12 @@ func New(isTest bool) (*UserApp, error) {
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":9082", nil)
+		if err := http.ListenAndServe(":9082", nil); err != nil {
+			logger.Error().Err(err).Msg("Metrics stopped")
+		}
 	}()
 
-	return &UserApp{
+	return &AppUser{
 		logger:   &logger,
 		database: db,
 		config:   cfg,
@@ -76,7 +82,8 @@ func New(isTest bool) (*UserApp, error) {
 	}, nil
 }
 
-func (ua *UserApp) Run() {
+// Run starts grpc server
+func (ua *AppUser) Run() {
 	lis, err := net.Listen("tcp", ua.config.Listener.Port)
 	if err != nil {
 		ua.logger.Fatal().Msgf("failed to setup user_app listener: %v", err)
@@ -99,7 +106,8 @@ func (ua *UserApp) Run() {
 	}
 }
 
-func (ua *UserApp) GracefulShutdown() error {
+// GracefulShutdown gracefully shutdowns AppUser
+func (ua *AppUser) GracefulShutdown() error {
 	ua.logger.Info().Msg("Starting graceful shutdown user_app")
 	if err := ua.database.Close(); err != nil {
 		ua.logger.Error().Err(err).Msg("failed to close user_app Postgres")

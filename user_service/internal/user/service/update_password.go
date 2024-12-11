@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// UpdatePassword updates user password
 func (u *UserService) UpdatePassword(ctx context.Context, passwordData *dto.PasswordData) error {
 	logger := log.Ctx(ctx)
 	usr, err := u.userRepo.UserByID(ctx, passwordData.UserID)

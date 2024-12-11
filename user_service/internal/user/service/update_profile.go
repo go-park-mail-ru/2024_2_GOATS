@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// UpdateProfile saves avatar and updates user profile by calling userRepo UpdateProfile
 func (u *UserService) UpdateProfile(ctx context.Context, usrData *dto.User) error {
 	logger := log.Ctx(ctx)
 	if usrData.AvatarName != "" {

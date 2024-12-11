@@ -19,10 +19,11 @@ const (
 	service             = "auth_microservice"
 )
 
+// WithLogger wraps logger into context
 func WithLogger(
 	ctx context.Context,
 	req interface{},
-	info *grpc.UnaryServerInfo,
+	_ *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
@@ -42,6 +43,7 @@ func WithLogger(
 	return handler(ctx, req)
 }
 
+// AccessLogInterceptor logs the request
 func AccessLogInterceptor(
 	ctx context.Context,
 	req interface{},

@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// CreatePayment creates payment by given params
 func (u *PaymentService) CreatePayment(ctx context.Context, createData *dto.CreatePaymentData) (uint64, error) {
 	logger := log.Ctx(ctx)
 	repoData := converter.ConvertToRepoPaymentData(createData)

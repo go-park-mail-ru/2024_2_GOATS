@@ -14,17 +14,17 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/password"
 )
 
+var usrEmail = "test@mail.ru"
+var usrUsername = "mr tester"
+var pass = "test_password"
+
 func TestCreateUser_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 
 	usrID := 1
-	usrEmail := "test@mail.ru"
-	usrUsername := "mr tester"
-	pass := "test_password"
 	usrPassword, err := password.HashAndSalt(context.Background(), pass)
 	assert.NoError(t, err)
 
@@ -59,13 +59,8 @@ func TestCreateUser_Success(t *testing.T) {
 func TestCreateUser_DbError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
-
-	usrEmail := "test@mail.ru"
-	usrUsername := "mr tester"
-	pass := "test_password"
 
 	regData := &dto.RepoCreateData{
 		Email:                usrEmail,
@@ -88,12 +83,10 @@ func TestCreateUser_DbError(t *testing.T) {
 func TestUpdatePassword_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 
 	usrID := 1
-	pass := "test_password"
 
 	mock.ExpectPrepare(`UPDATE users SET password_hash = \$1, updated_at = \$2 WHERE id = \$3`).
 		ExpectExec().
@@ -109,12 +102,10 @@ func TestUpdatePassword_Success(t *testing.T) {
 func TestUpdatePassword_DbError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 
 	usrID := 1
-	pass := "test_password"
 
 	mock.ExpectPrepare(`UPDATE users SET password_hash = \$1, updated_at = \$2 WHERE id = \$3`).
 		ExpectExec().
@@ -130,13 +121,10 @@ func TestUpdatePassword_DbError(t *testing.T) {
 func TestUserByEmail_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 
 	usrID := 1
-	usrEmail := "test@mail.ru"
-	usrUsername := "mr tester"
 	passHash, err := password.HashAndSalt(context.Background(), "test_password")
 	assert.NoError(t, err)
 
@@ -158,11 +146,8 @@ func TestUserByEmail_Success(t *testing.T) {
 func TestUserByEmail_NotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
-
-	usrEmail := "test@mail.ru"
 
 	mock.ExpectPrepare(`SELECT id, email, username, password_hash FROM users WHERE email = \$1`).
 		ExpectQuery().
@@ -178,13 +163,10 @@ func TestUserByEmail_NotFound(t *testing.T) {
 func TestUserByID_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 
 	usrID := 1
-	usrEmail := "test@mail.ru"
-	usrUsername := "mr tester"
 	passHash, err := password.HashAndSalt(context.Background(), "test_password")
 	assert.NoError(t, err)
 
@@ -210,7 +192,6 @@ func TestUserByID_Success(t *testing.T) {
 func TestUserByID_NotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 
@@ -230,7 +211,6 @@ func TestUserByID_NotFound(t *testing.T) {
 func TestUpdateProfileData_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	profileData := &dto.RepoUser{
@@ -254,7 +234,6 @@ func TestUpdateProfileData_Success(t *testing.T) {
 func TestUpdateProfileData_DbError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	profileData := &dto.RepoUser{
@@ -279,7 +258,6 @@ func TestUpdateProfileData_DbError(t *testing.T) {
 func TestCheckFavorite_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{
@@ -303,7 +281,6 @@ func TestCheckFavorite_Success(t *testing.T) {
 func TestCheckFavorite_FalseSuccess(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{
@@ -327,7 +304,6 @@ func TestCheckFavorite_FalseSuccess(t *testing.T) {
 func TestCheckFavorite_Error(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{
@@ -350,19 +326,18 @@ func TestCheckFavorite_Error(t *testing.T) {
 func TestGetFavorites_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	expectedFavs := []uint64{1, 2}
-	usrId := 1
+	usrID := 1
 
 	mockRows := sqlmock.NewRows([]string{"movie_id"}).AddRow(1).AddRow(2)
 	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1`).
 		ExpectQuery().
-		WithArgs(usrId).
+		WithArgs(usrID).
 		WillReturnRows(mockRows)
 
-	favs, errObj := r.GetFavorites(context.Background(), uint64(usrId))
+	favs, errObj := r.GetFavorites(context.Background(), uint64(usrID))
 
 	assert.Nil(t, errObj)
 	assert.Equal(t, expectedFavs, favs)
@@ -372,17 +347,16 @@ func TestGetFavorites_Success(t *testing.T) {
 func TestGetFavorites_Error(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
-	usrId := 1
+	usrID := 1
 
 	mock.ExpectPrepare(`SELECT movie_id FROM favorites WHERE user_id = \$1`).
 		ExpectQuery().
-		WithArgs(usrId).
+		WithArgs(usrID).
 		WillReturnError(errors.New("some_database_error"))
 
-	favs, errObj := r.GetFavorites(context.Background(), uint64(usrId))
+	favs, errObj := r.GetFavorites(context.Background(), uint64(usrID))
 
 	assert.Nil(t, favs)
 	assert.NotNil(t, errObj)
@@ -392,7 +366,6 @@ func TestGetFavorites_Error(t *testing.T) {
 func TestSetFavorite_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{
@@ -414,7 +387,6 @@ func TestSetFavorite_Success(t *testing.T) {
 func TestSetFavorite_Error(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{
@@ -436,7 +408,6 @@ func TestSetFavorite_Error(t *testing.T) {
 func TestResetFavorite_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{
@@ -458,7 +429,6 @@ func TestResetFavorite_Success(t *testing.T) {
 func TestResetFavorite_Error(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewUserRepository(db)
 	favData := &dto.RepoFavorite{

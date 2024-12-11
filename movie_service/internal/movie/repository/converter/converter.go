@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/dto"
 )
 
+// ToActorInfoFromRepo converts from dto Actor to models Actor
 func ToActorInfoFromRepo(ac *dto.RepoActor) *models.ActorInfo {
 	if ac == nil {
 		return nil
@@ -27,23 +28,25 @@ func ToActorInfoFromRepo(ac *dto.RepoActor) *models.ActorInfo {
 	}
 }
 
+// ToRepoEpisodeFromDB converts from db Episode to models Episode
 func ToRepoEpisodeFromDB(dbEp *models.DBEpisode) *models.Episode {
 	if dbEp == nil {
 		return nil
 	}
 
 	return &models.Episode{
-		ID:            ToIntFromSQLInt(dbEp.ID),
-		Title:         ToStringFromSQLString(dbEp.Title),
-		Description:   ToStringFromSQLString(dbEp.Description),
-		EpisodeNumber: ToIntFromSQLInt(dbEp.EpisodeNumber),
-		ReleaseDate:   ToStringFromSQLString(dbEp.ReleaseDate),
-		Rating:        ToFloat32FromSQLFloat(dbEp.Rating),
-		PreviewURL:    ToStringFromSQLString(dbEp.PreviewURL),
-		VideoURL:      ToStringFromSQLString(dbEp.VideoURL),
+		ID:            toIntFromSQLInt(dbEp.ID),
+		Title:         toStringFromSQLString(dbEp.Title),
+		Description:   toStringFromSQLString(dbEp.Description),
+		EpisodeNumber: toIntFromSQLInt(dbEp.EpisodeNumber),
+		ReleaseDate:   toStringFromSQLString(dbEp.ReleaseDate),
+		Rating:        toFloat32FromSQLFloat(dbEp.Rating),
+		PreviewURL:    toStringFromSQLString(dbEp.PreviewURL),
+		VideoURL:      toStringFromSQLString(dbEp.VideoURL),
 	}
 }
 
+// ToMovieShortInfoFromRepo converts from repo MovieShortInfo to models MovieShortInfo
 func ToMovieShortInfoFromRepo(m *dto.RepoMovieShortInfo) *models.MovieShortInfo {
 	if m == nil {
 		return nil
@@ -61,7 +64,7 @@ func ToMovieShortInfoFromRepo(m *dto.RepoMovieShortInfo) *models.MovieShortInfo 
 	}
 }
 
-func ToIntFromSQLInt(sqlInt sql.NullInt64) int {
+func toIntFromSQLInt(sqlInt sql.NullInt64) int {
 	if !sqlInt.Valid {
 		return 0
 	}
@@ -69,7 +72,7 @@ func ToIntFromSQLInt(sqlInt sql.NullInt64) int {
 	return int(sqlInt.Int64)
 }
 
-func ToFloat32FromSQLFloat(sqlFt sql.NullFloat64) float32 {
+func toFloat32FromSQLFloat(sqlFt sql.NullFloat64) float32 {
 	if !sqlFt.Valid {
 		return 0
 	}
@@ -77,7 +80,7 @@ func ToFloat32FromSQLFloat(sqlFt sql.NullFloat64) float32 {
 	return float32(sqlFt.Float64)
 }
 
-func ToStringFromSQLString(sqlStr sql.NullString) string {
+func toStringFromSQLString(sqlStr sql.NullString) string {
 	if !sqlStr.Valid {
 		return ""
 	}

@@ -29,6 +29,7 @@ const (
 	usrUpdatePasswordSQL = "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
 )
 
+// Create creates user in db
 func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*dto.RepoUser, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -40,8 +41,8 @@ func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -51,7 +52,7 @@ func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*
 	).Scan(&usr.ID, &usr.Email)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "create_user", "users")
+		metricsutils.SaveErrorMetric("create_user", "users")
 		errMsg := fmt.Errorf("postgres: error while creating user - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -64,6 +65,7 @@ func Create(ctx context.Context, registerData dto.RepoCreateData, db *sql.DB) (*
 	return &usr, nil
 }
 
+// FindByEmail find user by email in db
 func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, error) {
 	var usr dto.RepoUser
 	start := time.Now()
@@ -75,15 +77,15 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, 
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	err = stmt.QueryRowContext(ctx, email).Scan(&usr.ID, &usr.Email, &usr.Username, &usr.Password)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "find_user_by_email", "users")
+		metricsutils.SaveErrorMetric("find_user_by_email", "users")
 		errMsg := fmt.Errorf("postgres: error while scanning user by email - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -96,6 +98,7 @@ func FindByEmail(ctx context.Context, email string, db *sql.DB) (*dto.RepoUser, 
 	return &usr, nil
 }
 
+// FindByID find user by id in db
 func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, error) {
 	var usr dto.RepoUser
 	start := time.Now()
@@ -107,8 +110,8 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, er
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -121,7 +124,7 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, er
 	)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "find_user_by_id", "users")
+		metricsutils.SaveErrorMetric("find_user_by_id", "users")
 		errMsg := fmt.Errorf("postgres: error while scanning user by id - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -134,6 +137,7 @@ func FindByID(ctx context.Context, userID uint64, db *sql.DB) (*dto.RepoUser, er
 	return &usr, nil
 }
 
+// UpdatePassword updates user password in db
 func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -144,15 +148,15 @@ func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB)
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	_, err = stmt.ExecContext(ctx, pass, time.Now(), userID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "update_password", "users")
+		metricsutils.SaveErrorMetric("update_password", "users")
 		errMsg := fmt.Errorf("postgres: error while updating user password - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -165,6 +169,7 @@ func UpdatePassword(ctx context.Context, userID uint64, pass string, db *sql.DB)
 	return nil
 }
 
+// UpdateProfile updates user profile in db
 func UpdateProfile(ctx context.Context, usrData *dto.RepoUser, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -208,14 +213,14 @@ func UpdateProfile(ctx context.Context, usrData *dto.RepoUser, db *sql.DB) error
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "update_profile", "users")
+		metricsutils.SaveErrorMetric("update_profile", "users")
 		errMsg := fmt.Errorf("postgres: error while updating user profile - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 

@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// SubscriptionServiceInterface defines SubscriptionService methods
 type SubscriptionServiceInterface interface {
 	Subscribe(ctx context.Context, data *models.SubscriptionData) (string, *errVals.ServiceError)
 }

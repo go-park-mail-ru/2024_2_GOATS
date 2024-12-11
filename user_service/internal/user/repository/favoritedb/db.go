@@ -33,6 +33,7 @@ const (
 	`
 )
 
+// Create creates user favorite
 func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -43,8 +44,8 @@ func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -54,7 +55,7 @@ func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	).Err()
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "create_favorite", "favorites")
+		metricsutils.SaveErrorMetric("create_favorite", "favorites")
 		errMsg := fmt.Errorf("postgres: error while creating favorite - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -67,6 +68,7 @@ func Create(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	return nil
 }
 
+// Destroy destroys user favorite
 func Destroy(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -77,8 +79,8 @@ func Destroy(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -88,7 +90,7 @@ func Destroy(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	).Err()
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "destroy_favorite", "favorites")
+		metricsutils.SaveErrorMetric("destroy_favorite", "favorites")
 		errMsg := fmt.Errorf("postgres: error while destroying favorite - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -101,6 +103,7 @@ func Destroy(ctx context.Context, favReq *dto.RepoFavorite, db *sql.DB) error {
 	return nil
 }
 
+// FindByUserID find user's favorites
 func FindByUserID(ctx context.Context, userID uint64, db *sql.DB) (*sql.Rows, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -111,14 +114,14 @@ func FindByUserID(ctx context.Context, userID uint64, db *sql.DB) (*sql.Rows, er
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "find_user_favorites", "favorites")
+		metricsutils.SaveErrorMetric("find_user_favorites", "favorites")
 		errMsg := fmt.Errorf("postgres: error while scanning favorites by user_id - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -131,6 +134,7 @@ func FindByUserID(ctx context.Context, userID uint64, db *sql.DB) (*sql.Rows, er
 	return rows, nil
 }
 
+// Check checks user's favorites
 func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -141,19 +145,23 @@ func Check(ctx context.Context, favData *dto.RepoFavorite, db *sql.DB) (bool, er
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
 	rows, err := stmt.QueryContext(ctx, favData.UserID, favData.MovieID)
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "check_favorite_existence", "favorites")
+		metricsutils.SaveErrorMetric("check_favorite_existence", "favorites")
 		errMsg := fmt.Errorf("postgres: failed to check favorite existence: %w", err)
 		logger.Error().Err(errMsg).Msg("database query error")
 		return false, errMsg
 	}
-	defer rows.Close()
+	defer func() {
+		if clErr := rows.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("cannot close rows")
+		}
+	}()
 
 	if rows.Next() {
 		logger.Info().Msgf("postgres: favorite pair for user %d and movie_service %d found", favData.UserID, favData.MovieID)

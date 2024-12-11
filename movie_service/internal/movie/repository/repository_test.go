@@ -15,7 +15,6 @@ import (
 func TestGetActor_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewMovieRepository(db, nil)
 
@@ -92,7 +91,6 @@ func TestGetActor_Success(t *testing.T) {
 func TestGetActor_FindByIDError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewMovieRepository(db, nil)
 
@@ -124,7 +122,6 @@ func TestGetActor_FindByIDError(t *testing.T) {
 func TestGetActor_FindByActorIDError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	r := NewMovieRepository(db, nil)
 
@@ -175,7 +172,6 @@ func TestGetActor_FindByActorIDError(t *testing.T) {
 func TestGetCollection_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	collID := 1
 	expectedCollections := []models.Collection{{
@@ -251,7 +247,6 @@ func TestGetCollection_Success(t *testing.T) {
 func TestGetCollection_ObtainError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	mock.ExpectPrepare(`
 		SELECT
@@ -284,7 +279,6 @@ func TestGetCollection_ObtainError(t *testing.T) {
 func TestGetMovie_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	movieID := 1
 	expectedMovie := &models.MovieInfo{
@@ -343,31 +337,31 @@ func TestGetMovie_Success(t *testing.T) {
 	`).
 		ExpectQuery().
 		WithArgs(movieID).RowsWillBeClosed().WillReturnRows(sqlmock.NewRows(
-			[]string{
-				"id",
-				"title",
-				"short_description",
-				"long_description",
-				"card_url",
-				"album_url",
-				"rating",
-				"release_date",
-				"video_url",
-				"movie_type",
-				"title_url",
-				"directors_name",
-				"directors_surname",
-				"country_title",
-				"episode_id",
-				"episode_title",
-				"episode_description",
-				"season_number",
-				"episode_number",
-				"episode_release_date",
-				"episode_rating",
-				"episode_preview_url",
-				"episode_video_url",
-			}).
+		[]string{
+			"id",
+			"title",
+			"short_description",
+			"long_description",
+			"card_url",
+			"album_url",
+			"rating",
+			"release_date",
+			"video_url",
+			"movie_type",
+			"title_url",
+			"directors_name",
+			"directors_surname",
+			"country_title",
+			"episode_id",
+			"episode_title",
+			"episode_description",
+			"season_number",
+			"episode_number",
+			"episode_release_date",
+			"episode_rating",
+			"episode_preview_url",
+			"episode_video_url",
+		}).
 		AddRow(
 			1,
 			"test movie_service",
@@ -408,7 +402,6 @@ func TestGetMovie_Success(t *testing.T) {
 func TestGetMovie_FindByIDError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	movieID := 1
 
@@ -457,7 +450,6 @@ func TestGetMovie_FindByIDError(t *testing.T) {
 func TestGetMovieActors_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	movieID := 1
 	expectedActors := []*models.ActorInfo{{
@@ -503,7 +495,6 @@ func TestGetMovieActors_Success(t *testing.T) {
 func TestGetMovieActors_DbError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer db.Close()
 
 	movieID := 1
 

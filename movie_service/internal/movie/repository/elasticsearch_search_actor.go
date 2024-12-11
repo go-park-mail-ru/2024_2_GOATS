@@ -5,13 +5,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	"io"
 	"log"
 	"strconv"
+
+	zl "github.com/rs/zerolog/log"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 )
 
+// SearchActors search_actors in elasticsearch
 func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
+	logger := zl.Ctx(ctx)
 	searchQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match_phrase_prefix": map[string]interface{}{
@@ -34,7 +39,12 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 	if err != nil {
 		return nil, fmt.Errorf("error executing search query: %w", err)
 	}
-	defer res.Body.Close()
+
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			logger.Error().Err(err).Msg("cannot close searchActors body")
+		}
+	}()
 
 	bodyBytes, _ := io.ReadAll(res.Body)
 	log.Println("ElasticSearch Response:", string(bodyBytes))
@@ -49,7 +59,7 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 				Source struct {
 					ID          string `json:"id"`
 					Name        string `json:"full_name"`
-					PhotoBigUrl string `json:"photo_big_url"`
+					PhotoBigURL string `json:"photo_big_url"`
 				} `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
@@ -73,7 +83,7 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 		}
 		actors[i] = models.ActorInfo{
 			ID:          id,
-			BigPhotoURL: hit.Source.PhotoBigUrl,
+			BigPhotoURL: hit.Source.PhotoBigURL,
 			Person: models.Person{
 				Name: hit.Source.Name,
 			},

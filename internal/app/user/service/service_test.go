@@ -44,7 +44,7 @@ func TestUpdatePassword(t *testing.T) {
 		},
 		{
 			name: "InvalidOldPassword",
-			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData) {
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, _ *models.PasswordData) {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("old_password"), bcrypt.DefaultCost)
 				mockUser := &models.User{
 					ID:       1,
@@ -63,7 +63,7 @@ func TestUpdatePassword(t *testing.T) {
 		},
 		{
 			name: "FailureOnFindByID",
-			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, passwordData *models.PasswordData) {
+			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, _ *models.PasswordData) {
 				mockUserClient.EXPECT().FindByID(ctx, uint64(1)).Return(nil, errors.New("user not found"))
 			},
 			passwordData: &models.PasswordData{

@@ -1,13 +1,11 @@
 package delivery
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/converter"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
@@ -25,22 +23,21 @@ const (
 	vlErr     = "auth_validation_error"
 )
 
+// AuthHandler is a auth delivery handler struct
 type AuthHandler struct {
 	authService AuthServiceInterface
 	userService userDel.UserServiceInterface
-	redisCfg    *config.Redis
 }
 
-func NewAuthHandler(ctx context.Context, authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) handlers.AuthHandlerInterface {
-	redisCfg := config.FromContext(ctx).Databases.Redis
-
+// NewAuthHandler returns an instance of AuthHandlerInterface
+func NewAuthHandler(authSrv AuthServiceInterface, usrSrv userDel.UserServiceInterface) handlers.AuthHandlerInterface {
 	return &AuthHandler{
 		authService: authSrv,
 		userService: usrSrv,
-		redisCfg:    &redisCfg,
 	}
 }
 
+// Logout logout http handler method
 func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	ck, err := r.Cookie("session_id")
@@ -75,20 +72,20 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
+// Login login http handler method
 func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	loginRequest := &api.LoginRequest{}
-	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
 
 	api.DecodeBody(w, r, loginRequest)
 	loginServData := converter.ToServLoginData(loginRequest)
-	authSrvResp, errSrvResp := a.authService.Login(ctx, loginServData)
+	authSrvResp, errSrvResp := a.authService.Login(r.Context(), loginServData)
 
-	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
+	authResp, errResp := converter.ToAPIAuthResponse(authSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to login")
 		logger.Error().Err(errMsg).Interface("loginResp", errResp).Msg("request_failed")
-		api.Response(ctx, w, errResp.HTTPStatus, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
@@ -107,12 +104,12 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger.Info().Msg("successfully set new cookie")
 	logger.Info().Interface("loginResp", authResp).Msg("login success")
 
-	api.Response(ctx, w, http.StatusOK, authResp)
+	api.Response(r.Context(), w, http.StatusOK, authResp)
 }
 
+// Register register_user http handler method
 func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
-	ctx := config.WrapRedisContext(r.Context(), a.redisCfg)
 
 	registerReq := &api.RegisterRequest{}
 	api.DecodeBody(w, r, registerReq)
@@ -131,18 +128,18 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	if len(errs) > 0 {
 		errResp := errVals.NewDeliveryError(http.StatusBadRequest, errs)
-		api.Response(ctx, w, errResp.HTTPStatus, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 		return
 	}
 
 	registerServData := converter.ToServRegisterData(registerReq)
-	authSrvResp, errSrvResp := a.authService.Register(ctx, registerServData)
-	authResp, errResp := converter.ToApiAuthResponse(authSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
+	authSrvResp, errSrvResp := a.authService.Register(r.Context(), registerServData)
+	authResp, errResp := converter.ToAPIAuthResponse(authSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to register")
 		logger.Error().Err(errMsg).Interface("registerResp", errResp).Msg("request_failed")
-		api.Response(ctx, w, errResp.HTTPStatus, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 
 		return
 	}
@@ -150,9 +147,10 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, preparedCookie(authResp.NewCookie))
 	logger.Info().Interface("registerResp", authResp).Msg("Register success")
 
-	api.Response(ctx, w, http.StatusOK, authResp)
+	api.Response(r.Context(), w, http.StatusOK, authResp)
 }
 
+// Session check_session http handler method
 func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	ck, err := r.Cookie("session_id")
@@ -165,7 +163,7 @@ func (a *AuthHandler) Session(w http.ResponseWriter, r *http.Request) {
 
 	sessionSrvResp, errSrvResp := a.authService.Session(r.Context(), ck.Value)
 
-	sessionResp, errResp := converter.ToApiSessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
+	sessionResp, errResp := converter.ToAPISessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 	if errResp != nil {
 		errMsg := errors.New("failed to get session")
 		logger.Error().Err(errMsg).Interface("sessionResp", errResp).Msg("request_failed")
