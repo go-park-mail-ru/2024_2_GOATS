@@ -13,10 +13,10 @@ func SetupAuth(delLayer handlers.AuthHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	authRouter := apiMux.PathPrefix("/auth").Subrouter()
 
-	authRouter.HandleFunc("/login", delLayer.Login).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.HandleFunc("/signup", delLayer.Register).Methods(http.MethodPost, http.MethodOptions)
-	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions)
+	authRouter.HandleFunc("/login", delLayer.Login).Methods(http.MethodPost, http.MethodOptions).Name("LoginRoute")
+	authRouter.HandleFunc("/logout", delLayer.Logout).Methods(http.MethodPost, http.MethodOptions).Name("LogoutRoute")
+	authRouter.HandleFunc("/signup", delLayer.Register).Methods(http.MethodPost, http.MethodOptions).Name("SignupRoute")
+	authRouter.HandleFunc("/session", delLayer.Session).Methods(http.MethodGet, http.MethodOptions).Name("SessionRoute")
 }
 
 func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
@@ -26,25 +26,25 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	genreRouter := apiMux.PathPrefix("/genres").Subrouter()
 	movieCollectionsRouter := apiMux.PathPrefix("/movie_collections").Subrouter()
 
-	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions)
-	genreRouter.HandleFunc("/", delLayer.GetGenres).Methods(http.MethodGet, http.MethodOptions)
-	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions)
-	// movieRouter.HandleFunc("/", delLayer.GetMovieByGenre).Methods(http.MethodGet, http.MethodOptions)
-	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions)
+	movieCollectionsRouter.HandleFunc("/", delLayer.GetCollections).Methods(http.MethodGet, http.MethodOptions).Name("CollectionRoute")
+	genreRouter.HandleFunc("/", delLayer.GetGenres).Methods(http.MethodGet, http.MethodOptions).Name("GenresRoute")
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}", delLayer.GetMovie).Methods(http.MethodGet, http.MethodOptions).Name("MovieRoute")
+	// movieRouter.HandleFunc("/", delLayer.GetMovieByGenre).Methods(http.MethodGet, http.MethodOptions).Name("MovieByGenreRoute")
+	actorRouter.HandleFunc("/{actor_id:[0-9]+}", delLayer.GetActor).Methods(http.MethodGet, http.MethodOptions).Name("ActorRoute")
 
-	movieRouter.HandleFunc("/movies/search", delLayer.SearchMovies).Methods(http.MethodGet, http.MethodOptions)
-	movieRouter.HandleFunc("/actors/search", delLayer.SearchActors).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/movies/search", delLayer.SearchMovies).Methods(http.MethodGet, http.MethodOptions).Name("MovieSearchRoute")
+	movieRouter.HandleFunc("/actors/search", delLayer.SearchActors).Methods(http.MethodGet, http.MethodOptions).Name("ActorSearchRoute")
 }
 
 func SetupUser(delLayer handlers.UserHandlerInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	userRouter := apiMux.PathPrefix("/users").Subrouter()
 
-	userRouter.HandleFunc("/{id:[0-9]+}/profile", delLayer.UpdateProfile).Methods(http.MethodPut, http.MethodOptions)
-	userRouter.HandleFunc("/{id:[0-9]+}/password", delLayer.UpdatePassword).Methods(http.MethodPut, http.MethodOptions)
-	userRouter.HandleFunc("/{id:[0-9]+}/favorites", delLayer.GetFavorites).Methods(http.MethodGet, http.MethodOptions)
-	userRouter.HandleFunc("/favorites", delLayer.SetFavorite).Methods(http.MethodPost, http.MethodOptions)
-	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions)
+	userRouter.HandleFunc("/{id:[0-9]+}/profile", delLayer.UpdateProfile).Methods(http.MethodPut, http.MethodOptions).Name("UpdateProfileRoute")
+	userRouter.HandleFunc("/{id:[0-9]+}/password", delLayer.UpdatePassword).Methods(http.MethodPut, http.MethodOptions).Name("UpdatePasswordRoute")
+	userRouter.HandleFunc("/{id:[0-9]+}/favorites", delLayer.GetFavorites).Methods(http.MethodGet, http.MethodOptions).Name("FavoritesRoute")
+	userRouter.HandleFunc("/favorites", delLayer.SetFavorite).Methods(http.MethodPost, http.MethodOptions).Name("SetFavoriteRoute")
+	userRouter.HandleFunc("/favorites", delLayer.ResetFavorite).Methods(http.MethodDelete, http.MethodOptions).Name("ResetFavoriteRoute")
 }
 
 //func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
