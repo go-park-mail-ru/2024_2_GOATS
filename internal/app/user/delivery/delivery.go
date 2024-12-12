@@ -7,6 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// UserServiceInterface defines facade service layer methods
+//
 //go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type UserServiceInterface interface {
 	UpdateProfile(ctx context.Context, profileData *models.User) *errVals.ServiceError

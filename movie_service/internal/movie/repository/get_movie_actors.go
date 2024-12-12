@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GetMovieActors gets actors for a movie
 func (r *MovieRepo) GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error) {
 	logger := log.Ctx(ctx)
 	rows, err := moviedb.GetMovieActors(ctx, mvID, r.Database)
@@ -19,8 +20,8 @@ func (r *MovieRepo) GetMovieActors(ctx context.Context, mvID int) ([]*models.Act
 	}
 
 	defer func() {
-		if err := rows.Close(); err != nil {
-			logger.Error().Err(err).Msg("cannot close rows while taking movie_service actors")
+		if clErr := rows.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("cannot close rows while taking movie_service actors")
 		}
 	}()
 

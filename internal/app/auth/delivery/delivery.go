@@ -7,6 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// AuthServiceInterface defines methods for facade auth service layer
+//
 //go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type AuthServiceInterface interface {
 	Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *errVals.ServiceError)

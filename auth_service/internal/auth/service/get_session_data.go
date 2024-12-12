@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GetSessionData get session data by cookie
 func (as *AuthService) GetSessionData(ctx context.Context, cookie string) (uint64, error) {
 	strUserID, err := as.authRepository.GetSessionData(ctx, cookie)
 	if err != nil {

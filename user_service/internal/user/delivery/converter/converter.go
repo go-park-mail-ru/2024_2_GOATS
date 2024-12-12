@@ -6,6 +6,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 )
 
+// ConvertToSrvCreateUser converts from grpc request to srv DTO CreateUserData
 func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData {
 	if req == nil {
 		return nil
@@ -19,6 +20,7 @@ func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData 
 	}
 }
 
+// ConvertToSrvCreateSubscription converts from grpc request to srv DTO CreateSubscriptionData
 func ConvertToSrvCreateSubscription(req *user.CreateSubscriptionRequest) *srvDTO.CreateSubscriptionData {
 	if req == nil {
 		return nil
@@ -30,6 +32,7 @@ func ConvertToSrvCreateSubscription(req *user.CreateSubscriptionRequest) *srvDTO
 	}
 }
 
+// ConvertToSrvUpdatePassword converts from grpc request to srv DTO PasswordData
 func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.PasswordData {
 	if req == nil {
 		return nil
@@ -43,6 +46,7 @@ func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.Passwor
 	}
 }
 
+// ConvertToSrvUpdateProfile converts from grpc request to srv DTO User
 func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 	if req == nil {
 		return nil
@@ -58,6 +62,7 @@ func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 	}
 }
 
+// ConvertToSrvFavorite converts from grpc request to srv DTO Favorite
 func ConvertToSrvFavorite(req *user.HandleFavorite) *srvDTO.Favorite {
 	if req == nil {
 		return nil
@@ -69,6 +74,7 @@ func ConvertToSrvFavorite(req *user.HandleFavorite) *srvDTO.Favorite {
 	}
 }
 
+// ConvertToGRPCUser converts from srv DTO User to grpc
 func ConvertToGRPCUser(su *srvDTO.User) *user.UserData {
 	if su == nil {
 		return nil

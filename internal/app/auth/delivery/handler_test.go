@@ -2,14 +2,11 @@ package delivery
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authSrvMock "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -17,7 +14,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -28,7 +24,6 @@ const (
 )
 
 func TestDelivery_Register(t *testing.T) {
-	ctx := testContext(t)
 	tests := []struct {
 		name         string
 		req          string
@@ -72,7 +67,7 @@ func TestDelivery_Register(t *testing.T) {
 			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "12345678910"}`,
 			mockErr: &errVals.ServiceError{
 				Code:  errVals.ErrInvalidPasswordCode,
-				Error: errVals.ErrInvalidPasswordsMatch.Err,
+				Error: errVals.ErrInvalidPasswordsMatch,
 			},
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
@@ -90,7 +85,7 @@ func TestDelivery_Register(t *testing.T) {
 
 			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
 			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
+			handler := NewAuthHandler(mAuthSrv, mUsrSrv)
 
 			if !test.isValidation {
 				mAuthSrv.EXPECT().Register(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
@@ -111,8 +106,6 @@ func TestDelivery_Register(t *testing.T) {
 }
 
 func TestDelivery_Login(t *testing.T) {
-	ctx := testContext(t)
-
 	tests := []struct {
 		name       string
 		req        string
@@ -139,7 +132,7 @@ func TestDelivery_Login(t *testing.T) {
 		{
 			req:        `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err),
+			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch),
 			resp:       `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
@@ -155,7 +148,7 @@ func TestDelivery_Login(t *testing.T) {
 
 			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
 			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
+			handler := NewAuthHandler(mAuthSrv, mUsrSrv)
 
 			mAuthSrv.EXPECT().Login(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
 
@@ -174,8 +167,6 @@ func TestDelivery_Login(t *testing.T) {
 }
 
 func TestDelivery_Logout(t *testing.T) {
-	ctx := testContext(t)
-
 	tests := []struct {
 		name         string
 		resp         string
@@ -200,7 +191,7 @@ func TestDelivery_Logout(t *testing.T) {
 		},
 		{
 			name:         "Validation Error",
-			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.ErrBrokenCookie.Err),
+			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.ErrBrokenCookie),
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,
@@ -224,7 +215,7 @@ func TestDelivery_Logout(t *testing.T) {
 
 			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
 			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
+			handler := NewAuthHandler(mAuthSrv, mUsrSrv)
 
 			r := mux.NewRouter()
 			r.HandleFunc(logoutPath, handler.Logout)
@@ -253,8 +244,6 @@ func TestDelivery_Logout(t *testing.T) {
 }
 
 func TestDelivery_Session(t *testing.T) {
-	ctx := testContext(t)
-
 	tests := []struct {
 		name       string
 		mockReturn *models.SessionRespData
@@ -272,7 +261,7 @@ func TestDelivery_Session(t *testing.T) {
 					Username: "Tester",
 				},
 			},
-			resp:       `{"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":""}}`,
+			resp:       `{"user_data":{"id":1,"email":"test@mail.ru","username":"Tester","avatar_url":"","subscription_expiration_date":"", "subscription_status":false}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -302,7 +291,7 @@ func TestDelivery_Session(t *testing.T) {
 
 			mAuthSrv := authSrvMock.NewMockAuthServiceInterface(ctrl)
 			mUsrSrv := usrSrvMock.NewMockUserServiceInterface(ctrl)
-			handler := NewAuthHandler(ctx, mAuthSrv, mUsrSrv)
+			handler := NewAuthHandler(mAuthSrv, mUsrSrv)
 
 			r := mux.NewRouter()
 			r.HandleFunc(sessionPath, handler.Session)
@@ -321,13 +310,4 @@ func TestDelivery_Session(t *testing.T) {
 			assert.JSONEq(t, test.resp, w.Body.String())
 		})
 	}
-}
-
-func testContext(t *testing.T) context.Context {
-	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
-
-	cfg, err := config.New(true)
-	require.NoError(t, err, "failed to read config from auth handler_test")
-
-	return config.WrapContext(context.Background(), cfg)
 }

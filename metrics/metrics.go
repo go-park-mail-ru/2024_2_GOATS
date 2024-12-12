@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	// HTTPRequestTotal is a counter vector for total http requests number
 	HTTPRequestTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
@@ -13,6 +14,7 @@ var (
 		[]string{"method", "path", "status"},
 	)
 
+	// HTTPRequestDuration is a histogram vector for http requests duration
 	HTTPRequestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds",
@@ -22,6 +24,7 @@ var (
 		[]string{"method", "path"},
 	)
 
+	// GRPCClientRequestsTotal is a counter vector for total grpc requests number
 	GRPCClientRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "grpc_client_requests_total",
@@ -30,6 +33,7 @@ var (
 		[]string{"service", "method", "status"},
 	)
 
+	// GRPCClientDuration is a histogram vector for grpc requests duration
 	GRPCClientDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "grpc_client_duration_seconds",

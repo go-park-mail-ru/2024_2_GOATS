@@ -7,6 +7,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
+// Logout logouts user by cookie
 func (s *AuthService) Logout(ctx context.Context, cookie string) *errVals.ServiceError {
 	err := s.authClient.DestroySession(ctx, cookie)
 

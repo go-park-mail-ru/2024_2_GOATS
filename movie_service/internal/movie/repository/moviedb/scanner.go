@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ScanMovieConnection scans full movie info from sql Rows
 func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	mvInfo := &models.MovieInfo{}
 	directorInfo := &models.DirectorInfo{}
@@ -83,6 +84,7 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 	return mvInfo, nil
 }
 
+// ScanActorsConnections scans short actors info for movie page from sql Rows
 func ScanActorsConnections(rows *sql.Rows) ([]*dto.RepoActor, error) {
 	actorInfos := []*dto.RepoActor{}
 
@@ -117,6 +119,7 @@ func ScanActorsConnections(rows *sql.Rows) ([]*dto.RepoActor, error) {
 	return actorInfos, nil
 }
 
+// ScanActorMoviesConnections scans full actors info for actor page from sql Rows
 func ScanActorMoviesConnections(rows *sql.Rows) ([]*dto.RepoMovieShortInfo, error) {
 	actMvs := []*dto.RepoMovieShortInfo{}
 
@@ -152,6 +155,7 @@ func ScanActorMoviesConnections(rows *sql.Rows) ([]*dto.RepoMovieShortInfo, erro
 	return actMvs, nil
 }
 
+// ScanMovieShortConnection scans short movie info from sql Rows
 func ScanMovieShortConnection(rows *sql.Rows) ([]*models.MovieShortInfo, error) {
 	var movies []*models.MovieShortInfo
 

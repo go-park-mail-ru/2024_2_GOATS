@@ -25,5 +25,6 @@ COPY --from=builder /app/auth_service/.env /app/auth_service/.env
 COPY --from=builder /app/auth_service/internal/config/config.yml /app/auth_service/internal/config/config.yml
 
 WORKDIR /app/auth_service
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 CMD wget --spider http://localhost:8081/health || exit 1
 
 ENTRYPOINT ["/bin/main"]

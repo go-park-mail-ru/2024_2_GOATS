@@ -8,6 +8,7 @@ import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// ToUserFromRepoUser converts from repo User to srv DTO User
 func ToUserFromRepoUser(u *dto.RepoUser, s *dto.RepoSubscription) *srvDTO.User {
 	if u == nil {
 		return nil
@@ -24,6 +25,7 @@ func ToUserFromRepoUser(u *dto.RepoUser, s *dto.RepoSubscription) *srvDTO.User {
 	}
 }
 
+// ToUserShortFromRepoUser converts from repo User to srv DTO User
 func ToUserShortFromRepoUser(u *dto.RepoUser) *srvDTO.User {
 	if u == nil {
 		return nil

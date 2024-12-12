@@ -26,5 +26,6 @@ COPY --from=builder /app/facade_app/internal/config/config.yml /app/facade_app/i
 COPY --from=builder /app/facade_app/internal/db /app/facade_app/internal/db
 
 WORKDIR /app/facade_app
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 CMD wget --spider http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["/bin/main"]

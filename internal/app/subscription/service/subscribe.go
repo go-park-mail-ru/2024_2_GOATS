@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Subscribe creates user subscription
 func (ss *SubscriptionService) Subscribe(ctx context.Context, data *models.SubscriptionData) (string, *errVals.ServiceError) {
 	logger := log.Ctx(ctx)
 	subID, err := ss.usrClient.CreateSubscription(ctx, data)

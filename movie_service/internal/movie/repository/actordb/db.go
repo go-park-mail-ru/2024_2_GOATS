@@ -29,6 +29,7 @@ const (
 	`
 )
 
+// FindByID finds actor by id in db
 func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -40,8 +41,8 @@ func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, err
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -59,7 +60,7 @@ func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, err
 	)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_actor_by_id", "actors")
+		metricsutils.SaveErrorMetric("get_actor_by_id", "actors")
 		errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 

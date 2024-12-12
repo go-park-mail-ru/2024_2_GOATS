@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/repository/userdb"
 )
 
+// UpdateProfileData updates user profile by calling db UpdateProfile
 func (u *UserRepo) UpdateProfileData(ctx context.Context, profileData *dto.RepoUser) error {
 	err := userdb.UpdateProfile(ctx, profileData, u.Database)
 

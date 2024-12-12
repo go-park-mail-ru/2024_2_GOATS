@@ -21,6 +21,7 @@ const (
 	markPaidSQL = "UPDATE payments SET captured_amount = requested_amount, captured_at = $1 WHERE id = $2"
 )
 
+// Create creates payment in database
 func Create(ctx context.Context, paymentData *dto.RepoPaymentData, db *sql.DB) (uint64, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -32,8 +33,8 @@ func Create(ctx context.Context, paymentData *dto.RepoPaymentData, db *sql.DB) (
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -43,7 +44,7 @@ func Create(ctx context.Context, paymentData *dto.RepoPaymentData, db *sql.DB) (
 	).Scan(&pID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "create_payment", "payments")
+		metricsutils.SaveErrorMetric("create_payment", "payments")
 		errMsg := fmt.Errorf("postgres: error while creating payment - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -56,6 +57,7 @@ func Create(ctx context.Context, paymentData *dto.RepoPaymentData, db *sql.DB) (
 	return pID, nil
 }
 
+// MarkPaid marks payment as paid in database
 func MarkPaid(ctx context.Context, pID uint64, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
@@ -66,8 +68,8 @@ func MarkPaid(ctx context.Context, pID uint64, db *sql.DB) error {
 	}
 
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error().Err(err).Msg("failed_to_close_statement")
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
 		}
 	}()
 
@@ -77,7 +79,7 @@ func MarkPaid(ctx context.Context, pID uint64, db *sql.DB) error {
 	)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "mark_paid_payment", "payments")
+		metricsutils.SaveErrorMetric("mark_paid_payment", "payments")
 		errMsg := fmt.Errorf("postgres: error while marking payment as paid - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 

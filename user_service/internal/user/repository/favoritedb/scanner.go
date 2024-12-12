@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ScanConnections scans user favorites from rows
 func ScanConnections(rows *sql.Rows) ([]uint64, error) {
 	defer func() {
 		if err := rows.Close(); err != nil {

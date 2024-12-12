@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/service/dto"
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/service/dto"
 	"github.com/rs/zerolog/log"
 )
 
+// GenerateToken generates cookie token with expiry
 func GenerateToken(ctx context.Context, userID uint64) (*dto.Token, error) {
 	tokenID, err := generateRandomString(32)
 	if err != nil {

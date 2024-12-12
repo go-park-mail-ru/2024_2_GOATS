@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// FindByEmail find user by email
 func (u *UserService) FindByEmail(ctx context.Context, email string) (*dto.User, error) {
 	logger := log.Ctx(ctx)
 	repResp, err := u.userRepo.UserByEmail(ctx, email)

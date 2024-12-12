@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ScanConnections scans movie_collections rows
 func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 	defer closeRows(rows, "movie_collections")
 	collections := make(map[int]models.Collection, 3)
@@ -40,6 +41,7 @@ func ScanConnections(rows *sql.Rows) (map[int]models.Collection, error) {
 	return collections, nil
 }
 
+// ScanMovieShortInfo scans movie short info rows
 func ScanMovieShortInfo(rows *sql.Rows) ([]models.MovieShortInfo, error) {
 	defer closeRows(rows, "movie_short_info")
 	var movies []models.MovieShortInfo

@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	servMock "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service/mocks"
-	"github.com/stretchr/testify/assert"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestService_GetCollection(t *testing.T) {

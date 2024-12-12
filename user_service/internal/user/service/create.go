@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Create creates user by given params
 func (u *UserService) Create(ctx context.Context, createData *dto.CreateUserData) (uint64, error) {
 	logger := log.Ctx(ctx)
 	repoData := converter.ConvertToRepoCreateData(createData)

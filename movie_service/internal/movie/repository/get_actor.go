@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/moviedb"
 )
 
+// GetActor get actor using db FindByID
 func (r *MovieRepo) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	log.Println("qwer")
 	actor, err := actordb.FindByID(ctx, actorID, r.Database)

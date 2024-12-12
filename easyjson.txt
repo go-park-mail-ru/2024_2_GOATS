@@ -1,0 +1,3 @@
+internal/app/models/easy.go
+internal/app/api/struct.go
+internal/app/errors/errors.go

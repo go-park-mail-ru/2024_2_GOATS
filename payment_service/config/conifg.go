@@ -6,19 +6,23 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config contains payment_service configuration
 type Config struct {
 	Listener  Listener  `yaml:"listener"`
 	Databases Databases `yaml:"databases"`
 }
 
+// Listener contains payment_service listener port
 type Listener struct {
 	Port string `yaml:"port"`
 }
 
+// Databases contains payment_service databases configuration
 type Databases struct {
 	Postgres Postgres `yaml:"postgres"`
 }
 
+// Postgres contains payment_service postgres configuration
 type Postgres struct {
 	Host            string `yaml:"host"`
 	Port            int    `yaml:"port"`
@@ -31,6 +35,7 @@ type Postgres struct {
 	ConnMaxIdleTime int    `yaml:"connMaxIdleTime"`
 }
 
+// New returns an instance of Config
 func New(isTest bool) (*Config, error) {
 	err := setupViper(isTest)
 	if err != nil {

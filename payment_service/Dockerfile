@@ -26,5 +26,6 @@ COPY --from=builder /app/payment_service/internal/config/config.yml /app/payment
 COPY --from=builder /app/payment_service/internal/db /app/payment_service/internal/db
 
 WORKDIR /app/payment_service
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 CMD wget --spider http://localhost:8084/health || exit 1
 
 ENTRYPOINT ["/bin/main"]

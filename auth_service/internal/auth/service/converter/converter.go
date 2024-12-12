@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/auth/service/dto"
 )
 
+// ToRepoTokenFromSrv converts srvDTO Token to repoDTO TokenData
 func ToRepoTokenFromSrv(token *dto.Token) *repoDTO.TokenData {
 	if token == nil {
 		return nil
