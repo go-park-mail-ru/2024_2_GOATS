@@ -22,10 +22,10 @@ jobs:
       - name: Restore .env files
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
-          echo "${{ secrets.USER_ENV_FILE }}" > /user_service/.env
-          echo "${{ secrets.AUTH_ENV_FILE }}" > /auth_service/.env
-          echo "${{ secrets.MOVIE_ENV_FILE }}" > /movie_service/.env
-          echo "${{ secrets.PAYMENT_ENV_FILE }}" > /payment_service/.env
+          echo "${{ secrets.USER_ENV_FILE }}" > user_service/.env
+          echo "${{ secrets.AUTH_ENV_FILE }}" > auth_service/.env
+          echo "${{ secrets.MOVIE_ENV_FILE }}" > movie_service/.env
+          echo "${{ secrets.PAYMENT_ENV_FILE }}" > payment_service/.env
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -75,6 +75,10 @@ jobs:
       - name: Restore .env files
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
+          echo "${{ secrets.USER_ENV_FILE }}" > user_service/.env
+          echo "${{ secrets.AUTH_ENV_FILE }}" > auth_service/.env
+          echo "${{ secrets.MOVIE_ENV_FILE }}" > movie_service/.env
+          echo "${{ secrets.PAYMENT_ENV_FILE }}" > payment_service/.env
 
       - name: Set base and head SHAs
         id: set_shas
