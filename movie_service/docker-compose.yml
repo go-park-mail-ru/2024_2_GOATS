@@ -4,34 +4,41 @@ volumes:
 
 services:
   movie_app:
+    container_name: movie_app
+    image: unicoyal/movie_app:latest
     build:
       context: ..
       dockerfile: movie_service/Dockerfile
     restart: always
-    environment:
-      - PORT=8083
-      - DATABASE_HOST=movie_db
-      - DATABASE_PORT=5432
-      - DATABASE_USER=test
-      - DATABASE_PASSWORD=test
-      - DATABASE_NAME=movie_db
     depends_on:
-      - movie_db
+      movie_db:
+        condition: service_healthy
     ports:
       - "8083:8083"
     networks:
       - cassette-world
 
   movie_db:
-    image: postgres:latest
+    build:
+      dockerfile: pg.Dockerfile
     container_name: movie_db
     environment:
-      - POSTGRES_DB=movie_db
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=${MOVIE_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${MOVIE_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${MOVIE_SERVICE_POSTGRES_PASSWORD}
     volumes:
-      - ./dev/SQL:/docker-entrypoint-initdb.d/
       - postgres_volume:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "sh -c 'pg_isready -U movie_user -d movie_db'",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 3
     ports:
       - "5433:5432"
     networks:

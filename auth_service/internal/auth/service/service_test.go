@@ -148,7 +148,7 @@ func TestAuthService_CreateSession(t *testing.T) {
 			name:      "Success",
 			inputData: &dto.SrvCreateCookie{UserID: 1},
 			mockSetup: func(mockRepo *repoMock.MockAuthRepositoryInterface) {
-				mockRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, token *rdto.TokenData) (*dto.Cookie, error) {
+				mockRepo.EXPECT().SetCookie(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, token *rdto.TokenData) (*dto.Cookie, error) {
 					return &dto.Cookie{
 						Name:    "session_cookie",
 						UserID:  token.UserID,

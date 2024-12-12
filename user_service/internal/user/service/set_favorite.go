@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// SetFavorite sets user favorite by calling userRepo SetFavorite
 func (u *UserService) SetFavorite(ctx context.Context, favData *dto.Favorite) error {
 	logger := log.Ctx(ctx)
 	err := u.userRepo.SetFavorite(ctx, converter.ConvertToRepoFavorite(favData))

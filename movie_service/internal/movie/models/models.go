@@ -3,52 +3,22 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"mime/multipart"
 	"strings"
-	"time"
 )
 
-type LoginData struct {
-	Email    string
-	Password string
-	Cookie   string
-}
-
-type RegisterData struct {
-	Email                string
-	Username             string
-	Password             string
-	PasswordConfirmation string
-}
-
-type SessionRespData struct {
-	UserData User
-}
-
-type AuthRespData struct {
-	NewCookie *CookieData
-}
-
+// CollectionsRespData represents collections response
 type CollectionsRespData struct {
 	Collections []Collection
 }
 
-type User struct {
-	ID         int
-	Email      string
-	Username   string
-	Password   string
-	AvatarURL  string
-	AvatarName string
-	AvatarFile multipart.File
-}
-
+// Collection represents collection full info
 type Collection struct {
 	ID     int               `json:"id"`
 	Title  string            `json:"title"`
 	Movies []*MovieShortInfo `json:"movies"`
 }
 
+// MovieInfo represents movie full info
 type MovieInfo struct {
 	ID               int           `json:"id"`
 	Title            string        `json:"title"`
@@ -68,11 +38,13 @@ type MovieInfo struct {
 	IsFavorite       bool          `json:"is_favorite"`
 }
 
+// Season represents movie's season full info
 type Season struct {
 	SeasonNumber int        `json:"season_number"`
 	Episodes     []*Episode `json:"episodes"`
 }
 
+// Episode represents season's episode full info
 type Episode struct {
 	ID            int     `json:"id"`
 	Title         string  `json:"title"`
@@ -84,17 +56,19 @@ type Episode struct {
 	VideoURL      string  `json:"video_url"`
 }
 
+// DBEpisode represents db episode data
 type DBEpisode struct {
-	ID            sql.NullInt64   `json:"id"`
-	Title         sql.NullString  `json:"title"`
-	Description   sql.NullString  `json:"description"`
-	EpisodeNumber sql.NullInt64   `json:"episode_number"`
-	ReleaseDate   sql.NullString  `json:"release_date"`
-	Rating        sql.NullFloat64 `json:"rating"`
-	PreviewURL    sql.NullString  `json:"preview_url"`
-	VideoURL      sql.NullString  `json:"video_url"`
+	ID            sql.NullInt64
+	Title         sql.NullString
+	Description   sql.NullString
+	EpisodeNumber sql.NullInt64
+	ReleaseDate   sql.NullString
+	Rating        sql.NullFloat64
+	PreviewURL    sql.NullString
+	VideoURL      sql.NullString
 }
 
+// MovieShortInfo represents movie_short_info data
 type MovieShortInfo struct {
 	ID          int     `json:"id"`
 	Title       string  `json:"title"`
@@ -106,6 +80,7 @@ type MovieShortInfo struct {
 	Country     string  `json:"country"`
 }
 
+// ActorInfo represents actor full info
 type ActorInfo struct {
 	Person
 	ID            int               `json:"id"`
@@ -118,39 +93,25 @@ type ActorInfo struct {
 	Movies        []*MovieShortInfo `json:"movies"`
 }
 
+// DirectorInfo represents director full info
 type DirectorInfo struct {
 	Person
 	ID int
 }
 
-type CookieData struct {
-	Name  string
-	Token *Token
-}
-
-type Token struct {
-	UserID  int
-	TokenID string
-	Expiry  time.Time
-}
-
-type PasswordData struct {
-	UserID               int
-	OldPassword          string
-	Password             string
-	PasswordConfirmation string
-}
-
+// Person represents person's name and surname
 type Person struct {
 	Name    string
 	Surname string
 }
 
+// Favorite represents favorite's relations
 type Favorite struct {
 	UserID  int
 	MovieID int
 }
 
+// FullName returns the person's fullname
 func (p Person) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
 }

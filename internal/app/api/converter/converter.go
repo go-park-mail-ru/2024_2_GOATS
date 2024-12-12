@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// ToServLoginData converts http login request to models LoginData
 func ToServLoginData(lg *api.LoginRequest) *models.LoginData {
 	if lg == nil {
 		return nil
@@ -17,6 +18,7 @@ func ToServLoginData(lg *api.LoginRequest) *models.LoginData {
 	}
 }
 
+// ToServRegisterData converts http register request to models RegisterData
 func ToServRegisterData(rg *api.RegisterRequest) *models.RegisterData {
 	if rg == nil {
 		return nil
@@ -30,6 +32,7 @@ func ToServRegisterData(rg *api.RegisterRequest) *models.RegisterData {
 	}
 }
 
+// ToServPasswordData converts http update_password request to models PasswordData
 func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 	return &models.PasswordData{
 		UserID:               rp.UserID,
@@ -39,6 +42,28 @@ func ToServPasswordData(rp *api.UpdatePasswordRequest) *models.PasswordData {
 	}
 }
 
+// ToServCreateSubscription converts http subscribe request to models SubscriptionData
+func ToServCreateSubscription(rp *api.SubscribeRequest, usrID int) *models.SubscriptionData {
+	return &models.SubscriptionData{
+		UserID: usrID,
+		Amount: uint64(rp.Amount),
+	}
+}
+
+// ToServPaymentCallback converts http payment_callback to models PaymentCallbackData
+func ToServPaymentCallback(cb *api.PaymentCallback) *models.PaymentCallbackData {
+	return &models.PaymentCallbackData{
+		NotificationType: cb.NotificationType,
+		OperationID:      cb.OperationID,
+		Amount:           cb.Amount,
+		Currency:         cb.Currency,
+		Sender:           cb.Sender,
+		Label:            cb.Label,
+		Unaccepted:       cb.Unaccepted,
+	}
+}
+
+// ToServUserData converts http update_profile request to models User
 func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 	return &models.User{
 		ID:         pr.UserID,
@@ -49,6 +74,7 @@ func ToServUserData(pr *api.UpdateProfileRequest) *models.User {
 	}
 }
 
+// ToServFavData converts http favorite request to models Favorite
 func ToServFavData(fr *api.FavReq) *models.Favorite {
 	return &models.Favorite{
 		UserID:  fr.UserID,
@@ -56,7 +82,8 @@ func ToServFavData(fr *api.FavReq) *models.Favorite {
 	}
 }
 
-func ToApiAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
+// ToAPIAuthResponse converts models AuthRespData to http AuthResponse
+func ToAPIAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
 	if ld == nil {
 		return nil
 	}
@@ -66,22 +93,26 @@ func ToApiAuthResponse(ld *models.AuthRespData) *api.AuthResponse {
 	}
 }
 
-func ToApiSessionResponse(sr *models.SessionRespData) *api.SessionResponse {
+// ToAPISessionResponse converts models SessionRespData to http SessionResponse
+func ToAPISessionResponse(sr *models.SessionRespData) *api.SessionResponse {
 	if sr == nil {
 		return nil
 	}
 
 	return &api.SessionResponse{
 		UserData: api.User{
-			ID:        sr.UserData.ID,
-			Email:     sr.UserData.Email,
-			Username:  sr.UserData.Username,
-			AvatarURL: sr.UserData.AvatarURL,
+			ID:                         sr.UserData.ID,
+			Email:                      sr.UserData.Email,
+			Username:                   sr.UserData.Username,
+			AvatarURL:                  sr.UserData.AvatarURL,
+			SubscriptionStatus:         sr.UserData.SubscriptionStatus,
+			SubscriptionExpirationDate: sr.UserData.SubscriptionExpirationDate,
 		},
 	}
 }
 
-func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsResponse {
+// ToAPICollectionsResponse converts models CollectionsRespData to http CollectionsResponse
+func ToAPICollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsResponse {
 	if cl == nil {
 		return nil
 	}
@@ -97,7 +128,8 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 	}
 }
 
-func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
+// ToAPIGetMovieResponse converts models MovieInfo to http MovieResponse
+func ToAPIGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	if mv == nil {
 		return nil
 	}
@@ -139,7 +171,8 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 }
 
-func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
+// ToAPIGetActorResponse converts models ActorInfo to http ActorResponse
+func ToAPIGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 	if ac == nil {
 		return nil
 	}
@@ -164,7 +197,8 @@ func ToApiGetActorResponse(ac *models.ActorInfo) *api.ActorResponse {
 	}
 }
 
-func ToApiMovieShortInfos(mvs []models.MovieShortInfo) api.MovieShortInfos {
+// ToAPIMovieShortInfos converts models MovieShortInfo to http MovieShortInfos
+func ToAPIMovieShortInfos(mvs []models.MovieShortInfo) api.MovieShortInfos {
 	if mvs == nil {
 		return api.MovieShortInfos{}
 	}

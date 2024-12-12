@@ -11,12 +11,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// UserHandler grpc handler
 type UserHandler struct {
 	user.UnimplementedUserRPCServer
 	userService UserServiceInterface
 	lclStrg     *config.LocalStorage
 }
 
+// NewUserHandler returns and instance of UserRPCServer
 func NewUserHandler(ctx context.Context, usrSrv UserServiceInterface) user.UserRPCServer {
 	lclStrg := config.FromContext(ctx).Databases.LocalStorage
 
@@ -26,6 +28,7 @@ func NewUserHandler(ctx context.Context, usrSrv UserServiceInterface) user.UserR
 	}
 }
 
+// Create grps create_user handler
 func (uh *UserHandler) Create(ctx context.Context, createUsrReq *user.CreateUserRequest) (*user.ID, error) {
 	logger := log.Ctx(ctx)
 	err := validation.ValidateCreateUserRequest(createUsrReq)
@@ -50,6 +53,7 @@ func (uh *UserHandler) Create(ctx context.Context, createUsrReq *user.CreateUser
 	return &user.ID{ID: usrID}, nil
 }
 
+// UpdateProfile grps update_profile handler
 func (uh *UserHandler) UpdateProfile(ctx context.Context, updateProfileReq *user.UserData) (*user.Nothing, error) {
 	logger := log.Ctx(ctx)
 	ctx = config.WrapLocalStorageContext(ctx, uh.lclStrg)
@@ -64,6 +68,7 @@ func (uh *UserHandler) UpdateProfile(ctx context.Context, updateProfileReq *user
 	return &user.Nothing{Dummy: true}, nil
 }
 
+// UpdatePassword grps update_password handler
 func (uh *UserHandler) UpdatePassword(ctx context.Context, updatePasswdReq *user.UpdatePasswordRequest) (*user.Nothing, error) {
 	logger := log.Ctx(ctx)
 	err := validation.ValidateUpdatePasswordRequesr(updatePasswdReq)
@@ -87,6 +92,7 @@ func (uh *UserHandler) UpdatePassword(ctx context.Context, updatePasswdReq *user
 	return &user.Nothing{Dummy: true}, nil
 }
 
+// GetFavorites grps get_favorites handler
 func (uh *UserHandler) GetFavorites(ctx context.Context, getFavReq *user.ID) (*user.GetFavoritesResponse, error) {
 	logger := log.Ctx(ctx)
 	if getFavReq.ID == 0 {
@@ -103,10 +109,12 @@ func (uh *UserHandler) GetFavorites(ctx context.Context, getFavReq *user.ID) (*u
 	return &user.GetFavoritesResponse{MovieIDs: mvIDs}, nil
 }
 
+// SetFavorite grps set_favorite handler
 func (uh *UserHandler) SetFavorite(ctx context.Context, setFavReq *user.HandleFavorite) (*user.Nothing, error) {
 	return uh.toggleFavorite(ctx, setFavReq, "set")
 }
 
+// ResetFavorite grps reset_favorite handler
 func (uh *UserHandler) ResetFavorite(ctx context.Context, resetFavReq *user.HandleFavorite) (*user.Nothing, error) {
 	return uh.toggleFavorite(ctx, resetFavReq, "reset")
 }
@@ -139,6 +147,7 @@ func (uh *UserHandler) toggleFavorite(ctx context.Context, req *user.HandleFavor
 	return &user.Nothing{Dummy: true}, nil
 }
 
+// CheckFavorite grps check_favorite handler
 func (uh *UserHandler) CheckFavorite(ctx context.Context, checkFavReq *user.HandleFavorite) (*user.Nothing, error) {
 	logger := log.Ctx(ctx)
 	err := validation.ValidateFavoriteRequest(checkFavReq)
@@ -162,6 +171,7 @@ func (uh *UserHandler) CheckFavorite(ctx context.Context, checkFavReq *user.Hand
 	return &user.Nothing{Dummy: present}, nil
 }
 
+// FindByID grps find_by_id handler
 func (uh *UserHandler) FindByID(ctx context.Context, usrID *user.ID) (*user.UserData, error) {
 	logger := log.Ctx(ctx)
 	if usrID.ID == 0 {
@@ -178,6 +188,7 @@ func (uh *UserHandler) FindByID(ctx context.Context, usrID *user.ID) (*user.User
 	return converter.ConvertToGRPCUser(usrData), nil
 }
 
+// FindByEmail grps find_by_email handler
 func (uh *UserHandler) FindByEmail(ctx context.Context, usrEmail *user.Email) (*user.UserData, error) {
 	logger := log.Ctx(ctx)
 	if usrEmail.Email == "" {
@@ -192,4 +203,39 @@ func (uh *UserHandler) FindByEmail(ctx context.Context, usrEmail *user.Email) (*
 
 	logger.Error().Interface("findUserByEmailSuccess", usrData).Msg("successfully_find_user_by_email")
 	return converter.ConvertToGRPCUser(usrData), nil
+}
+
+// Subscribe grps subscribe handler
+func (uh *UserHandler) Subscribe(ctx context.Context, subData *user.CreateSubscriptionRequest) (*user.SubscriptionID, error) {
+	logger := log.Ctx(ctx)
+	if subData.UserID == 0 || subData.Amount == 0 {
+		return nil, errs.ErrBadRequest
+	}
+
+	srvData := converter.ConvertToSrvCreateSubscription(subData)
+	subID, err := uh.userService.CreateSubscription(ctx, srvData)
+	if err != nil {
+		logger.Error().Interface("createSubscriptionError", err).Msg("failed_to_create_subscription")
+		return nil, err
+	}
+
+	logger.Error().Uint64("createSubscriptionSuccess", subID).Msg("successfully_created_subscription")
+	return &user.SubscriptionID{ID: subID}, nil
+}
+
+// UpdateSubscribtionStatus grps update_subscription_status handler
+func (uh *UserHandler) UpdateSubscribtionStatus(ctx context.Context, req *user.SubscriptionID) (*user.Nothing, error) {
+	logger := log.Ctx(ctx)
+	if req.ID == 0 {
+		return nil, errs.ErrBadRequest
+	}
+
+	err := uh.userService.UpdateSubscribtionStatus(ctx, req.ID)
+	if err != nil {
+		logger.Error().Interface("updateSubscribtionStatusError", err).Msg("failed_to_update_subscription")
+		return nil, err
+	}
+
+	logger.Error().Msg("successfully_updated_subscription")
+	return &user.Nothing{Dummy: true}, nil
 }

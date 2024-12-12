@@ -5,9 +5,13 @@ databases:
   postgres:
     host: user_db
     port: 5432
-    user: test
-    password: test
+    user: user_service_user
+    password: user_service_user_password
     name: user_db
+    maxOpenConns: 100
+    maxIdleConns: 30
+    connMaxLifetime: 30
+    connMaxIdleTime: 5
 
   localStorage:
     userAvatarsFullURL: /home/ubuntu/images/user_avatars/

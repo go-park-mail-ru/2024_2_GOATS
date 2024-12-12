@@ -18,6 +18,7 @@ import (
 )
 
 var expirationTime = time.Now().Add(24 * time.Hour)
+var closeRDBError = "cannot_close_redis_db"
 
 func TestAuthRepository_SetCookie(t *testing.T) {
 	tests := []struct {
@@ -63,7 +64,11 @@ func TestAuthRepository_SetCookie(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			rdb, mock := redismock.NewClientMock()
-			defer rdb.Close()
+			defer func() {
+				if err := rdb.Close(); err != nil {
+					t.Errorf("%s:%v", closeRDBError, err)
+				}
+			}()
 
 			test.mockSetup(mock)
 			repo := NewAuthRepository(rdb)
@@ -110,7 +115,11 @@ func TestAuthRepository_DestroySession(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			rdb, mock := redismock.NewClientMock()
-			defer rdb.Close()
+			defer func() {
+				if err := rdb.Close(); err != nil {
+					t.Errorf("%s:%v", closeRDBError, err)
+				}
+			}()
 
 			test.mockSetup(mock)
 			repo := NewAuthRepository(rdb)
@@ -168,7 +177,11 @@ func TestAuthRepository_GetSessionData(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			rdb, mock := redismock.NewClientMock()
-			defer rdb.Close()
+			defer func() {
+				if err := rdb.Close(); err != nil {
+					t.Errorf("%s:%v", closeRDBError, err)
+				}
+			}()
 
 			test.mockSetup(mock)
 			repo := NewAuthRepository(rdb)

@@ -15,21 +15,23 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/auth_service/internal/interceptors"
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-redis/redis/v8"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-type AuthApp struct {
+// AppAuth is a root struct of auth_service
+type AppAuth struct {
 	rdb    *redis.Client
 	logger *zerolog.Logger
 	srv    *grpc.Server
 	cfg    *config.Config
 }
 
-func New(isTest bool) (*AuthApp, error) {
+// New returns an instance of AppAuth
+func New(isTest bool) (*AppAuth, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
@@ -58,10 +60,12 @@ func New(isTest bool) (*AuthApp, error) {
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":9081", nil)
+		if err := http.ListenAndServe(":9081", nil); err != nil {
+			logger.Error().Err(err).Msg("Metrics stopped")
+		}
 	}()
 
-	return &AuthApp{
+	return &AppAuth{
 		rdb:    rdb,
 		srv:    srv,
 		logger: &logger,
@@ -69,7 +73,8 @@ func New(isTest bool) (*AuthApp, error) {
 	}, nil
 }
 
-func (a *AuthApp) Run() {
+// Run starts grpc server
+func (a *AppAuth) Run() {
 	lis, err := net.Listen("tcp", a.cfg.Listener.Port)
 	if err != nil {
 		a.logger.Fatal().Msgf("failed to setup listener: %v", err)
@@ -92,7 +97,8 @@ func (a *AuthApp) Run() {
 	}
 }
 
-func (a *AuthApp) GracefulShutdown() error {
+// GracefulShutdown gracefully shutdowns AppAuth
+func (a *AppAuth) GracefulShutdown() error {
 	a.logger.Info().Msg("Starting graceful shutdown")
 
 	if err := a.rdb.Close(); err != nil {

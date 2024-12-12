@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// ConvertToRepoUser converts service dto User to repo DTO
 func ConvertToRepoUser(u *dto.User) *repoDTO.RepoUser {
 	if u == nil {
 		return nil
@@ -19,6 +20,7 @@ func ConvertToRepoUser(u *dto.User) *repoDTO.RepoUser {
 	}
 }
 
+// ConvertToRepoFavorite converts service dto Favorite to repo DTO
 func ConvertToRepoFavorite(f *dto.Favorite) *repoDTO.RepoFavorite {
 	if f == nil {
 		return nil
@@ -30,6 +32,7 @@ func ConvertToRepoFavorite(f *dto.Favorite) *repoDTO.RepoFavorite {
 	}
 }
 
+// ConvertToRepoCreateData converts service dto CreateUserData to repo DTO
 func ConvertToRepoCreateData(cr *dto.CreateUserData) *repoDTO.RepoCreateData {
 	if cr == nil {
 		return nil
@@ -40,5 +43,17 @@ func ConvertToRepoCreateData(cr *dto.CreateUserData) *repoDTO.RepoCreateData {
 		Username:             cr.Username,
 		Password:             cr.Password,
 		PasswordConfirmation: cr.PasswordConfirmation,
+	}
+}
+
+// ConvertToRepoCreateSubData converts service dto SubscriptionData to repo DTO
+func ConvertToRepoCreateSubData(cr *dto.CreateSubscriptionData) *repoDTO.RepoCreateSubscriptionData {
+	if cr == nil {
+		return nil
+	}
+
+	return &repoDTO.RepoCreateSubscriptionData{
+		UserID: cr.UserID,
+		Amount: cr.Amount,
 	}
 }

@@ -5,27 +5,31 @@ import (
 	"log"
 
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	"github.com/microcosm-cc/bluemonday"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
+// MovieHandler grpc handler
 type MovieHandler struct {
 	movieService MovieServiceInterface
 	movie.UnimplementedMovieServiceServer
 }
 
+// NewMovieHandler returns an instance of MovieHandler
 func NewMovieHandler(service MovieServiceInterface) *MovieHandler {
 	return &MovieHandler{
 		movieService: service,
 	}
 }
 
+// GetMovieByGenre get_movie_by_genre grpc handler
 func (h *MovieHandler) GetMovieByGenre(ctx context.Context, req *movie.GetMovieByGenreRequest) (*movie.GetMovieByGenreResponse, error) {
 	if req.Genre == "" {
 		return nil, status.Error(codes.InvalidArgument, "genre is required")
 	}
 
-	movies, err := h.movieService.GetMovieByGenre(ctx, req.Genre)
+	movies, err := h.movieService.GetMovieByGenre(ctx, sanitizeInput(req.Genre))
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +51,7 @@ func (h *MovieHandler) GetMovieByGenre(ctx context.Context, req *movie.GetMovieB
 	return &movie.GetMovieByGenreResponse{Movies: respp}, nil
 }
 
+// GetMovie get movie grpc handler
 func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest) (*movie.GetMovieResponse, error) {
 	if req.MovieId <= 0 {
 		return nil, status.Error(codes.InvalidArgument, "invalid movie ID")
@@ -128,6 +133,7 @@ func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest)
 	return &movie.GetMovieResponse{Movie: &respp}, nil
 }
 
+// GetActor get_actor grpc handler
 func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest) (*movie.GetActorResponse, error) {
 	if req.ActorId <= 0 {
 		return nil, status.Error(codes.InvalidArgument, "invalid actor ID")
@@ -172,6 +178,7 @@ func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest)
 	return &movie.GetActorResponse{Actor: &respp}, nil
 }
 
+// SearchMovies search_movies grpc handler
 func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMoviesRequest) (*movie.SearchMoviesResponse, error) {
 	if req.Query == "" {
 		return nil, status.Error(codes.InvalidArgument, "query is required")
@@ -205,6 +212,7 @@ func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMovies
 	return &movie.SearchMoviesResponse{Movies: respp}, nil
 }
 
+// SearchActors search_actors grpc handler
 func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActorsRequest) (*movie.SearchActorsResponse, error) {
 	if req.Query == "" {
 		return nil, status.Error(codes.InvalidArgument, "query is required")
@@ -230,8 +238,9 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 	return &movie.SearchActorsResponse{Actors: respp}, nil
 }
 
+// GetCollections get_collections grpc handler
 func (h *MovieHandler) GetCollections(ctx context.Context, req *movie.GetCollectionsRequest) (*movie.GetCollectionsResponse, error) {
-	collections, err := h.movieService.GetCollection(ctx, req.Filter)
+	collections, err := h.movieService.GetCollection(ctx, sanitizeInput(req.Filter))
 	if err != nil {
 		return nil, err
 	}
@@ -265,6 +274,7 @@ func (h *MovieHandler) GetCollections(ctx context.Context, req *movie.GetCollect
 	return &movie.GetCollectionsResponse{Collections: respp}, nil
 }
 
+// GetFavorites get_favorites grpc handler
 func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavoritesRequest) (*movie.GetFavoritesResponse, error) {
 	favs, err := h.movieService.GetFavorites(ctx, req.MovieIds)
 	if err != nil {
@@ -288,4 +298,9 @@ func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavorites
 	}
 
 	return &movie.GetFavoritesResponse{Movies: respp}, nil
+}
+
+func sanitizeInput(input string) string {
+	policy := bluemonday.UGCPolicy()
+	return policy.Sanitize(input)
 }

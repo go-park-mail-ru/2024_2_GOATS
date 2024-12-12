@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// CheckFavorite check user favorite
 func (u *UserService) CheckFavorite(ctx context.Context, favData *dto.Favorite) (bool, error) {
 	logger := log.Ctx(ctx)
 	present, err := u.userRepo.CheckFavorite(ctx, converter.ConvertToRepoFavorite(favData))

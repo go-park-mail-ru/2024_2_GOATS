@@ -1,0 +1,14 @@
+listener:
+  port: ":8087"
+
+databases:
+  postgres:
+    host: localhost
+    port: 5436
+    user: test_user
+    password: test_password
+    name: test_payment_db
+    maxOpenConns: 100
+    maxIdleConns: 30
+    connMaxLifetime: 30
+    connMaxIdleTime: 5

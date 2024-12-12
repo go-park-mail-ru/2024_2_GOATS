@@ -7,6 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// MovieServiceInterface defines methods for facade movie service layer
+//
 //go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type MovieServiceInterface interface {
 	GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError)

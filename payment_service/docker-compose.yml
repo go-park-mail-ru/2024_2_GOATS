@@ -1,0 +1,51 @@
+volumes:
+  postgres_volume:
+
+services:
+  payment_app:
+    container_name: payment_app
+    image: unicoyal/payment_app:latest
+    build:
+      context: ..
+      dockerfile: payment_service/Dockerfile
+    restart: always
+    depends_on:
+      payment_db:
+        condition: service_healthy
+    env_file: ../.env
+    ports:
+      - "8084:8084"
+    networks:
+      - cassette-world
+
+  payment_db:
+    build:
+      dockerfile: pg.Dockerfile
+    container_name: payment_db
+    env_file: ../.env
+    environment:
+      - POSTGRES_DB=${PAYMENT_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${PAYMENT_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${PAYMENT_SERVICE_POSTGRES_PASSWORD}
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "sh -c 'pg_isready -U payment_user -d payment_db'",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 3
+    ports:
+      - "5434:5432"
+    networks:
+      - cassette-world
+
+networks:
+  cassette-world:
+    external:
+      name: cassette-world

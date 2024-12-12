@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login logins user by given params
 func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*models.AuthRespData, *errVals.ServiceError) {
 	logger := log.Ctx(ctx)
 	usr, err := s.userClient.FindByEmail(ctx, loginData.Email)
@@ -22,7 +23,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
-		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err)
+		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch)
 	}
 
 	if loginData.Cookie != "" {

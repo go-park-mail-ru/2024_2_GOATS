@@ -12,6 +12,7 @@ import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// CreateUser creates user by calling db CreateUser
 func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.RepoCreateData) (*srvDTO.User, error) {
 	hashedPasswd, err := password.HashAndSalt(ctx, registerData.Password)
 	if err != nil {
@@ -29,5 +30,5 @@ func (u *UserRepo) CreateUser(ctx context.Context, registerData *dto.RepoCreateD
 		return nil, fmt.Errorf("%s: %w", errors.ErrCreateUserCode, err)
 	}
 
-	return converter.ToUserFromRepoUser(usr), nil
+	return converter.ToUserShortFromRepoUser(usr), nil
 }

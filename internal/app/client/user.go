@@ -10,6 +10,8 @@ import (
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 )
 
+// UserClientInterface defines the methods for interacting with user-related data via an RPC client
+//
 //go:generate mockgen -source=user.go -destination=../user/service/mocks/mock.go
 type UserClientInterface interface {
 	Create(ctx context.Context, regData *models.RegisterData) (int, error)
@@ -21,18 +23,23 @@ type UserClientInterface interface {
 	ResetFavorite(ctx context.Context, favData *models.Favorite) error
 	CheckFavorite(ctx context.Context, favData *models.Favorite) (bool, error)
 	UpdateProfile(ctx context.Context, usrData *models.User) error
+	CreateSubscription(ctx context.Context, data *models.SubscriptionData) (int, error)
+	UpdateSubscriptionStatus(ctx context.Context, subID int) error
 }
 
+// UserClient implements UserClientInterface
 type UserClient struct {
 	UserMS user.UserRPCClient
 }
 
+// NewUserClient returns an instance of UserClientInterface
 func NewUserClient(userMS user.UserRPCClient) UserClientInterface {
 	return &UserClient{
 		UserMS: userMS,
 	}
 }
 
+// FindByEmail makes find_by_email request to user microservice
 func (uc *UserClient) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	start := time.Now()
 	method := "FindByEmail"
@@ -54,6 +61,7 @@ func (uc *UserClient) FindByEmail(ctx context.Context, email string) (*models.Us
 	}, nil
 }
 
+// FindByID makes find_by_id request to user microservice
 func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, error) {
 	start := time.Now()
 	method := "FindByID"
@@ -66,15 +74,18 @@ func (uc *UserClient) FindByID(ctx context.Context, id uint64) (*models.User, er
 	}
 
 	return &models.User{
-		ID:         int(resp.UserID),
-		Email:      resp.Email,
-		Username:   resp.Username,
-		Password:   resp.Password,
-		AvatarURL:  resp.AvatarURL,
-		AvatarName: resp.AvatarName,
+		ID:                         int(resp.UserID),
+		Email:                      resp.Email,
+		Username:                   resp.Username,
+		Password:                   resp.Password,
+		AvatarURL:                  resp.AvatarURL,
+		AvatarName:                 resp.AvatarName,
+		SubscriptionStatus:         resp.SubscriptionStatus,
+		SubscriptionExpirationDate: resp.SubscriptionExpirationDate,
 	}, nil
 }
 
+// Create makes create_user request to user microservice
 func (uc *UserClient) Create(ctx context.Context, regData *models.RegisterData) (int, error) {
 	start := time.Now()
 	method := "CreateUser"
@@ -95,6 +106,7 @@ func (uc *UserClient) Create(ctx context.Context, regData *models.RegisterData) 
 	return int(resp.ID), nil
 }
 
+// UpdateProfile makes find_by_id request to user microservice
 func (uc *UserClient) UpdateProfile(ctx context.Context, usrData *models.User) error {
 	var fileBytes []byte
 	var err error
@@ -131,6 +143,7 @@ func (uc *UserClient) UpdateProfile(ctx context.Context, usrData *models.User) e
 	return nil
 }
 
+// UpdatePassword makes update_user_password request to user microservice
 func (uc *UserClient) UpdatePassword(ctx context.Context, passwordData *models.PasswordData) error {
 	start := time.Now()
 	method := "UpdatePassword"
@@ -151,6 +164,7 @@ func (uc *UserClient) UpdatePassword(ctx context.Context, passwordData *models.P
 	return nil
 }
 
+// GetFavorites collects movie_ids from user's favorites from user microservice
 func (uc *UserClient) GetFavorites(ctx context.Context, usrID int) ([]uint64, error) {
 	start := time.Now()
 	method := "GetFavorites"
@@ -165,6 +179,7 @@ func (uc *UserClient) GetFavorites(ctx context.Context, usrID int) ([]uint64, er
 	return resp.MovieIDs, nil
 }
 
+// SetFavorite create new user favorite in user microservice
 func (uc *UserClient) SetFavorite(ctx context.Context, favData *models.Favorite) error {
 	start := time.Now()
 	method := "SetFavorite"
@@ -175,6 +190,7 @@ func (uc *UserClient) SetFavorite(ctx context.Context, favData *models.Favorite)
 	return err
 }
 
+// ResetFavorite destroy user favorite in user microservice
 func (uc *UserClient) ResetFavorite(ctx context.Context, favData *models.Favorite) error {
 	start := time.Now()
 	method := "ResetFavorite"
@@ -185,6 +201,7 @@ func (uc *UserClient) ResetFavorite(ctx context.Context, favData *models.Favorit
 	return err
 }
 
+// CheckFavorite checks favorite existense for given user in user microservice
 func (uc *UserClient) CheckFavorite(ctx context.Context, favData *models.Favorite) (bool, error) {
 	start := time.Now()
 	method := "CheckFavorite"
@@ -218,6 +235,41 @@ func (uc *UserClient) toggleFavorite(ctx context.Context, favData *models.Favori
 
 	if err != nil {
 		return fmt.Errorf("userClientError#toggleFavorite: %w", err)
+	}
+
+	return nil
+}
+
+// CreateSubscription makes create_subscription request to user microservice
+func (uc *UserClient) CreateSubscription(ctx context.Context, data *models.SubscriptionData) (int, error) {
+	start := time.Now()
+	method := "CreateSubscription"
+
+	resp, err := uc.UserMS.Subscribe(ctx, &user.CreateSubscriptionRequest{
+		UserID: uint64(data.UserID),
+		Amount: uint64(data.Amount),
+	})
+
+	saveMetric(start, userClient, method, err)
+
+	if err != nil {
+		return 0, fmt.Errorf("userClientError#createSubscription: %w", err)
+	}
+
+	return int(resp.ID), nil
+}
+
+// UpdateSubscriptionStatus updates user subscription status in user microservice
+func (uc *UserClient) UpdateSubscriptionStatus(ctx context.Context, subID int) error {
+	start := time.Now()
+	method := "UpdateSubscriptionStatus"
+
+	_, err := uc.UserMS.UpdateSubscribtionStatus(ctx, &user.SubscriptionID{ID: uint64(subID)})
+
+	saveMetric(start, userClient, method, err)
+
+	if err != nil {
+		return fmt.Errorf("userClientError#updateSubscriptionStatus: %w", err)
 	}
 
 	return nil

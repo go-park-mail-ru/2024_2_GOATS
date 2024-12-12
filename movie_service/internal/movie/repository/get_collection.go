@@ -9,6 +9,7 @@ import (
 	movieCollectionDB "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/movie_collectiondb"
 )
 
+// GetCollection gets movie collections by calling db GetCollections
 func (r *MovieRepo) GetCollection(ctx context.Context, filter string) ([]models.Collection, error) {
 	var rows *sql.Rows
 	var err error

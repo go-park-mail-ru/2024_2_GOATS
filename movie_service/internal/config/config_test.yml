@@ -8,3 +8,7 @@ databases:
     user: test
     password: test
     name: movie_db
+    maxOpenConns: 100
+    maxIdleConns: 30
+    connMaxLifetime: 30
+    connMaxIdleTime: 5

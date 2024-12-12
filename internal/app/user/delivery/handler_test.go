@@ -2,27 +2,22 @@ package delivery
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	mockSrv "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks"
 )
 
 func TestUserHandler_UpdatePassword(t *testing.T) {
-	ctx := testContext(t)
 	tests := []struct {
 		name        string
 		reqBody     string
@@ -74,7 +69,7 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(ctx, ms)
+			handler := NewUserHandler(ms)
 
 			if !test.skipService {
 				ms.EXPECT().UpdatePassword(gomock.Any(), gomock.Any()).Return(test.mockErr)
@@ -84,7 +79,12 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 
 			handler.UpdatePassword(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					t.Errorf("cannot close updatePassword body")
+				}
+			}()
 
 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
 			if test.resp == "" {
@@ -97,8 +97,6 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 }
 
 func TestUserHandler_UpdateProfile(t *testing.T) {
-	ctx := testContext(t)
-
 	tests := []struct {
 		name        string
 		formData    map[string]string
@@ -166,10 +164,13 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 
 			if test.fileData != nil {
 				part, _ := writer.CreateFormFile("avatar", "avatar.png")
-				part.Write(test.fileData)
+				_, err := part.Write(test.fileData)
+				assert.NoError(t, err)
 			}
 
-			writer.Close()
+			if err := writer.Close(); err != nil {
+				t.Errorf("cannot_close_writer: %v", err)
+			}
 
 			req := httptest.NewRequest(http.MethodPost, "/users/1/update_profile", body)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -178,7 +179,7 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			}
 
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(ctx, ms)
+			handler := NewUserHandler(ms)
 
 			if !test.skipService {
 				ms.EXPECT().UpdateProfile(gomock.Any(), gomock.Any()).Return(test.mockErr)
@@ -188,7 +189,12 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			handler.UpdateProfile(w, req)
 
 			res := w.Result()
-			defer res.Body.Close()
+
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					t.Errorf("cannot close updateProfile body")
+				}
+			}()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
 			if test.resp == "" {
@@ -201,7 +207,6 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 }
 
 func TestUserHandler_SetFavorite(t *testing.T) {
-	ctx := testContext(t)
 	tests := []struct {
 		name       string
 		reqBody    string
@@ -235,7 +240,7 @@ func TestUserHandler_SetFavorite(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(ctx, ms)
+			handler := NewUserHandler(ms)
 
 			ms.EXPECT().AddFavorite(gomock.Any(), gomock.Any()).Return(test.mockErr)
 
@@ -243,7 +248,12 @@ func TestUserHandler_SetFavorite(t *testing.T) {
 
 			handler.SetFavorite(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					t.Errorf("cannot close setFavorite body")
+				}
+			}()
 
 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
 			if test.resp == "" {
@@ -256,7 +266,6 @@ func TestUserHandler_SetFavorite(t *testing.T) {
 }
 
 func TestUserHandler_ResetFavorite(t *testing.T) {
-	ctx := testContext(t)
 	tests := []struct {
 		name       string
 		reqBody    string
@@ -290,7 +299,7 @@ func TestUserHandler_ResetFavorite(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(ctx, ms)
+			handler := NewUserHandler(ms)
 
 			ms.EXPECT().ResetFavorite(gomock.Any(), gomock.Any()).Return(test.mockErr)
 
@@ -298,7 +307,12 @@ func TestUserHandler_ResetFavorite(t *testing.T) {
 
 			handler.ResetFavorite(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					t.Errorf("cannot close resetFavorite body")
+				}
+			}()
 
 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
 			if test.resp == "" {
@@ -311,7 +325,6 @@ func TestUserHandler_ResetFavorite(t *testing.T) {
 }
 
 func TestUserHandler_GetFavorites(t *testing.T) {
-	ctx := testContext(t)
 	tests := []struct {
 		name       string
 		usrID      string
@@ -347,7 +360,7 @@ func TestUserHandler_GetFavorites(t *testing.T) {
 			req = mux.SetURLVars(req, map[string]string{"id": test.usrID})
 
 			ms := mockSrv.NewMockUserServiceInterface(ctrl)
-			handler := NewUserHandler(ctx, ms)
+			handler := NewUserHandler(ms)
 
 			ms.EXPECT().GetFavorites(gomock.Any(), gomock.Any()).Return(test.mockResp, test.mockErr)
 
@@ -355,7 +368,12 @@ func TestUserHandler_GetFavorites(t *testing.T) {
 
 			handler.GetFavorites(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					t.Errorf("cannot close GetFavorites body")
+				}
+			}()
 
 			assert.Equal(t, test.statusCode, w.Result().StatusCode)
 			if test.resp == "" {
@@ -365,13 +383,4 @@ func TestUserHandler_GetFavorites(t *testing.T) {
 			}
 		})
 	}
-}
-
-func testContext(t *testing.T) context.Context {
-	require.NoError(t, os.Chdir("../../../.."), "failed to change directory")
-
-	cfg, err := config.New(true)
-	require.NoError(t, err, "failed to read config from user handler_test")
-
-	return config.WrapContext(context.Background(), cfg)
 }

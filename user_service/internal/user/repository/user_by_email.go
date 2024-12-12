@@ -12,6 +12,7 @@ import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// UserByEmail finds user by email by calling db FindByEmail
 func (u *UserRepo) UserByEmail(ctx context.Context, email string) (*srvDTO.User, error) {
 	usr, err := userdb.FindByEmail(ctx, email, u.Database)
 
@@ -23,5 +24,5 @@ func (u *UserRepo) UserByEmail(ctx context.Context, email string) (*srvDTO.User,
 		return nil, fmt.Errorf("%s: %w", errVals.ErrServerCode, err)
 	}
 
-	return converter.ToUserFromRepoUser(usr), nil
+	return converter.ToUserShortFromRepoUser(usr), nil
 }

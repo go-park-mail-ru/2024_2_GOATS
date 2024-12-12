@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
@@ -25,15 +24,21 @@ import (
 
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	payApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery"
+	payServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
+	subApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/delivery"
+	subServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/service"
 	userApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery"
 	userServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
+	payment "github.com/go-park-mail-ru/2024_2_GOATS/payment_service/pkg/payment_v1"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// App root facade struct
 type App struct {
 	Config            *config.Config
 	Logger            *zerolog.Logger
@@ -41,6 +46,7 @@ type App struct {
 	AcceptConnections bool
 }
 
+// New returns an instance of App
 func New(isTest bool) (*App, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
@@ -56,6 +62,7 @@ func New(isTest bool) (*App, error) {
 	}, nil
 }
 
+// Run Starts http server
 func (a *App) Run() {
 	ctx := config.WrapContext(context.Background(), a.Config)
 	aGrpcConn, err := grpc.NewClient(
@@ -66,7 +73,11 @@ func (a *App) Run() {
 		log.Fatalf("cant connect to grpc")
 	}
 
-	defer aGrpcConn.Close()
+	defer func() {
+		if clErr := aGrpcConn.Close(); clErr != nil {
+			log.Fatal("cannot close authGrpcConnection")
+		}
+	}()
 
 	uGrpcConn, err := grpc.NewClient(
 		"user_app:8082",
@@ -76,7 +87,11 @@ func (a *App) Run() {
 		log.Fatalf("cant connect to grpc")
 	}
 
-	defer uGrpcConn.Close()
+	defer func() {
+		if clErr := uGrpcConn.Close(); clErr != nil {
+			log.Fatal("cannot close userGrpcConnection")
+		}
+	}()
 
 	mGrpcConn, err := grpc.NewClient(
 		"movie_app:8083",
@@ -86,20 +101,45 @@ func (a *App) Run() {
 		log.Fatalf("cant connect to grpc")
 	}
 
-	defer mGrpcConn.Close()
+	defer func() {
+		if clErr := mGrpcConn.Close(); clErr != nil {
+			log.Fatal("cannot close movieGrpcConnection")
+		}
+	}()
+
+	pGrpcConn, err := grpc.NewClient(
+		"payment_app:8084",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
+	defer func() {
+		if clErr := pGrpcConn.Close(); clErr != nil {
+			log.Fatal("cannot close paymentGrpcConnection")
+		}
+	}()
 
 	sessManager := client.NewAuthClient(auth.NewSessionRPCClient(aGrpcConn))
 	usrManager := client.NewUserClient(user.NewUserRPCClient(uGrpcConn))
 	mvManager := client.NewMovieClient(movie.NewMovieServiceClient(mGrpcConn))
+	payManager := client.NewPaymentClient(payment.NewPaymentRPCClient(pGrpcConn))
 
 	srvUser := userServ.NewUserService(usrManager, mvManager)
-	delUser := userApi.NewUserHandler(ctx, srvUser)
+	delUser := userApi.NewUserHandler(srvUser)
 
 	srvAuth := authServ.NewAuthService(sessManager, usrManager)
-	delAuth := authApi.NewAuthHandler(ctx, srvAuth, srvUser)
+	delAuth := authApi.NewAuthHandler(srvAuth, srvUser)
 
 	srvMov := movieServ.NewMovieService(mvManager, usrManager)
 	delMov := movieApi.NewMovieHandler(srvMov)
+
+	srvPay := payServ.NewPaymentService(payManager, usrManager)
+	delPay := payApi.NewPaymentHandler(srvPay)
+
+	srvSub := subServ.NewSubscriptionService(payManager, usrManager)
+	delSub := subApi.NewSubscriptionHandler(srvSub)
 
 	// repoRoom := roomRepo.NewRepository(database, rdb)
 	// srvRoom := roomServ.NewService(repoRoom, srvMov)
@@ -115,6 +155,8 @@ func (a *App) Run() {
 	router.SetupAuth(delAuth, mx)
 	router.SetupUser(delUser, mx)
 	router.SetupMovie(delMov, mx)
+	router.SetupPayment(delPay, mx)
+	router.SetupSubscription(delSub, mx)
 
 	mx.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)
@@ -152,6 +194,7 @@ func (a *App) Run() {
 	}
 }
 
+// GracefulShutdown gracefully shutdowns grpc server
 func (a *App) GracefulShutdown() error {
 	a.AcceptConnections = false
 	a.Logger.Info().Msg("Starting graceful shutdown")

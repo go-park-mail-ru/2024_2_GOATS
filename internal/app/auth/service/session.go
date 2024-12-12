@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// Session checks user session by cookie
 func (s *AuthService) Session(ctx context.Context, cookie string) (*models.SessionRespData, *errVals.ServiceError) {
 	usrID, err := s.authClient.Session(ctx, cookie)
 
@@ -21,12 +22,6 @@ func (s *AuthService) Session(ctx context.Context, cookie string) (*models.Sessi
 	}
 
 	return &models.SessionRespData{
-		UserData: models.User{
-			ID:         usr.ID,
-			Email:      usr.Email,
-			Username:   usr.Username,
-			AvatarURL:  usr.AvatarURL,
-			AvatarName: usr.AvatarName,
-		},
+		UserData: *usr,
 	}, nil
 }

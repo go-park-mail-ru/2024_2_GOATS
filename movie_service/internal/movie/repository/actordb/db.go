@@ -10,7 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/dto"
 	"github.com/rs/zerolog/log"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
+	metricsutils "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/metrics_utils"
 )
 
 const (
@@ -29,15 +29,27 @@ const (
 	`
 )
 
+// FindByID finds actor by id in db
 func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 	actorInfo := &dto.RepoActor{}
 
-	row := db.QueryRowContext(ctx, actorFindByIDSQL, actorID)
+	stmt, err := db.Prepare(actorFindByIDSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#actorFindById: %w", err)
+	}
+
+	defer func() {
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
+		}
+	}()
+
+	row := stmt.QueryRowContext(ctx, actorID)
 	logger.Info().Msg("postgres: successfully select actor info")
 
-	err := row.Scan(
+	err = row.Scan(
 		&actorInfo.ID,
 		&actorInfo.Name,
 		&actorInfo.Surname,
@@ -48,7 +60,7 @@ func FindByID(ctx context.Context, actorID int, db *sql.DB) (*dto.RepoActor, err
 	)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "get_actor_by_id", "actors")
+		metricsutils.SaveErrorMetric("get_actor_by_id", "actors")
 		errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 

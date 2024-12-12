@@ -32,10 +32,12 @@ func (rec *statusRecorder) WriteHeader(code int) {
 	rec.ResponseWriter.WriteHeader(code)
 }
 
+// NewLoggingResponseWriter wraps resonseWriter with status
 func NewLoggingResponseWriter(w http.ResponseWriter) *statusRecorder {
 	return &statusRecorder{w, http.StatusOK}
 }
 
+// AccessLogMiddleware logs any request
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := r.Header.Get("Req-ID")
@@ -59,6 +61,7 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// CorsMiddleware set CORS Headers
 func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", viper.GetString("ALLOWED_ORIGIN"))
@@ -78,6 +81,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// PanicMiddleware prevents any panic
 func PanicMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -129,7 +133,8 @@ func sanitizeInput(input string) string {
 	return policy.Sanitize(input)
 }
 
-func XssMiddleware(next http.Handler) http.Handler {
+// XSSMiddleware sanitize inputs
+func XSSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Invalid form data", http.StatusBadRequest)
@@ -147,10 +152,10 @@ func XssMiddleware(next http.Handler) http.Handler {
 
 var store = sessions.NewCookieStore([]byte("secret-key"))
 
-// CsrfMiddleware проверяет CSRF токен из сессии и заголовка запроса
+// CsrfMiddleware checks CSRF-Token
 func CsrfMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" {
+		if r.Method == http.MethodGet || r.URL.Path == "/api/csrf-token" || strings.HasPrefix(r.URL.Path, "/api/payments") {
 			next.ServeHTTP(w, r)
 			return
 		}

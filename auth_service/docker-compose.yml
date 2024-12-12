@@ -3,10 +3,14 @@ volumes:
 
 services:
   auth_app:
+    container_name: auth_app
+    image: unicoyal/auth_app:latest
     build:
       context: ..
       dockerfile: auth_service/Dockerfile
     restart: always
+    ports:
+      - 8081:8081
     networks:
       - cassette-world
   redis:

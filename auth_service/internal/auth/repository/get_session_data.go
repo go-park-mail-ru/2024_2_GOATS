@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GetSessionData gets session info from Redis
 func (ar *AuthRepository) GetSessionData(ctx context.Context, cookie string) (string, error) {
 	var userID string
 	start := time.Now()
