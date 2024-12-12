@@ -136,8 +136,8 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 			roomState.TimeCode = action.TimeCode
 		}
 
-	case "timer":
-		roomState.TimeCode = action.TimeCode
+	//case "timer":
+	//	roomState.TimeCode = action.TimeCode
 
 	case "message":
 		roomState.Message.Text = action.Message.Text
@@ -153,37 +153,37 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		roomState.Movie.MovieType = movie_service.MovieType
 		log.Println("MovieType==", roomState.Movie.MovieType)
 
-		if movie_service.MovieType == "serial" {
-			var seasons []*model.Season
-			for _, season := range movie_service.Seasons {
-				sn := season.SeasonNumber
-				var eps []*model.Episode
-				for _, ep := range season.Episodes {
-					cur := &model.Episode{
-						ID:            ep.ID,
-						Description:   ep.Description,
-						EpisodeNumber: ep.EpisodeNumber,
-						Title:         ep.Title,
-						Rating:        ep.Rating,
-						ReleaseDate:   ep.ReleaseDate,
-						VideoURL:      ep.VideoURL,
-						PreviewURL:    ep.PreviewURL,
-					}
-
-					eps = append(eps, cur)
+		//if movie_service.MovieType == "serial" {
+		var seasons []*model.Season
+		for _, season := range movie_service.Seasons {
+			sn := season.SeasonNumber
+			var eps []*model.Episode
+			for _, ep := range season.Episodes {
+				cur := &model.Episode{
+					ID:            ep.ID,
+					Description:   ep.Description,
+					EpisodeNumber: ep.EpisodeNumber,
+					Title:         ep.Title,
+					Rating:        ep.Rating,
+					ReleaseDate:   ep.ReleaseDate,
+					VideoURL:      ep.VideoURL,
+					PreviewURL:    ep.PreviewURL,
 				}
 
-				curSeas := &model.Season{
-					SeasonNumber: sn,
-					Episodes:     eps,
-				}
-
-				seasons = append(seasons, curSeas)
+				eps = append(eps, cur)
 			}
-			roomState.Movie.Seasons = seasons
-			log.Println("SeasonNumber==")
 
+			curSeas := &model.Season{
+				SeasonNumber: sn,
+				Episodes:     eps,
+			}
+
+			seasons = append(seasons, curSeas)
 		}
+		roomState.Movie.Seasons = seasons
+		log.Println("SeasonNumber==")
+
+		//}
 		roomState.Movie.AlbumURL = movie_service.AlbumURL
 		log.Println("roomState.Movie.AlbumURL==", roomState.Movie.AlbumURL)
 		roomState.Movie.CardURL = movie_service.CardURL
@@ -204,16 +204,16 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		//	log.Println("Failed to send room state:", err)
 		//}
 		//}
+		s.hub.Broadcast <- ws.BroadcastMessage{
+			Action: map[string]interface{}{
+				"name":   "change_movie",
+				"movie ": roomState.Movie,
+			},
+			RoomID: roomID,
+		}
 	}
 	log.Println("roomState.Movie==", roomState.Movie)
 
-	s.hub.Broadcast <- ws.BroadcastMessage{
-		Action: map[string]interface{}{
-			"type":   "timer",
-			"movie ": roomState.Movie,
-		},
-		RoomID: roomID,
-	}
 	//case "change":
 	//	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
 	//	roomState.Message.Text = action.Message.Text

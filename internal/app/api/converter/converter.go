@@ -133,10 +133,11 @@ func ToApiGetMovieResponse(mv *models.MovieInfo, rating int64) *api.MovieRespons
 	}
 
 	mvInfo.Actors = actors
-	mvInfo.RatingUser = rating
+	//mvInfo.RatingUser = rating
 
 	return &api.MovieResponse{
 		MovieInfo: mvInfo,
+		//Rating:    rating,
 	}
 }
 

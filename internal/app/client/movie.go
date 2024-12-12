@@ -133,6 +133,7 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	respp.Actors = actors
 
 	var seasons []*models.Season
+
 	for _, season := range respMov.Seasons {
 		sn := season.SeasonNumber
 		var eps []*models.Episode
