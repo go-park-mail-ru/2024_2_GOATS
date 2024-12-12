@@ -20,7 +20,7 @@ func (u *UserService) UpdatePassword(ctx context.Context, passwordData *models.P
 	cryptErr := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(passwordData.OldPassword))
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
-		return errVals.NewServiceError("failed_to_update_password", errVals.ErrInvalidOldPassword.Err)
+		return errVals.NewServiceError("failed_to_update_password", errVals.ErrInvalidOldPassword)
 	}
 
 	err = u.userClient.UpdatePassword(ctx, passwordData)

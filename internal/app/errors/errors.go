@@ -1,7 +1,6 @@
 package errors
 
 import (
-	"encoding/json"
 	errs "errors"
 	"net/http"
 
@@ -73,25 +72,29 @@ var ErrorCodeToHTTPStatus = map[string]int{
 
 // CustomErrors
 var (
-	ErrInvalidEmail          = NewCustomError("email is incorrect")
-	ErrInvalidPassword       = NewCustomError("password is too short. The minimal len is 8")
-	ErrInvalidUsername       = NewCustomError("username is too short. The minimal len is 6")
-	ErrInvalidPasswordsMatch = NewCustomError("password doesn't match with passwordConfirmation")
-	ErrInvalidOldPassword    = NewCustomError("invalid old password")
-	ErrUserNotFound          = NewCustomError("cannot find user by given params")
-	ErrBrokenCookie          = NewCustomError("broken cookie was given")
-	ErrSaveFile              = NewCustomError("cannot save file")
+	ErrInvalidEmail          = errs.New("email is incorrect")
+	ErrInvalidPassword       = errs.New("password is too short. The minimal len is 8")
+	ErrInvalidUsername       = errs.New("username is too short. The minimal len is 6")
+	ErrInvalidPasswordsMatch = errs.New("password doesn't match with passwordConfirmation")
+	ErrInvalidOldPassword    = errs.New("invalid old password")
+	ErrUserNotFound          = errs.New("cannot find user by given params")
+	ErrBrokenCookie          = errs.New("broken cookie was given")
+	ErrSaveFile              = errs.New("cannot save file")
 )
 
-// CustomError is a struct for internal error
+// CustomError struct
+//
+//easyjson:skip
 type CustomError struct {
-	Err error
+	Err string
 }
 
 // ErrorItem is a struct for internal error with code
+//
+//go:generate easyjson -all errors.go
 type ErrorItem struct {
-	Code  string      `json:"code"`
-	Error CustomError `json:"error"`
+	Code  string `json:"code"`
+	Error string `json:"error"`
 }
 
 // DeliveryError is a struct for error response with http code
@@ -100,13 +103,17 @@ type DeliveryError struct {
 	Errors     []ErrorItem `json:"errors"`
 }
 
-// ServiceError is a struct for service layer
+// ServiceError struct
+//
+//easyjson:skip
 type ServiceError struct {
 	Code  string
 	Error error
 }
 
-// RepoError is a struct for repo layer
+// RepoError struct
+//
+//easyjson:skip
 type RepoError struct {
 	Code  string
 	Error CustomError
@@ -118,14 +125,9 @@ func IsDuplicateError(err error) bool {
 	return errs.As(err, &pqErr) && pqErr.Code == DuplicateErrKey
 }
 
-// MarshalJSON marshal custom error
-func (ce *CustomError) MarshalJSON() ([]byte, error) {
-	return json.Marshal(ce.Err.Error())
-}
-
 // NewCustomError returns an instance of CustomError
 func NewCustomError(message string) CustomError {
-	return CustomError{Err: errs.New(message)}
+	return CustomError{Err: message}
 }
 
 // NewRepoError returns an instance of RepoError
@@ -156,7 +158,7 @@ func NewDeliveryError(status int, errs []ErrorItem) *DeliveryError {
 func NewErrorItem(code string, err CustomError) ErrorItem {
 	return ErrorItem{
 		Code:  code,
-		Error: err,
+		Error: err.Err,
 	}
 }
 

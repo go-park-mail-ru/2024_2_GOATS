@@ -56,7 +56,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	passwordReq.UserID = usrID
 
 	if err := validation.ValidatePassword(passwordReq.Password, passwordReq.PasswordConfirmation); err != nil {
-		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err.Err)
+		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err)
 		api.RequestError(r.Context(), w, vlErr, http.StatusBadRequest, errMsg)
 
 		return
@@ -111,15 +111,15 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	var errs = make([]errVals.ErrorItem, 0)
 	if profileReq.Username != "" {
 		if valErr := validation.ValidateUsername(profileReq.Username); valErr != nil {
-			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr.Err)
-			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errVals.NewCustomError(errMsg.Error())})
+			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr)
+			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errMsg.Error()})
 		}
 	}
 
 	if profileReq.Email != "" {
 		if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
-			errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
-			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errVals.NewCustomError(errMsg.Error())})
+			errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr)
+			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errMsg.Error()})
 		}
 	}
 

@@ -67,7 +67,7 @@ func TestDelivery_Register(t *testing.T) {
 			req:  `{"email": "test@mail.ru", "username": "tester", "password": "123456789", "passwordConfirmation": "12345678910"}`,
 			mockErr: &errVals.ServiceError{
 				Code:  errVals.ErrInvalidPasswordCode,
-				Error: errVals.ErrInvalidPasswordsMatch.Err,
+				Error: errVals.ErrInvalidPasswordsMatch,
 			},
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
@@ -132,7 +132,7 @@ func TestDelivery_Login(t *testing.T) {
 		{
 			req:        `{"email": "ashurov@mail.rs", "password": "A123456bb"}`,
 			name:       "Service Error",
-			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err),
+			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch),
 			resp:       `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
 			statusCode: http.StatusBadRequest,
 		},
@@ -191,7 +191,7 @@ func TestDelivery_Logout(t *testing.T) {
 		},
 		{
 			name:         "Validation Error",
-			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.ErrBrokenCookie.Err),
+			mockErr:      errVals.NewServiceError(errVals.ErrBrokenCookieCode, errVals.ErrBrokenCookie),
 			statusCode:   http.StatusBadRequest,
 			isValidation: true,
 			emptyCookie:  true,

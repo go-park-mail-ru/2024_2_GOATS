@@ -58,8 +58,8 @@ func TestUpdatePassword(t *testing.T) {
 				Password:             "new_password",
 				PasswordConfirmation: "new_password",
 			},
-			expectedErr:    errVals.ErrInvalidOldPassword.Err,
-			expectedErrMsg: errVals.ErrInvalidOldPassword.Err.Error(),
+			expectedErr:    errVals.ErrInvalidOldPassword,
+			expectedErrMsg: errVals.ErrInvalidOldPassword.Error(),
 		},
 		{
 			name: "FailureOnFindByID",

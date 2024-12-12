@@ -50,7 +50,7 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	validErr := validation.ValidateCookie(ck.Value)
 	if validErr != nil {
-		errMsg := fmt.Errorf("logout action: Invalid cookie err - %w", validErr.Err)
+		errMsg := fmt.Errorf("logout action: Invalid cookie err - %w", validErr)
 		api.RequestError(r.Context(), w, vlErr, http.StatusBadRequest, errMsg)
 
 		return
@@ -117,13 +117,13 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	errs := make([]errVals.ErrorItem, 0)
 
 	if err := validation.ValidatePassword(registerReq.Password, registerReq.PasswordConfirmation); err != nil {
-		logger.Error().Err(err.Err).Msg(vlErr)
-		addError(errVals.ErrInvalidPasswordCode, *err, &errs)
+		logger.Error().Msgf("%s:%s", vlErr, err)
+		addError(errVals.ErrInvalidPasswordCode, err, &errs)
 	}
 
 	if err := validation.ValidateEmail(registerReq.Email); err != nil {
-		logger.Error().Err(err.Err).Msg(vlErr)
-		addError(errVals.ErrInvalidEmailCode, *err, &errs)
+		logger.Error().Msgf("%s:%s", vlErr, err)
+		addError(errVals.ErrInvalidEmailCode, err, &errs)
 	}
 
 	if len(errs) > 0 {
@@ -201,10 +201,10 @@ func preparedExpiredCookie() *http.Cookie {
 	}
 }
 
-func addError(code string, err errVals.CustomError, errors *[]errVals.ErrorItem) {
+func addError(code string, err error, errors *[]errVals.ErrorItem) {
 	errStruct := errVals.ErrorItem{
 		Code:  code,
-		Error: err,
+		Error: err.Error(),
 	}
 
 	*errors = append(*errors, errStruct)

@@ -211,9 +211,9 @@ func TestService_Session(t *testing.T) {
 				cookie: "some random cookie",
 			},
 			mockGetFromCookie: 1,
-			mockGetUserErr:    errVals.ErrUserNotFound.Err,
+			mockGetUserErr:    errVals.ErrUserNotFound,
 			expectedResponse:  nil,
-			expectedError:     errVals.NewServiceError(errVals.ErrUserNotFoundCode, fmt.Errorf("failed to get session data: %w", errVals.ErrUserNotFound.Err)),
+			expectedError:     errVals.NewServiceError(errVals.ErrUserNotFoundCode, fmt.Errorf("failed to get session data: %w", errVals.ErrUserNotFound)),
 			WithGetUser:       true,
 		},
 	}
@@ -361,9 +361,9 @@ func TestService_Login(t *testing.T) {
 					Cookie:   "some_cookie",
 				},
 			},
-			mockUserErr:      errVals.ErrUserNotFound.Err,
+			mockUserErr:      errVals.ErrUserNotFound,
 			expectedResponse: nil,
-			expectedError:    errVals.NewServiceError(errVals.ErrUserNotFoundCode, fmt.Errorf("failed to login: %w", errVals.ErrUserNotFound.Err)),
+			expectedError:    errVals.NewServiceError(errVals.ErrUserNotFoundCode, fmt.Errorf("failed to login: %w", errVals.ErrUserNotFound)),
 		},
 		{
 			name: "Wrong password error",
@@ -383,7 +383,7 @@ func TestService_Login(t *testing.T) {
 			},
 			mockUserErr:      nil,
 			expectedResponse: nil,
-			expectedError:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err),
+			expectedError:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch),
 		},
 	}
 

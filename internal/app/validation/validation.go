@@ -14,40 +14,40 @@ const (
 var emailRegex = regexp.MustCompile(`^[$\/@ "'.!#\$%&'*+\-=?^_{|}~a-zA-z0-9]+@[a-z]+\.[a-z]{2,10}$`)
 
 // ValidatePassword validates password len and matching with password_confirmation
-func ValidatePassword(pass, passConf string) *errVals.CustomError {
+func ValidatePassword(pass, passConf string) error {
 	if pass != passConf {
-		return &errVals.ErrInvalidPasswordsMatch
+		return errVals.ErrInvalidPasswordsMatch
 	}
 
 	if len(pass) < passwordLength {
-		return &errVals.ErrInvalidPassword
+		return errVals.ErrInvalidPassword
 	}
 
 	return nil
 }
 
 // ValidateEmail validates email matches regexp
-func ValidateEmail(email string) *errVals.CustomError {
+func ValidateEmail(email string) error {
 	if !emailRegex.MatchString(email) {
-		return &errVals.ErrInvalidEmail
+		return errVals.ErrInvalidEmail
 	}
 
 	return nil
 }
 
 // ValidateUsername validates username length
-func ValidateUsername(username string) *errVals.CustomError {
+func ValidateUsername(username string) error {
 	if len(username) < usernameLength {
-		return &errVals.ErrInvalidUsername
+		return errVals.ErrInvalidUsername
 	}
 
 	return nil
 }
 
 // ValidateCookie validates cookie presence
-func ValidateCookie(cookie string) *errVals.CustomError {
+func ValidateCookie(cookie string) error {
 	if len(cookie) == 0 {
-		return &errVals.ErrBrokenCookie
+		return errVals.ErrBrokenCookie
 	}
 
 	return nil

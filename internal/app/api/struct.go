@@ -8,6 +8,8 @@ import (
 )
 
 // RegisterRequest json struct
+//
+//go:generate easyjson -all struct.go
 type RegisterRequest struct {
 	Email                string `json:"email"`
 	Username             string `json:"username"`
@@ -17,11 +19,11 @@ type RegisterRequest struct {
 
 // UpdateProfileRequest json struct
 type UpdateProfileRequest struct {
-	UserID     int    `json:"user_id"`
-	Email      string `json:"email"`
-	Username   string `json:"username"`
-	AvatarFile multipart.File
-	AvatarName string
+	UserID     int            `json:"user_id"`
+	Email      string         `json:"email"`
+	Username   string         `json:"username"`
+	AvatarFile multipart.File `json:"-"`
+	AvatarName string         `json:"-"`
 }
 
 // UpdatePasswordRequest json struct

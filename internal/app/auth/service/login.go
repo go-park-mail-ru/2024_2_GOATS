@@ -23,7 +23,7 @@ func (s *AuthService) Login(ctx context.Context, loginData *models.LoginData) (*
 	if cryptErr != nil {
 		logger.Err(cryptErr).Msg("BCrypt: password missmatched.")
 
-		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch.Err)
+		return nil, errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch)
 	}
 
 	if loginData.Cookie != "" {
