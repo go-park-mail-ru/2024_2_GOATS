@@ -20,9 +20,9 @@ services:
       dockerfile: pg.Dockerfile
     container_name: user_db
     environment:
-      - POSTGRES_DB=user_db
-      - POSTGRES_USER=user_service_user
-      - POSTGRES_PASSWORD=user_service_user_password
+      - POSTGRES_DB=${USER_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${USER_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${USER_SERVICE_POSTGRES_PASSWORD}
     volumes:
       - postgres_volume:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf

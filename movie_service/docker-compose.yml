@@ -23,9 +23,9 @@ services:
       dockerfile: pg.Dockerfile
     container_name: movie_db
     environment:
-      - POSTGRES_DB=movie_db
-      - POSTGRES_USER=movie_user
-      - POSTGRES_PASSWORD=movie_user_password
+      - POSTGRES_DB=${MOVIE_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${MOVIE_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${MOVIE_SERVICE_POSTGRES_PASSWORD}
     volumes:
       - postgres_volume:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf

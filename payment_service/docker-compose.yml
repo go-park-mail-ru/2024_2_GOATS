@@ -12,6 +12,7 @@ services:
     depends_on:
       payment_db:
         condition: service_healthy
+    env_file: ../.env
     ports:
       - "8084:8084"
     networks:
@@ -21,10 +22,11 @@ services:
     build:
       dockerfile: pg.Dockerfile
     container_name: payment_db
+    env_file: ../.env
     environment:
-      - POSTGRES_DB=payment_db
-      - POSTGRES_USER=payment_user
-      - POSTGRES_PASSWORD=payment_user_password
+      - POSTGRES_DB=${PAYMENT_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${PAYMENT_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${PAYMENT_SERVICE_POSTGRES_PASSWORD}
     volumes:
       - postgres_volume:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf

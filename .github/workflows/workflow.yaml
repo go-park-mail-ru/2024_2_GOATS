@@ -22,6 +22,10 @@ jobs:
       - name: Restore .env files
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
+          echo "${{ secrets.USER_ENV_FILE }}" > user_service/.env
+          echo "${{ secrets.AUTH_ENV_FILE }}" > auth_service/.env
+          echo "${{ secrets.MOVIE_ENV_FILE }}" > movie_service/.env
+          echo "${{ secrets.PAYMENT_ENV_FILE }}" > payment_service/.env
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -136,8 +140,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ vars.DOCKER_REGISTRY }}
-          username: unicoyal
-          password: Igor310304
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push facade
         if: steps.check_facade.outputs.changed == 'true'
@@ -146,7 +150,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: unicoyal/facade_app:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/facade_app:latest
 
       - name: Build and push user_service
         if: steps.check_user_service.outputs.changed == 'true'
@@ -155,7 +159,7 @@ jobs:
           context: .
           file: ./user_service/Dockerfile
           push: true
-          tags: unicoyal/user_app:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/user_app:latest
 
       - name: Build and push movie_service
         if: steps.check_movie_service.outputs.changed == 'true'
@@ -164,7 +168,7 @@ jobs:
           context: .
           file: ./movie_service/Dockerfile
           push: true
-          tags: unicoyal/movie_app:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/movie_app:latest
 
       - name: Build and push payment_service
         if: steps.check_payment_service.outputs.changed == 'true'
@@ -173,7 +177,7 @@ jobs:
           context: .
           file: ./payment_service/Dockerfile
           push: true
-          tags: unicoyal/payment_app:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/payment_app:latest
 
       - name: Build and push auth_service
         if: steps.check_auth_service.outputs.changed == 'true'
@@ -182,4 +186,4 @@ jobs:
           context: .
           file: ./auth_service/Dockerfile
           push: true
-          tags: unicoyal/auth_app:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/auth_app:latest

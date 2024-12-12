@@ -40,7 +40,13 @@ func Response(ctx context.Context, w http.ResponseWriter, code int, obj interfac
 		}
 
 		w.WriteHeader(code)
-		_, _ = w.Write(buf.Bytes())
+		_, wErr := w.Write(buf.Bytes())
+		if wErr != nil {
+			logger.Error().Err(wErr).Msg("error while writing response")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		return
 	}
 
