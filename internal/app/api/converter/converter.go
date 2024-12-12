@@ -97,7 +97,7 @@ func ToApiCollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 	}
 }
 
-func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
+func ToApiGetMovieResponse(mv *models.MovieInfo, rating int64) *api.MovieResponse {
 	if mv == nil {
 		return nil
 	}
@@ -133,6 +133,7 @@ func ToApiGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 
 	mvInfo.Actors = actors
+	mvInfo.RatingUser = rating
 
 	return &api.MovieResponse{
 		MovieInfo: mvInfo,

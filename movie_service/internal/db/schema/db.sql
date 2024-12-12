@@ -159,7 +159,7 @@ CREATE TABLE ratings (
          id SERIAL PRIMARY KEY,
          user_id INT NOT NULL,
          movie_id INT NOT NULL,
-         rating DECIMAL(3, 2) NOT NULL CHECK (rating >= 0 AND rating <= 10),
+         rating DECIMAL(10, 2) NOT NULL DEFAULT '0.0' CHECK (rating >= 0 AND rating <= 10),
          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 

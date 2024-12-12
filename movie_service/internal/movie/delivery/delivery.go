@@ -17,4 +17,5 @@ type MovieServiceInterface interface {
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
 	GetUserRating(ctx context.Context, userId int, movieId int) (float32, error)
 	AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error
+	DeleteRating(ctx context.Context, userId int, movieId int) error
 }

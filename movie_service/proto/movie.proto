@@ -176,6 +176,15 @@ message UserRating {
   float rating = 3;
 }
 
+message DeleteRatingRequest {
+  int32 user_id = 1;
+  int32 movie_id = 2;
+}
+
+message DeleteRatingResponse {
+    bool success = 1;
+    string message = 2;
+}
 
 service MovieService {
   rpc GetMovie(GetMovieRequest) returns (GetMovieResponse);
@@ -196,8 +205,9 @@ service MovieService {
 
   rpc GetUserRating(GetUserRatingRequest) returns (GetUserRatingResponse);
 
-  rpc AddOrUpdateRating(AddOrUpdateRatingRequest) returns (Nothing);
-}
+  rpc AddOrUpdateRating(AddOrUpdateRatingRequest) returns (AddOrUpdateRatingResponse);
 
+  rpc DeleteRating(DeleteRatingRequest) returns (DeleteRatingResponse);
+}
 
 
