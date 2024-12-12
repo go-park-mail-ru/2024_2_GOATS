@@ -8,6 +8,8 @@ import (
 )
 
 // PaymentServiceInterface defines facade payment_service layer methods
+//
+//go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type PaymentServiceInterface interface {
 	ProcessCallback(ctx context.Context, data *models.PaymentCallbackData) *errVals.ServiceError
 }

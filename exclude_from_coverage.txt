@@ -4,6 +4,10 @@ github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/delivery/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/service/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/service/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/delivery/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/struct.go
 github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg
@@ -20,7 +24,8 @@ github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/delivery/mock
 github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service/mocks
-github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/payment_service/internal/payment/delivery/mocks
+github.com/go-park-mail-ru/2024_2_GOATS/payment_service/internal/payment/service/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client/mocks
 github.com/go-park-mail-ru/2024_2_GOATS/internal/db/script_elastic
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/easy_easyjson.go

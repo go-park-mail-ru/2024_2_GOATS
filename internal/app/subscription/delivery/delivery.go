@@ -8,6 +8,8 @@ import (
 )
 
 // SubscriptionServiceInterface defines SubscriptionService methods
+//
+//go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type SubscriptionServiceInterface interface {
 	Subscribe(ctx context.Context, data *models.SubscriptionData) (string, *errVals.ServiceError)
 }

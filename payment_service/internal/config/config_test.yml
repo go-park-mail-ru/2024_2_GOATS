@@ -4,7 +4,7 @@ listener:
 databases:
   postgres:
     host: localhost
-    port: 5434
+    port: 5436
     user: test_user
     password: test_password
     name: test_payment_db
@@ -12,7 +12,3 @@ databases:
     maxIdleConns: 30
     connMaxLifetime: 30
     connMaxIdleTime: 5
-
-  localStorage:
-    userAvatarsFullURL: images/user_avatars/
-    userAvatarsRelativeURL: images/user_avatars/

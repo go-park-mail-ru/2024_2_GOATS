@@ -3,10 +3,13 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
@@ -517,5 +520,109 @@ func TestGetMovieActors_DbError(t *testing.T) {
 
 	assert.Nil(t, actors)
 	assert.NotNil(t, errObj)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetFavorites_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movieIDs := []uint64{1, 2}
+	expectedMovies := []*models.MovieShortInfo{
+		{
+			ID:          1,
+			Title:       "Movie 1",
+			CardURL:     "card1.jpg",
+			AlbumURL:    "album1.jpg",
+			Rating:      4.5,
+			ReleaseDate: "2023-01-01",
+			MovieType:   "Action",
+			Country:     "USA",
+		},
+		{
+			ID:          2,
+			Title:       "Movie 2",
+			CardURL:     "card2.jpg",
+			AlbumURL:    "album2.jpg",
+			Rating:      3.8,
+			ReleaseDate: "2023-02-01",
+			MovieType:   "Drama",
+			Country:     "UK",
+		},
+	}
+
+	mockRows := sqlmock.NewRows([]string{"id", "title", "card_url", "album_url", "rating", "release_date", "movie_type", "title"}).
+		AddRow(1, "Movie 1", "card1.jpg", "album1.jpg", 4.5, "2023-01-01", "Action", "USA").
+		AddRow(2, "Movie 2", "card2.jpg", "album2.jpg", 3.8, "2023-02-01", "Drama", "UK")
+	mock.ExpectPrepare("SELECT movies.id, movies.title, movies.card_url, movies.album_url").
+		ExpectQuery().
+		WithArgs(pq.Array(movieIDs)).
+		WillReturnRows(mockRows)
+
+	movies, errObj := r.GetFavorites(context.Background(), movieIDs)
+
+	assert.Nil(t, errObj)
+	assert.Equal(t, expectedMovies, movies)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetFavorites_PrepareError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movieIDs := []uint64{1, 2}
+
+	mock.ExpectPrepare("SELECT movies.id, movies.title, movies.card_url, movies.album_url").
+		WillReturnError(errors.New("prepare statement error"))
+
+	movies, errObj := r.GetFavorites(context.Background(), movieIDs)
+
+	assert.Nil(t, movies)
+	assert.NotNil(t, errObj)
+	assert.Contains(t, errObj.Error(), "prepareStatement#moviesByIDs: prepare statement error")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetFavorites_QueryError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movieIDs := []uint64{1, 2}
+
+	mock.ExpectPrepare("SELECT movies.id, movies.title, movies.card_url, movies.album_url").
+		ExpectQuery().
+		WithArgs(pq.Array(movieIDs)).
+		WillReturnError(errors.New("query execution error"))
+
+	movies, errObj := r.GetFavorites(context.Background(), movieIDs)
+
+	assert.Nil(t, movies)
+	assert.NotNil(t, errObj)
+	assert.Contains(t, errObj.Error(), "postgres: error while selecting favorite movies: query execution error")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetFavorites_ScanError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movieIDs := []uint64{1, 2}
+
+	mockRows := sqlmock.NewRows([]string{"id", "title", "card_url", "album_url", "rating", "release_date", "movie_type", "title"}).
+		AddRow(nil, nil, nil, nil, nil, nil, nil, nil)
+	mock.ExpectPrepare("SELECT movies.id, movies.title, movies.card_url, movies.album_url").
+		ExpectQuery().
+		WithArgs(pq.Array(movieIDs)).
+		WillReturnRows(mockRows)
+
+	movies, errObj := r.GetFavorites(context.Background(), movieIDs)
+
+	assert.Nil(t, movies)
+	assert.NotNil(t, errObj)
+	assert.Contains(t, errObj.Error(), "error getting movie collections")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

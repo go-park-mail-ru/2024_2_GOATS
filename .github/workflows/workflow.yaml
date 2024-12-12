@@ -36,8 +36,8 @@ jobs:
         run: |
           COVERAGE=$(go tool cover -func=coverage.out | grep -Po 'total:\s+\(statements\)\s+\K[\d.]+')
           echo "Coverage: $COVERAGE%"
-          if (( $(echo "$COVERAGE < 50" | bc -l) )); then
-            echo "Test coverage is below 50%! Current coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 60" | bc -l) )); then
+            echo "Test coverage is below 60%! Current coverage: $COVERAGE%"
             exit 1
           fi
   linter:

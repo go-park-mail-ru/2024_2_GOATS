@@ -45,6 +45,8 @@ func (sh *SubscriptionHandler) Subscribe(w http.ResponseWriter, r *http.Request)
 	if respErr != nil {
 		logger.Error().Err(srvErr.Error).Interface("createSubError", srvErr).Msg("request_failed")
 		api.Response(r.Context(), w, respErr.HTTPStatus, respErr)
+
+		return
 	}
 
 	logger.Info().Str("subIDP", subIDP).Msg("successfully check subscription status")
