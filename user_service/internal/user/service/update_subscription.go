@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// UpdateSubscribtionStatus updates user's subscriprion status
 func (u *UserService) UpdateSubscribtionStatus(ctx context.Context, subID uint64) error {
 	logger := log.Ctx(ctx)
 	err := u.userRepo.UpdateSubscribtionStatus(ctx, subID)

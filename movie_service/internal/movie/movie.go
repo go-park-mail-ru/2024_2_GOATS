@@ -19,7 +19,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/service"
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+
+	// postgres drive
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -27,14 +29,16 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-type MovieApp struct {
+// AppMovie is a root struct of movie_service
+type AppMovie struct {
 	database *sql.DB
 	logger   *zerolog.Logger
 	srv      *grpc.Server
 	cfg      *config.Config
 }
 
-func New(isTest bool) (*MovieApp, error) {
+// New returns an instance of AppMovie
+func New(isTest bool) (*AppMovie, error) {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
@@ -78,10 +82,12 @@ func New(isTest bool) (*MovieApp, error) {
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":9083", nil)
+		if err := http.ListenAndServe(":9083", nil); err != nil {
+			logger.Error().Err(err).Msg("Metrics stopped")
+		}
 	}()
 
-	return &MovieApp{
+	return &AppMovie{
 		database: db,
 		srv:      srv,
 		logger:   &logger,
@@ -89,7 +95,8 @@ func New(isTest bool) (*MovieApp, error) {
 	}, nil
 }
 
-func (a *MovieApp) Run() {
+// Run starts grpc server
+func (a *AppMovie) Run() {
 	lis, err := net.Listen("tcp", a.cfg.Listener.Port)
 	if err != nil {
 		a.logger.Fatal().Msgf("failed to setup listener: %v", err)
@@ -112,15 +119,16 @@ func (a *MovieApp) Run() {
 	}
 }
 
-func (ua *MovieApp) GracefulShutdown() error {
-	ua.logger.Info().Msg("Starting graceful shutdown user_app")
-	if err := ua.database.Close(); err != nil {
-		ua.logger.Error().Err(err).Msg("failed to close user_app Postgres")
+// GracefulShutdown gracefully shutdowns AppMovie
+func (a *AppMovie) GracefulShutdown() error {
+	a.logger.Info().Msg("Starting graceful shutdown user_app")
+	if err := a.database.Close(); err != nil {
+		a.logger.Error().Err(err).Msg("failed to close user_app Postgres")
 		return err
 	}
 
-	ua.srv.GracefulStop()
-	ua.logger.Info().Msg("user_app is shutdown")
+	a.srv.GracefulStop()
+	a.logger.Info().Msg("user_app is shutdown")
 
 	return nil
 }

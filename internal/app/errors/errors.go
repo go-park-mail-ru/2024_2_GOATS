@@ -1,13 +1,13 @@
 package errors
 
 import (
-	"encoding/json"
 	errs "errors"
 	"net/http"
 
 	"github.com/lib/pq"
 )
 
+// Internal Error Codes
 const (
 	DuplicateErrKey        = "23505"
 	DuplicateErrCode       = "db_duplicate_entry"
@@ -39,6 +39,7 @@ const (
 	ErrCheckSessionCode    = "failed_to_get_session_data"
 )
 
+// ErrorCodeToHTTPStatus errors map
 var ErrorCodeToHTTPStatus = map[string]int{
 	DuplicateErrCode:       http.StatusUnprocessableEntity,
 	ErrBrokenCookieCode:    http.StatusBadRequest,
@@ -69,55 +70,67 @@ var ErrorCodeToHTTPStatus = map[string]int{
 	ErrCheckSessionCode:    http.StatusInternalServerError,
 }
 
+// CustomErrors
 var (
-	ErrInvalidEmail          = NewCustomError("email is incorrect")
-	ErrInvalidPassword       = NewCustomError("password is too short. The minimal len is 8")
-	ErrInvalidUsername       = NewCustomError("username is too short. The minimal len is 6")
-	ErrInvalidPasswordsMatch = NewCustomError("password doesn't match with passwordConfirmation")
-	ErrInvalidOldPassword    = NewCustomError("invalid old password")
-	ErrUserNotFound          = NewCustomError("cannot find user by given params")
-	ErrBrokenCookie          = NewCustomError("broken cookie was given")
-	ErrSaveFile              = NewCustomError("cannot save file")
+	ErrInvalidEmail          = errs.New("email is incorrect")
+	ErrInvalidPassword       = errs.New("password is too short. The minimal len is 8")
+	ErrInvalidUsername       = errs.New("username is too short. The minimal len is 6")
+	ErrInvalidPasswordsMatch = errs.New("password doesn't match with passwordConfirmation")
+	ErrInvalidOldPassword    = errs.New("invalid old password")
+	ErrUserNotFound          = errs.New("cannot find user by given params")
+	ErrBrokenCookie          = errs.New("broken cookie was given")
+	ErrSaveFile              = errs.New("cannot save file")
 )
 
+// CustomError struct
+//
+//easyjson:skip
 type CustomError struct {
-	Err error
+	Err string
 }
 
+// ErrorItem is a struct for internal error with code
+//
+//go:generate easyjson -all errors.go
 type ErrorItem struct {
-	Code  string      `json:"code"`
-	Error CustomError `json:"error"`
+	Code  string `json:"code"`
+	Error string `json:"error"`
 }
 
+// DeliveryError is a struct for error response with http code
 type DeliveryError struct {
 	HTTPStatus int         `json:"-"`
 	Errors     []ErrorItem `json:"errors"`
 }
 
+// ServiceError struct
+//
+//easyjson:skip
 type ServiceError struct {
 	Code  string
 	Error error
 }
 
+// RepoError struct
+//
+//easyjson:skip
 type RepoError struct {
 	Code  string
 	Error CustomError
 }
 
-// Функции для работы с ошибками
+// IsDuplicateError checks pg duplicate error
 func IsDuplicateError(err error) bool {
 	var pqErr *pq.Error
 	return errs.As(err, &pqErr) && pqErr.Code == DuplicateErrKey
 }
 
-func (ce *CustomError) MarshalJSON() ([]byte, error) {
-	return json.Marshal(ce.Err.Error())
-}
-
+// NewCustomError returns an instance of CustomError
 func NewCustomError(message string) CustomError {
-	return CustomError{Err: errs.New(message)}
+	return CustomError{Err: message}
 }
 
+// NewRepoError returns an instance of RepoError
 func NewRepoError(code string, err CustomError) *RepoError {
 	return &RepoError{
 		Code:  code,
@@ -125,6 +138,7 @@ func NewRepoError(code string, err CustomError) *RepoError {
 	}
 }
 
+// NewServiceError returns an instance of ServiceError
 func NewServiceError(code string, err error) *ServiceError {
 	return &ServiceError{
 		Code:  code,
@@ -132,6 +146,7 @@ func NewServiceError(code string, err error) *ServiceError {
 	}
 }
 
+// NewDeliveryError returns an instance of DeliveryError
 func NewDeliveryError(status int, errs []ErrorItem) *DeliveryError {
 	return &DeliveryError{
 		HTTPStatus: status,
@@ -139,10 +154,11 @@ func NewDeliveryError(status int, errs []ErrorItem) *DeliveryError {
 	}
 }
 
+// NewErrorItem returns an instance of ErrorItem
 func NewErrorItem(code string, err CustomError) ErrorItem {
 	return ErrorItem{
 		Code:  code,
-		Error: err,
+		Error: err.Err,
 	}
 }
 
@@ -153,6 +169,7 @@ func matchStatus(code string) int {
 	return http.StatusInternalServerError
 }
 
+// ToDeliveryErrorFromService converts ServiceError to DeliveryError
 func ToDeliveryErrorFromService(se *ServiceError) *DeliveryError {
 	if se == nil {
 		return nil

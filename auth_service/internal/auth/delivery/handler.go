@@ -12,12 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// AuthManager is a auth grpc handler
 type AuthManager struct {
 	auth.UnimplementedSessionRPCServer
 	SessionSrv AuthServiceInterface
 	redisCfg   *config.Redis
 }
 
+// NewAuthManager returns an instance of SessionRPCServer
 func NewAuthManager(ctx context.Context, srv AuthServiceInterface) auth.SessionRPCServer {
 	return &AuthManager{
 		SessionSrv: srv,
@@ -25,6 +27,7 @@ func NewAuthManager(ctx context.Context, srv AuthServiceInterface) auth.SessionR
 	}
 }
 
+// CreateSession create_session grpc handler
 func (am *AuthManager) CreateSession(ctx context.Context, createCookieReq *auth.CreateSessionRequest) (*auth.CreateSessionResponse, error) {
 	logger := log.Ctx(ctx)
 	err := validation.ValidateUserID(createCookieReq.UserID)
@@ -52,6 +55,7 @@ func (am *AuthManager) CreateSession(ctx context.Context, createCookieReq *auth.
 	return resp, nil
 }
 
+// DestroySession destroy_session grpc handler
 func (am *AuthManager) DestroySession(ctx context.Context, deleteCookieReq *auth.DestroySessionRequest) (*auth.Nothing, error) {
 	logger := log.Ctx(ctx)
 	err := validation.ValidateCookie(deleteCookieReq.Cookie)
@@ -72,6 +76,7 @@ func (am *AuthManager) DestroySession(ctx context.Context, deleteCookieReq *auth
 	return &auth.Nothing{Dummy: srvResp}, nil
 }
 
+// Session get_session_data grpc handler
 func (am *AuthManager) Session(ctx context.Context, checkCookieReq *auth.GetSessionRequest) (*auth.GetSessionResponse, error) {
 	logger := log.Ctx(ctx)
 	err := validation.ValidateCookie(checkCookieReq.Cookie)

@@ -3,21 +3,24 @@ package converter
 import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/microcosm-cc/bluemonday"
 )
 
+// ConvertToSrvCreateUser converts from grpc request to srv DTO CreateUserData
 func ConvertToSrvCreateUser(req *user.CreateUserRequest) *srvDTO.CreateUserData {
 	if req == nil {
 		return nil
 	}
 
 	return &srvDTO.CreateUserData{
-		Email:                req.Email,
-		Username:             req.Username,
-		Password:             req.Password,
-		PasswordConfirmation: req.PasswordConfirmation,
+		Email:                sanitizeInput(req.Email),
+		Username:             sanitizeInput(req.Username),
+		Password:             sanitizeInput(req.Password),
+		PasswordConfirmation: sanitizeInput(req.PasswordConfirmation),
 	}
 }
 
+// ConvertToSrvCreateSubscription converts from grpc request to srv DTO CreateSubscriptionData
 func ConvertToSrvCreateSubscription(req *user.CreateSubscriptionRequest) *srvDTO.CreateSubscriptionData {
 	if req == nil {
 		return nil
@@ -29,6 +32,7 @@ func ConvertToSrvCreateSubscription(req *user.CreateSubscriptionRequest) *srvDTO
 	}
 }
 
+// ConvertToSrvUpdatePassword converts from grpc request to srv DTO PasswordData
 func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.PasswordData {
 	if req == nil {
 		return nil
@@ -36,12 +40,13 @@ func ConvertToSrvUpdatePassword(req *user.UpdatePasswordRequest) *srvDTO.Passwor
 
 	return &srvDTO.PasswordData{
 		UserID:               req.UserID,
-		OldPassword:          req.OldPassword,
-		Password:             req.Password,
-		PasswordConfirmation: req.PasswordConfirmation,
+		OldPassword:          sanitizeInput(req.OldPassword),
+		Password:             sanitizeInput(req.Password),
+		PasswordConfirmation: sanitizeInput(req.PasswordConfirmation),
 	}
 }
 
+// ConvertToSrvUpdateProfile converts from grpc request to srv DTO User
 func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 	if req == nil {
 		return nil
@@ -49,14 +54,15 @@ func ConvertToSrvUpdateProfile(req *user.UserData) *srvDTO.User {
 
 	return &srvDTO.User{
 		ID:         req.UserID,
-		Email:      req.Email,
-		Username:   req.Username,
-		AvatarURL:  req.AvatarURL,
-		AvatarName: req.AvatarName,
+		Email:      sanitizeInput(req.Email),
+		Username:   sanitizeInput(req.Username),
+		AvatarURL:  sanitizeInput(req.AvatarURL),
+		AvatarName: sanitizeInput(req.AvatarName),
 		AvatarFile: req.AvatarFile,
 	}
 }
 
+// ConvertToSrvFavorite converts from grpc request to srv DTO Favorite
 func ConvertToSrvFavorite(req *user.HandleFavorite) *srvDTO.Favorite {
 	if req == nil {
 		return nil
@@ -68,6 +74,7 @@ func ConvertToSrvFavorite(req *user.HandleFavorite) *srvDTO.Favorite {
 	}
 }
 
+// ConvertToGRPCUser converts from srv DTO User to grpc
 func ConvertToGRPCUser(su *srvDTO.User) *user.UserData {
 	if su == nil {
 		return nil
@@ -83,4 +90,9 @@ func ConvertToGRPCUser(su *srvDTO.User) *user.UserData {
 		SubscriptionStatus:         su.SubscriptionStatus,
 		SubscriptionExpirationDate: su.SubscriptionExpirationDate,
 	}
+}
+
+func sanitizeInput(input string) string {
+	policy := bluemonday.UGCPolicy()
+	return policy.Sanitize(input)
 }

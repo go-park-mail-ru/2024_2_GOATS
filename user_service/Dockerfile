@@ -26,5 +26,6 @@ COPY --from=builder /app/user_service/internal/config/config.yml /app/user_servi
 COPY --from=builder /app/user_service/internal/db /app/user_service/internal/db
 
 WORKDIR /app/user_service
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 CMD wget --spider http://localhost:8082/health || exit 1
 
 ENTRYPOINT ["/bin/main"]

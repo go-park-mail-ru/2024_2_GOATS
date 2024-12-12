@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// SaveUserAvatar saves user avatar on the machine
 func (u *UserRepo) SaveUserAvatar(ctx context.Context, avatarName string, file []byte) (string, error) {
 	logger := log.Ctx(ctx)
 	lclStrg := config.FromLocalStorageContext(ctx)

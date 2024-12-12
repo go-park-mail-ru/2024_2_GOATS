@@ -6,6 +6,7 @@ import (
 	"github.com/lib/pq"
 )
 
+// Internal Error Codes
 const (
 	DuplicateErrKey        = "23505"
 	DuplicateErrCode       = "db_duplicate_entry"
@@ -37,6 +38,7 @@ const (
 	ErrCheckSessionCode    = "failed_to_get_session_data"
 )
 
+// Custom Errors
 var (
 	ErrInvalidEmail          = errs.New("email is incorrect")
 	ErrInvalidPassword       = errs.New("password is too short. The minimal len is 8")
@@ -48,6 +50,7 @@ var (
 	ErrSaveFile              = errs.New("cannot save file")
 )
 
+// IsDuplicateError shows duplicate entry error
 func IsDuplicateError(err error) bool {
 	var pqErr *pq.Error
 	return errs.As(err, &pqErr) && pqErr.Code == DuplicateErrKey

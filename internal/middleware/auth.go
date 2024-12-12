@@ -15,16 +15,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// SessionMiddleware struct
 type SessionMiddleware struct {
 	authServ delivery.AuthServiceInterface
 }
 
+// NewSessionMiddleware returns an instance of SessionMiddleware
 func NewSessionMiddleware(authServ delivery.AuthServiceInterface) *SessionMiddleware {
 	return &SessionMiddleware{
 		authServ: authServ,
 	}
 }
 
+// AuthMiddleware checks if user is authorized
 func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.HasPrefix(r.URL.Path, "/api/users") && !strings.HasPrefix(r.URL.Path, "/api/movies") && !strings.HasPrefix(r.URL.Path, "/api/subscription") {
@@ -52,7 +55,7 @@ func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		sessionSrvResp, errSrvResp := mw.authServ.Session(r.Context(), ck.Value)
-		_, errResp := converter.ToApiSessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
+		_, errResp := converter.ToAPISessionResponse(sessionSrvResp), errVals.ToDeliveryErrorFromService(errSrvResp)
 		if errResp != nil {
 			errRespp := errors.New("authorization failed")
 			logger.Error().Err(errRespp).Msg("authorization failed")

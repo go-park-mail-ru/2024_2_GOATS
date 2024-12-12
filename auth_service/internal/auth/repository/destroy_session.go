@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// DestroySession destroys session in Redis
 func (ar *AuthRepository) DestroySession(ctx context.Context, cookie string) error {
 	logger := log.Ctx(ctx)
 	start := time.Now()

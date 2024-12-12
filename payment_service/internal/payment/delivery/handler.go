@@ -10,17 +10,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// PaymentHandler grpc payments handler
 type PaymentHandler struct {
 	payment.UnimplementedPaymentRPCServer
 	paymentService PaymentServiceInterface
 }
 
-func NewPaymentHandler(ctx context.Context, usrSrv PaymentServiceInterface) payment.PaymentRPCServer {
+// NewPaymentHandler returns an instance of PaymentRPCServer
+func NewPaymentHandler(usrSrv PaymentServiceInterface) payment.PaymentRPCServer {
 	return &PaymentHandler{
 		paymentService: usrSrv,
 	}
 }
 
+// Create grpc create payment handler
 func (uh *PaymentHandler) Create(ctx context.Context, createPayReq *payment.CreateRequest) (*payment.PaymentID, error) {
 	logger := log.Ctx(ctx)
 	if createPayReq.Amount == 0 || createPayReq.SubscriptionID == 0 {
@@ -45,6 +48,7 @@ func (uh *PaymentHandler) Create(ctx context.Context, createPayReq *payment.Crea
 	return &payment.PaymentID{ID: pID}, nil
 }
 
+// MarkPaid grpc mark payment as paid handler
 func (uh *PaymentHandler) MarkPaid(ctx context.Context, req *payment.PaymentID) (*payment.Nothing, error) {
 	logger := log.Ctx(ctx)
 	if req.ID == 0 {

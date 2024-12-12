@@ -3,34 +3,43 @@ volumes:
 
 services:
   payment_app:
+    container_name: payment_app
+    image: unicoyal/payment_app:latest
     build:
       context: ..
       dockerfile: payment_service/Dockerfile
     restart: always
-    environment:
-      - PORT=8084
-      - DATABASE_HOST=payment_db
-      - DATABASE_PORT=5432
-      - DATABASE_USER=test
-      - DATABASE_PASSWORD=test
-      - DATABASE_NAME=payment_db
     depends_on:
-      - payment_db
+      payment_db:
+        condition: service_healthy
+    env_file: ../.env
     ports:
       - "8084:8084"
     networks:
       - cassette-world
 
   payment_db:
-    image: postgres:latest
+    build:
+      dockerfile: pg.Dockerfile
     container_name: payment_db
+    env_file: ../.env
     environment:
-      - POSTGRES_DB=payment_db
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=${PAYMENT_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${PAYMENT_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${PAYMENT_SERVICE_POSTGRES_PASSWORD}
     volumes:
-      - ./dev/SQL:/docker-entrypoint-initdb.d/
       - postgres_volume:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "sh -c 'pg_isready -U payment_user -d payment_db'",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 3
     ports:
       - "5434:5432"
     networks:

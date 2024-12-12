@@ -1,34 +1,41 @@
 services:
   user_app:
+    container_name: user_app
+    image: unicoyal/user_app:latest
     build:
       context: ..
       dockerfile: user_service/Dockerfile
     volumes:
       - /home/ubuntu/images:/home/ubuntu/images
-    environment:
-      - PORT=8082
-      - DATABASE_HOST=user_db
-      - DATABASE_PORT=5432
-      - DATABASE_USER=test
-      - DATABASE_PASSWORD=test
-      - DATABASE_NAME=user_db
     depends_on:
-      - user_db
+      user_db:
+        condition: service_healthy
     ports:
       - 8082:8082
     networks:
       - cassette-world
 
   user_db:
-    image: postgres:latest
+    build:
+      dockerfile: pg.Dockerfile
     container_name: user_db
     environment:
-      - POSTGRES_DB=user_db
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=${USER_SERVICE_POSTGRES_DB}
+      - POSTGRES_USER=${USER_SERVICE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${USER_SERVICE_POSTGRES_PASSWORD}
     volumes:
-      - ./dev/SQL:/docker-entrypoint-initdb.d/
       - postgres_volume:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "sh -c 'pg_isready -U user_service_user -d user_db'",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 3
     ports:
       - "5432:5432"
     networks:

@@ -25,23 +25,35 @@ const (
 	`
 	markPaidSQL = "UPDATE subscriptions SET status = $1, expiration_date = $2 WHERE id = $3"
 
-	PendingStatus = "pending"
-	ActiveStatus  = "active"
+	pendingStatus = "pending"
+	// ActiveStatus defines subscription active state
+	ActiveStatus = "active"
 )
 
+// CreateSubscription creates subscription in db
 func CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscriptionData, db *sql.DB) (uint64, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	var subID uint64
-	err := db.QueryRowContext(
+	stmt, err := db.Prepare(subCreateSQL)
+	if err != nil {
+		return 0, fmt.Errorf("prepareStatement#createSubscription: %w", err)
+	}
+
+	defer func() {
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
+		}
+	}()
+
+	err = stmt.QueryRowContext(
 		ctx,
-		subCreateSQL,
-		subData.UserID, subData.Amount, PendingStatus, time.Now().AddDate(0, 1, 0),
+		subData.UserID, subData.Amount, pendingStatus, time.Now().AddDate(0, 1, 0),
 	).Scan(&subID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "create_subscription", "subscriptions")
+		metricsutils.SaveErrorMetric("create_subscription", "subscriptions")
 		errMsg := fmt.Errorf("postgres: error while creating subscription - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -54,14 +66,26 @@ func CreateSubscription(ctx context.Context, subData *dto.RepoCreateSubscription
 	return subID, nil
 }
 
+// UpdateSubscription updates subscription data in db
 func UpdateSubscription(ctx context.Context, subID uint64, db *sql.DB) error {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
-	_, err := db.ExecContext(ctx, markPaidSQL, ActiveStatus, time.Now().AddDate(0, 1, 0), subID)
+	stmt, err := db.Prepare(markPaidSQL)
+	if err != nil {
+		return fmt.Errorf("prepareStatement#updateSubscription: %w", err)
+	}
+
+	defer func() {
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
+		}
+	}()
+
+	_, err = stmt.ExecContext(ctx, ActiveStatus, time.Now().AddDate(0, 1, 0), subID)
 
 	if err != nil {
-		metricsutils.SaveErrorMetric(start, "update_subscription_status", "subscriptions")
+		metricsutils.SaveErrorMetric("update_subscription_status", "subscriptions")
 		errMsg := fmt.Errorf("postgres: error while updating subscription status - %w", err)
 		logger.Error().Err(errMsg).Msg("pg_error")
 
@@ -74,21 +98,33 @@ func UpdateSubscription(ctx context.Context, subID uint64, db *sql.DB) error {
 	return nil
 }
 
+// FindByUserID gets last active user subscription in db
 func FindByUserID(ctx context.Context, usrID uint64, db *sql.DB) (*dto.RepoSubscription, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
 
 	var sub = &dto.RepoSubscription{}
-	row := db.QueryRowContext(ctx, findByUserIDSQL, usrID, time.Now(), ActiveStatus)
+	stmt, err := db.Prepare(findByUserIDSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#subscriptionByUserID: %w", err)
+	}
 
-	err := row.Scan(
+	defer func() {
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
+		}
+	}()
+
+	row := stmt.QueryRowContext(ctx, usrID, time.Now(), ActiveStatus)
+
+	err = row.Scan(
 		&sub.Status,
 		&sub.ExpirationDate,
 	)
 
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			metricsutils.SaveErrorMetric(start, "get_actor_by_id", "actors")
+			metricsutils.SaveErrorMetric("get_actor_by_id", "actors")
 			errMsg := fmt.Errorf("postgres: error while selecting actor info: %w", err)
 			logger.Error().Err(errMsg).Msg("pg_error")
 

@@ -7,10 +7,12 @@ import (
 
 var _ service.AuthRepositoryInterface = (*AuthRepository)(nil)
 
+// AuthRepository is a auth_service repo layer struct
 type AuthRepository struct {
 	Redis *redis.Client
 }
 
+// NewAuthRepository returns an instance of AuthRepositoryInterface
 func NewAuthRepository(rdb *redis.Client) service.AuthRepositoryInterface {
 	return &AuthRepository{
 		Redis: rdb,

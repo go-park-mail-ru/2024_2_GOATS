@@ -1,5 +1,6 @@
 package dto
 
+// User represents full user info
 type User struct {
 	ID                         uint64
 	Email                      string
@@ -12,11 +13,13 @@ type User struct {
 	SubscriptionExpirationDate string
 }
 
+// Favorite contains user and movie relation
 type Favorite struct {
 	UserID  uint64
 	MovieID uint64
 }
 
+// PasswordData for update user password
 type PasswordData struct {
 	UserID               uint64
 	OldPassword          string
@@ -24,6 +27,7 @@ type PasswordData struct {
 	PasswordConfirmation string
 }
 
+// CreateUserData for create_user action
 type CreateUserData struct {
 	Email                string
 	Username             string
@@ -31,6 +35,7 @@ type CreateUserData struct {
 	PasswordConfirmation string
 }
 
+// CreateSubscriptionData for create_subscription action
 type CreateSubscriptionData struct {
 	UserID uint64
 	Amount uint64

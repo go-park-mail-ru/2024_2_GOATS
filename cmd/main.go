@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app"
 	"log"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app"
 )
 
 func main() {

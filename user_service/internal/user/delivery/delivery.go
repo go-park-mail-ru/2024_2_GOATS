@@ -6,6 +6,8 @@ import (
 	srvDTO "github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// UserServiceInterface contains user_service methods
+//
 //go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type UserServiceInterface interface {
 	Create(ctx context.Context, createData *srvDTO.CreateUserData) (uint64, error)

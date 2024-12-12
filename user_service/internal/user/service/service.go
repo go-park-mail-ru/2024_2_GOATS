@@ -8,6 +8,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/user_service/internal/user/service/dto"
 )
 
+// UserRepoInterface defines methods for user repository layer
+//
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type UserRepoInterface interface {
 	CreateUser(ctx context.Context, registerData *repoDTO.RepoCreateData) (*dto.User, error)
@@ -24,10 +26,12 @@ type UserRepoInterface interface {
 	UpdateSubscribtionStatus(ctx context.Context, subID uint64) error
 }
 
+// UserService service layer struct
 type UserService struct {
 	userRepo UserRepoInterface
 }
 
+// NewUserService returns an instance of UserServiceInterface
 func NewUserService(userRepo UserRepoInterface) delivery.UserServiceInterface {
 	return &UserService{
 		userRepo: userRepo,

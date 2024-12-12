@@ -7,6 +7,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
+// RegisterRequest json struct
+//
+//go:generate easyjson -all struct.go
 type RegisterRequest struct {
 	Email                string `json:"email"`
 	Username             string `json:"username"`
@@ -14,14 +17,16 @@ type RegisterRequest struct {
 	PasswordConfirmation string `json:"passwordConfirmation"`
 }
 
+// UpdateProfileRequest json struct
 type UpdateProfileRequest struct {
-	UserID     int    `json:"user_id"`
-	Email      string `json:"email"`
-	Username   string `json:"username"`
-	AvatarFile multipart.File
-	AvatarName string
+	UserID     int            `json:"user_id"`
+	Email      string         `json:"email"`
+	Username   string         `json:"username"`
+	AvatarFile multipart.File `json:"-"`
+	AvatarName string         `json:"-"`
 }
 
+// UpdatePasswordRequest json struct
 type UpdatePasswordRequest struct {
 	UserID               int    `json:"user_id"`
 	OldPassword          string `json:"oldPassword"`
@@ -29,37 +34,46 @@ type UpdatePasswordRequest struct {
 	PasswordConfirmation string `json:"passwordConfirmation"`
 }
 
+// LoginRequest json struct
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Cookie   string `json:"-"`
 }
+
+// SessionResponse json struct
 type SessionResponse struct {
 	UserData User `json:"user_data"`
 }
 
+// AuthResponse json struct
 type AuthResponse struct {
 	NewCookie *models.CookieData `json:"-"`
 }
 
+// CollectionsResponse json struct
 type CollectionsResponse struct {
 	Collections []Collection `json:"collections"`
 }
 
+// Collection json struct
 type Collection struct {
 	ID     int                      `json:"id"`
 	Title  string                   `json:"title"`
 	Movies []*models.MovieShortInfo `json:"movies"`
 }
 
+// MovieShortInfos json struct
 type MovieShortInfos struct {
 	Movies []models.MovieShortInfo `json:"movies"`
 }
 
+// MovieResponse json struct
 type MovieResponse struct {
 	MovieInfo *MovieInfo `json:"movie_info"`
 }
 
+// MovieInfo json struct
 type MovieInfo struct {
 	ID               int              `json:"id"`
 	Title            string           `json:"title"`
@@ -79,16 +93,20 @@ type MovieInfo struct {
 	IsFavorite       bool             `json:"is_favorite"`
 }
 
+// ActorResponse json struct
 type ActorResponse struct {
 	ActorInfo *Actor `json:"actor_info"`
 }
 
+// ActorInfo json struct
 type ActorInfo struct {
 	ID       int    `json:"id"`
 	FullName string `json:"full_name"`
 	PhotoURL string `json:"photo_url"`
 	Country  string `json:"country"`
 }
+
+// Actor json struct
 type Actor struct {
 	ID        int                      `json:"id"`
 	FullName  string                   `json:"full_name"`
@@ -99,6 +117,7 @@ type Actor struct {
 	Movies    []*models.MovieShortInfo `json:"movies"`
 }
 
+// User json struct
 type User struct {
 	ID                         int    `json:"id"`
 	Email                      string `json:"email"`
@@ -108,11 +127,13 @@ type User struct {
 	SubscriptionExpirationDate string `json:"subscription_expiration_date"`
 }
 
+// FavReq json struct
 type FavReq struct {
 	UserID  int `json:"user_id"`
 	MovieID int `json:"movie_id"`
 }
 
+// PaymentCallback json struct
 type PaymentCallback struct {
 	NotificationType string    `json:"notification_type"`
 	OperationID      string    `json:"operation_id"`
@@ -127,14 +148,17 @@ type PaymentCallback struct {
 	Unaccepted       bool      `json:"unaccepted"`
 }
 
+// SubscriptionStatus json struct
 type SubscriptionStatus struct {
 	Status string `json:"status"`
 }
 
+// SubscribeRequest json struct
 type SubscribeRequest struct {
 	Amount int64 `json:"amount"`
 }
 
+// SubscribeResponse json struct
 type SubscribeResponse struct {
 	SubscriptionIDP string `json:"subscription_idp"`
 }

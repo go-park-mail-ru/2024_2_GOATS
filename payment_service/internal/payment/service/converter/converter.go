@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/payment_service/internal/payment/service/dto"
 )
 
+// ConvertToRepoPaymentData converts service payment data to repo payment data
 func ConvertToRepoPaymentData(cr *dto.CreatePaymentData) *repoDTO.RepoPaymentData {
 	if cr == nil {
 		return nil

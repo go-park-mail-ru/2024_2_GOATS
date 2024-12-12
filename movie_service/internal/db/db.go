@@ -4,14 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/config"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/postgres"
+
+	// migration driver
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 )
 
+// SetupDatabase connects to Postgres and returns instance of sql.DB
 func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, error) {
 	ctxVals := config.FromContext(ctx)
 	defer cancel()
@@ -21,7 +25,7 @@ func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, err
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			DB, err := ConnectDB(ctxVals)
+			DB, err := connectDB(ctxVals)
 			if err == nil {
 				return DB, nil
 			}
@@ -32,7 +36,7 @@ func SetupDatabase(ctx context.Context, cancel context.CancelFunc) (*sql.DB, err
 	}
 }
 
-func ConnectDB(cfg *config.Config) (*sql.DB, error) {
+func connectDB(cfg *config.Config) (*sql.DB, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Databases.Postgres.Host,
@@ -50,6 +54,11 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 		return nil, errMsg
 	}
 
+	DB.SetMaxOpenConns(cfg.Databases.Postgres.MaxOpenConns)
+	DB.SetMaxIdleConns(cfg.Databases.Postgres.MaxIdleConns)
+	DB.SetConnMaxLifetime(time.Duration(cfg.Databases.Postgres.ConnMaxLifetime) * time.Minute)
+	DB.SetConnMaxIdleTime(time.Duration(cfg.Databases.Postgres.ConnMaxIdleTime) * time.Minute)
+
 	log.Info().Msg("Database connection opened successfully")
 	time.Sleep(5 * time.Second)
 
@@ -61,58 +70,37 @@ func ConnectDB(cfg *config.Config) (*sql.DB, error) {
 		return nil, errMsg
 	}
 
-	log.Printf("Database pinged successfully")
+	log.Info().Msg("Database pinged successfully")
 
-	if err = migrate(DB); err != nil {
+	if err = migDB(DB); err != nil {
 		return nil, fmt.Errorf("error while migrating DB: %w", err)
-	}
-
-	if err = seed(DB); err != nil {
-		return nil, fmt.Errorf("error while seeding DB: %w", err)
 	}
 
 	return DB, nil
 }
 
-func migrate(db *sql.DB) error {
-	sqlFile, err := os.ReadFile(viper.GetString("SCHEMA_PATH"))
+func migDB(db *sql.DB) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		errMsg := fmt.Errorf("migration: error read sql script - %w", err)
-		log.Error().Err(errMsg).Msg("migrate_db_error")
+		errMsg := fmt.Errorf("migDB: error get sql driver - %w", err)
+		log.Error().Msg(errMsg.Error())
 
 		return errMsg
 	}
 
-	_, err = db.Exec(string(sqlFile))
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://internal/db/migrations/",
+		"postgres",
+		driver,
+	)
+
 	if err != nil {
-		errMsg := fmt.Errorf("migration: error while exec sqlFile: %w", err)
-		log.Error().Err(errMsg).Msg("migrate_db_error")
+		errMsg := fmt.Errorf("migDB: cannot create migrator - %w", err)
+		log.Error().Msg(errMsg.Error())
 
 		return errMsg
 	}
 
-	log.Info().Msg("database successfully migrated")
-	return nil
-}
-
-func seed(db *sql.DB) error {
-	seedsFile, err := os.ReadFile(viper.GetString("SEEDS_PATH"))
-
-	if err != nil {
-		errMsg := fmt.Errorf("seed: error read sql script - %w", err)
-		log.Error().Err(errMsg).Msg("seed_db_error")
-
-		return errMsg
-	}
-
-	_, err = db.Exec(string(seedsFile))
-	if err != nil {
-		errMsg := fmt.Errorf("seed: error while exec seedsFile - %w", err)
-		log.Error().Err(errMsg).Msg("seed_db_error")
-
-		return errMsg
-	}
-
-	log.Info().Msg("database successfully seeded")
+	log.Error().Err(m.Up())
 	return nil
 }

@@ -1,0 +1,193 @@
+name: workflow
+
+on:
+  push:
+    branches:
+      - main
+      - release/ci-cd
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      dind:
+        image: docker:23.0-rc-dind-rootless
+        ports:
+          - 2375:2375
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Restore .env files
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          echo "${{ secrets.USER_ENV_FILE }}" > user_service/.env
+          echo "${{ secrets.AUTH_ENV_FILE }}" > auth_service/.env
+          echo "${{ secrets.MOVIE_ENV_FILE }}" > movie_service/.env
+          echo "${{ secrets.PAYMENT_ENV_FILE }}" > payment_service/.env
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Run Tests
+        run: |
+          make all
+
+      - name: Check Test Coverage
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep -Po 'total:\s+\(statements\)\s+\K[\d.]+')
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 60" | bc -l) )); then
+            echo "Test coverage is below 60%! Current coverage: $COVERAGE%"
+            exit 1
+          fi
+  linter:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.0'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.53
+          args: --timeout=30m --config=./.golangci.pipeline.yml --issues-exit-code=0
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs:
+      - linter
+      - test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch full history
+        run: git fetch --prune --unshallow
+
+      - name: Restore .env files
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          echo "${{ secrets.USER_ENV_FILE }}" > user_service/.env
+          echo "${{ secrets.AUTH_ENV_FILE }}" > auth_service/.env
+          echo "${{ secrets.MOVIE_ENV_FILE }}" > movie_service/.env
+          echo "${{ secrets.PAYMENT_ENV_FILE }}" > payment_service/.env
+
+      - name: Set base and head SHAs
+        id: set_shas
+        run: |
+          echo "BASE_SHA=${{ github.event.before }}" >> $GITHUB_ENV
+          echo "HEAD_SHA=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Check user_service changes
+        id: check_user_service
+        run: |
+          if git diff --quiet $BASE_SHA $HEAD_SHA -- user_service; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check movie_service changes
+        id: check_movie_service
+        run: |
+          if git diff --quiet $BASE_SHA $HEAD_SHA -- movie_service; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check payment_service changes
+        id: check_payment_service
+        run: |
+          if git diff --quiet $BASE_SHA $HEAD_SHA -- payment_service; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check auth_service changes
+        id: check_auth_service
+        run: |
+          if git diff --quiet $BASE_SHA $HEAD_SHA -- auth_service; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check facade changes
+        id: check_facade
+        run: |
+          if git diff --quiet $BASE_SHA $HEAD_SHA -- \
+            cmd internal config metrics Dockerfile docker-compose.yml prometheus \
+            exclude_from_coverage.txt filter_coverage.sh go.mod go.sum Makefile \
+            migrate.sh README.md run_app.sh .github; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push facade
+        if: steps.check_facade.outputs.changed == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/facade_app:latest
+
+      - name: Build and push user_service
+        if: steps.check_user_service.outputs.changed == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./user_service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/user_app:latest
+
+      - name: Build and push movie_service
+        if: steps.check_movie_service.outputs.changed == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./movie_service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/movie_app:latest
+
+      - name: Build and push payment_service
+        if: steps.check_payment_service.outputs.changed == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./payment_service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/payment_app:latest
+
+      - name: Build and push auth_service
+        if: steps.check_auth_service.outputs.changed == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./auth_service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/auth_app:latest

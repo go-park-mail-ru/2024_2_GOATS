@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -27,20 +26,19 @@ const (
 	setFavOp       = "set_favorite"
 )
 
+// UserHandler user http handler struct
 type UserHandler struct {
 	userService UserServiceInterface
-	lclStrg     *config.LocalStorage
 }
 
-func NewUserHandler(ctx context.Context, srv UserServiceInterface) handlers.UserHandlerInterface {
-	lclStrg := config.FromContext(ctx).Databases.LocalStorage
-
+// NewUserHandler returns an instance of UserHandlerInterface
+func NewUserHandler(srv UserServiceInterface) handlers.UserHandlerInterface {
 	return &UserHandler{
 		userService: srv,
-		lclStrg:     &lclStrg,
 	}
 }
 
+// UpdatePassword updates_user_password http handler method
 func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	passwordReq := &api.UpdatePasswordRequest{}
@@ -58,7 +56,7 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	passwordReq.UserID = usrID
 
 	if err := validation.ValidatePassword(passwordReq.Password, passwordReq.PasswordConfirmation); err != nil {
-		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err.Err)
+		errMsg := fmt.Errorf("updatePassword action: Password err - %w", err)
 		api.RequestError(r.Context(), w, vlErr, http.StatusBadRequest, errMsg)
 
 		return
@@ -81,14 +79,14 @@ func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
+// UpdateProfile updates_user_profile http handler method
 func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
-	ctx := config.WrapLocalStorageContext(r.Context(), u.lclStrg)
 	vars := mux.Vars(r)
 	usrID, err := getUserID(vars)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Path params err - %w", err)
-		api.RequestError(ctx, w, rParseErr, http.StatusBadRequest, errMsg)
+		api.RequestError(r.Context(), w, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -96,7 +94,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	err = r.ParseMultipartForm(uploadFileSize)
 	if err != nil {
 		errMsg := fmt.Errorf("updateProfile action: Error parsing multipartForm - %w", err)
-		api.RequestError(ctx, w, rParseErr, http.StatusBadRequest, errMsg)
+		api.RequestError(r.Context(), w, rParseErr, http.StatusBadRequest, errMsg)
 
 		return
 	}
@@ -105,7 +103,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errMsg := fmt.Errorf("cannot read file from request: %w", err)
 		logger.Error().Err(errMsg).Msg("read_file_error")
-		api.Response(ctx, w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
+		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("parse_request_error", errMsg))
 
 		return
 	}
@@ -113,39 +111,39 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	var errs = make([]errVals.ErrorItem, 0)
 	if profileReq.Username != "" {
 		if valErr := validation.ValidateUsername(profileReq.Username); valErr != nil {
-			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr.Err)
-			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errVals.NewCustomError(errMsg.Error())})
+			errMsg := fmt.Errorf("updateProfile action: Username err - %w", valErr)
+			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errMsg.Error()})
 		}
 	}
 
 	if profileReq.Email != "" {
 		if valErr := validation.ValidateEmail(profileReq.Email); valErr != nil {
-			errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr.Err)
-			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errVals.NewCustomError(errMsg.Error())})
+			errMsg := fmt.Errorf("updateProfile action: Email err - %w", valErr)
+			errs = append(errs, errVals.ErrorItem{Code: vlErr, Error: errMsg.Error()})
 		}
 	}
 
 	if len(errs) > 0 {
 		errResp := errVals.NewDeliveryError(http.StatusBadRequest, errs)
 
-		api.Response(ctx, w, errResp.HTTPStatus, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 		return
 	}
 
 	profileServData := converter.ToServUserData(profileReq)
-	errSrvResp := u.userService.UpdateProfile(ctx, profileServData)
+	errSrvResp := u.userService.UpdateProfile(r.Context(), profileServData)
 	errResp := errVals.ToDeliveryErrorFromService(errSrvResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to update profile")
 		logger.Error().Err(errMsg).Interface("updateProfileResp", errResp).Msg("request_failed")
-		api.Response(ctx, w, errResp.HTTPStatus, errResp)
+		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
 		return
 	}
 
 	logger.Info().Bool("updateProfileResp", true).Msg("updateProfile success")
 
-	api.Response(ctx, w, http.StatusOK, nil)
+	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
 func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, error) {
@@ -155,8 +153,8 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 
 	defer func() {
 		if file != nil {
-			if err := file.Close(); err != nil {
-				logger.Error().Err(fmt.Errorf("cannot close file: %v", err)).Msg("close_file_error")
+			if clErr := file.Close(); clErr != nil {
+				logger.Error().Err(fmt.Errorf("cannot close file: %v", clErr)).Msg("close_file_error")
 			}
 		}
 	}()
@@ -188,10 +186,12 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 	return profileReq, nil
 }
 
+// SetFavorite set_user_favorite http handler method
 func (u *UserHandler) SetFavorite(w http.ResponseWriter, r *http.Request) {
 	u.toggleFavorite(w, r)
 }
 
+// ResetFavorite reset_user_favorite http handler method
 func (u *UserHandler) ResetFavorite(w http.ResponseWriter, r *http.Request) {
 	u.toggleFavorite(w, r)
 }
@@ -229,6 +229,7 @@ func (u *UserHandler) toggleFavorite(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
+// GetFavorites get_user_favorites http handler method
 func (u *UserHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	vars := mux.Vars(r)
@@ -241,7 +242,7 @@ func (u *UserHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
 	}
 
 	srvResp, srvRespErr := u.userService.GetFavorites(r.Context(), usrID)
-	resp, respErr := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(srvRespErr)
+	resp, respErr := converter.ToAPIMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(srvRespErr)
 	if respErr != nil {
 		errMsg := errors.New("failed to get user favorites")
 		logger.Error().Err(errMsg).Interface("favResp", respErr).Msg("request_failed")

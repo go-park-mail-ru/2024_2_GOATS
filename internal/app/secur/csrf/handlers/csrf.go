@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"net/http"
+
 	token_gen "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/token"
 	"github.com/gorilla/sessions"
 	"github.com/rs/zerolog/log"
-	"net/http"
 )
 
 var store = sessions.NewCookieStore([]byte("secret-key"))

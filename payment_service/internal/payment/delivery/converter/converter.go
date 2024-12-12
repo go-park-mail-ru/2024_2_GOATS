@@ -5,6 +5,7 @@ import (
 	payment "github.com/go-park-mail-ru/2024_2_GOATS/payment_service/pkg/payment_v1"
 )
 
+// ConvertToSrvPayment converts grpc CreatePaymentRequest to srv CreatePaymentData
 func ConvertToSrvPayment(req *payment.CreateRequest) *srvDTO.CreatePaymentData {
 	if req == nil {
 		return nil

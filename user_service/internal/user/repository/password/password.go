@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// HashAndSalt calculates hashed password
 func HashAndSalt(ctx context.Context, password string) (string, error) {
 	logger := log.Ctx(ctx)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

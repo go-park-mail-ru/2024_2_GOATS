@@ -19,15 +19,15 @@ func TestMovieHandler_GetMovieByGenre(t *testing.T) {
 	tests := []struct {
 		name          string
 		req           *movie.GetMovieByGenreRequest
-		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		mockSetup     func(mockService *mockService.MockMovieServiceInterface)
 		expectedResp  *movie.GetMovieByGenreResponse
 		expectedError error
 	}{
 		{
 			name: "Success",
 			req:  &movie.GetMovieByGenreRequest{Genre: "Action"},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetMovieByGenre(gomock.Any(), "Action").
 					Return([]models.MovieShortInfo{
 						{
@@ -81,15 +81,15 @@ func TestMovieHandler_GetMovieByGenre(t *testing.T) {
 		{
 			name:          "Missing Genre",
 			req:           &movie.GetMovieByGenreRequest{Genre: ""},
-			mockSetup:     func(mock *mockService.MockMovieServiceInterface) {},
+			mockSetup:     func(_ *mockService.MockMovieServiceInterface) {},
 			expectedResp:  nil,
 			expectedError: status.Error(codes.InvalidArgument, "genre is required"),
 		},
 		{
 			name: "Service Error",
 			req:  &movie.GetMovieByGenreRequest{Genre: "Drama"},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetMovieByGenre(gomock.Any(), "Drama").
 					Return(nil, errors.New("internal error"))
 			},
@@ -124,15 +124,15 @@ func TestMovieHandler_GetMovie(t *testing.T) {
 	tests := []struct {
 		name          string
 		req           *movie.GetMovieRequest
-		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		mockSetup     func(mockService *mockService.MockMovieServiceInterface)
 		expectedResp  *movie.GetMovieResponse
 		expectedError error
 	}{
 		{
 			name: "Success",
 			req:  &movie.GetMovieRequest{MovieId: 1},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetMovie(gomock.Any(), 1).
 					Return(&models.MovieInfo{
 						ID:               1,
@@ -236,15 +236,15 @@ func TestMovieHandler_GetMovie(t *testing.T) {
 		{
 			name:          "Invalid Movie ID",
 			req:           &movie.GetMovieRequest{MovieId: 0},
-			mockSetup:     func(mock *mockService.MockMovieServiceInterface) {},
+			mockSetup:     func(_ *mockService.MockMovieServiceInterface) {},
 			expectedResp:  nil,
 			expectedError: status.Error(codes.InvalidArgument, "invalid movie ID"),
 		},
 		{
 			name: "Service Error",
 			req:  &movie.GetMovieRequest{MovieId: 1},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetMovie(gomock.Any(), 1).
 					Return(nil, errors.New("internal error"))
 			},
@@ -279,15 +279,15 @@ func TestMovieHandler_GetActor(t *testing.T) {
 	tests := []struct {
 		name          string
 		req           *movie.GetActorRequest
-		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		mockSetup     func(mockService *mockService.MockMovieServiceInterface)
 		expectedResp  *movie.GetActorResponse
 		expectedError error
 	}{
 		{
 			name: "Success",
 			req:  &movie.GetActorRequest{ActorId: 1},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetActor(gomock.Any(), 1).
 					Return(&models.ActorInfo{
 						ID:            1,
@@ -342,15 +342,15 @@ func TestMovieHandler_GetActor(t *testing.T) {
 		{
 			name:          "Invalid Actor ID",
 			req:           &movie.GetActorRequest{ActorId: 0},
-			mockSetup:     func(mock *mockService.MockMovieServiceInterface) {},
+			mockSetup:     func(_ *mockService.MockMovieServiceInterface) {},
 			expectedResp:  nil,
 			expectedError: status.Error(codes.InvalidArgument, "invalid actor ID"),
 		},
 		{
 			name: "Service Error",
 			req:  &movie.GetActorRequest{ActorId: 1},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetActor(gomock.Any(), 1).
 					Return(nil, errors.New("internal error"))
 			},
@@ -385,15 +385,15 @@ func TestMovieHandler_GetCollections(t *testing.T) {
 	tests := []struct {
 		name          string
 		req           *movie.GetCollectionsRequest
-		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		mockSetup     func(mockService *mockService.MockMovieServiceInterface)
 		expectedResp  *movie.GetCollectionsResponse
 		expectedError error
 	}{
 		{
 			name: "Success",
 			req:  &movie.GetCollectionsRequest{Filter: "Top"},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetCollection(gomock.Any(), "Top").
 					Return(&models.CollectionsRespData{
 						Collections: []models.Collection{
@@ -473,8 +473,8 @@ func TestMovieHandler_GetCollections(t *testing.T) {
 		{
 			name: "Service Error",
 			req:  &movie.GetCollectionsRequest{Filter: "Popular"},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetCollection(gomock.Any(), "Popular").
 					Return(nil, errors.New("internal error"))
 			},
@@ -509,15 +509,15 @@ func TestMovieHandler_GetFavorites(t *testing.T) {
 	tests := []struct {
 		name          string
 		req           *movie.GetFavoritesRequest
-		mockSetup     func(mock *mockService.MockMovieServiceInterface)
+		mockSetup     func(mockService *mockService.MockMovieServiceInterface)
 		expectedResp  *movie.GetFavoritesResponse
 		expectedError error
 	}{
 		{
 			name: "Success",
 			req:  &movie.GetFavoritesRequest{MovieIds: []uint64{1, 2}},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetFavorites(gomock.Any(), []uint64{1, 2}).
 					Return([]*models.MovieShortInfo{
 						{
@@ -571,8 +571,8 @@ func TestMovieHandler_GetFavorites(t *testing.T) {
 		{
 			name: "Empty MovieIds",
 			req:  &movie.GetFavoritesRequest{MovieIds: []uint64{}},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetFavorites(gomock.Any(), []uint64{}).
 					Return([]*models.MovieShortInfo{}, nil)
 			},
@@ -584,8 +584,8 @@ func TestMovieHandler_GetFavorites(t *testing.T) {
 		{
 			name: "Service Error",
 			req:  &movie.GetFavoritesRequest{MovieIds: []uint64{1, 2}},
-			mockSetup: func(mock *mockService.MockMovieServiceInterface) {
-				mock.EXPECT().
+			mockSetup: func(mockService *mockService.MockMovieServiceInterface) {
+				mockService.EXPECT().
 					GetFavorites(gomock.Any(), []uint64{1, 2}).
 					Return(nil, errors.New("internal error"))
 			},

@@ -12,9 +12,10 @@ type ctxKey int
 
 const (
 	requestIDKey ctxKey = iota
-	symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	symbols             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 )
 
+// WithLogger wraps logger into context
 func WithLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := getRequestID(r.Context())

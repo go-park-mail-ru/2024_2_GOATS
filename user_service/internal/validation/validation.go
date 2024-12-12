@@ -20,8 +20,9 @@ const (
 	usernameLength            = 6
 )
 
-var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var emailRegex = regexp.MustCompile(`^[$\/@ "'.!#\$%&'*+\-=?^_{|}~a-zA-z0-9]+@[a-z]+\.[a-z]{2,10}$`)
 
+// ValidateFavoriteRequest validates favorite req params
 func ValidateFavoriteRequest(favReq *user.HandleFavorite) error {
 	if favReq.MovieID == 0 || favReq.UserID == 0 {
 		return errors.New(favoriteValidationKey)
@@ -30,6 +31,7 @@ func ValidateFavoriteRequest(favReq *user.HandleFavorite) error {
 	return nil
 }
 
+// ValidateCreateUserRequest validates create_user req params
 func ValidateCreateUserRequest(req *user.CreateUserRequest) error {
 	var validationErrors []string
 
@@ -76,6 +78,7 @@ func validatePassword(passwd string, passwdConf string) []string {
 	return validationErrors
 }
 
+// ValidateUpdatePasswordRequesr validates update_password req params
 func ValidateUpdatePasswordRequesr(req *user.UpdatePasswordRequest) error {
 	var validationErrors []string
 

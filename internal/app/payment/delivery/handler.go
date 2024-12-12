@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"context"
 	"crypto/sha1"
 	"fmt"
 	"math"
@@ -18,16 +17,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+// PaymentHandler is a payments handler struct
 type PaymentHandler struct {
 	paymentService PaymentServiceInterface
 }
 
-func NewPaymentHandler(ctx context.Context, srv PaymentServiceInterface) handlers.PaymentHandlerInterface {
+// NewPaymentHandler returns an instance of PaymentHandlerInterface
+func NewPaymentHandler(srv PaymentServiceInterface) handlers.PaymentHandlerInterface {
 	return &PaymentHandler{
 		paymentService: srv,
 	}
 }
 
+// NotifyYooMoney processes YooMoney callback
 func (ph *PaymentHandler) NotifyYooMoney(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	err := r.ParseForm()
@@ -39,26 +41,16 @@ func (ph *PaymentHandler) NotifyYooMoney(w http.ResponseWriter, r *http.Request)
 	if !checkSignature(r) {
 		logger.Error().Str("callback_error", "signature doesnt match").Msg("request_failed")
 		api.Response(r.Context(), w, http.StatusBadRequest, nil)
+
+		return
 	}
 
-	amount, _ := convertToCopeck(r.FormValue("amount"))
-	wAmount, _ := convertToCopeck(r.FormValue("withdraw_amount"))
-	datetime, _ := parseDatetime(r.FormValue("datetime"))
-	unaccepted, _ := strconv.ParseBool(r.FormValue("unaccepted"))
-	codepro, _ := strconv.ParseBool(r.FormValue("codepro"))
+	callbackData, err := ph.parsePaymentCallback(r)
+	if err != nil {
+		logger.Error().Str("callback_error", "cannot parse request").Msg("bad_request")
+		api.Response(r.Context(), w, http.StatusBadRequest, nil)
 
-	callbackData := &api.PaymentCallback{
-		NotificationType: r.FormValue("notification_type"),
-		OperationID:      r.FormValue("operation_id"),
-		Amount:           amount,
-		WithdrawAmount:   wAmount,
-		Currency:         r.FormValue("currency"),
-		DateTime:         datetime,
-		Sender:           r.FormValue("sender"),
-		Label:            r.FormValue("label"),
-		Codepro:          codepro,
-		Signature:        r.FormValue("sha1_hash"),
-		Unaccepted:       unaccepted,
+		return
 	}
 
 	srvData := converter.ToServPaymentCallback(callbackData)
@@ -73,6 +65,49 @@ func (ph *PaymentHandler) NotifyYooMoney(w http.ResponseWriter, r *http.Request)
 	logger.Info().Interface("payment_callback", callbackData).Msg("got callback")
 
 	api.Response(r.Context(), w, http.StatusOK, nil)
+}
+
+func (ph *PaymentHandler) parsePaymentCallback(r *http.Request) (*api.PaymentCallback, error) {
+	formValues := r.Form
+
+	amount, err := convertToCopeck(formValues.Get("amount"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid amount: %w", err)
+	}
+
+	wAmount, err := convertToCopeck(formValues.Get("withdraw_amount"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid withdraw amount: %w", err)
+	}
+
+	datetime, err := parseDatetime(formValues.Get("datetime"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid datetime: %w", err)
+	}
+
+	unaccepted, err := strconv.ParseBool(formValues.Get("unaccepted"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid unaccepted value: %w", err)
+	}
+
+	codepro, err := strconv.ParseBool(formValues.Get("codepro"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid codepro value: %w", err)
+	}
+
+	return &api.PaymentCallback{
+		NotificationType: formValues.Get("notification_type"),
+		OperationID:      formValues.Get("operation_id"),
+		Amount:           amount,
+		WithdrawAmount:   wAmount,
+		Currency:         formValues.Get("currency"),
+		DateTime:         datetime,
+		Sender:           formValues.Get("sender"),
+		Label:            formValues.Get("label"),
+		Codepro:          codepro,
+		Signature:        formValues.Get("sha1_hash"),
+		Unaccepted:       unaccepted,
+	}, nil
 }
 
 func convertToCopeck(amountStr string) (int64, error) {

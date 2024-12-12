@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ResetFavorite resets user favorite
 func (u *UserService) ResetFavorite(ctx context.Context, favData *dto.Favorite) error {
 	logger := log.Ctx(ctx)
 	err := u.userRepo.ResetFavorite(ctx, converter.ConvertToRepoFavorite(favData))

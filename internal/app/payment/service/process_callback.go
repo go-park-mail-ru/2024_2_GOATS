@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ProcessCallback processes payment callback by calling payment and user clients
 func (ps *PaymentService) ProcessCallback(ctx context.Context, data *models.PaymentCallbackData) *errVals.ServiceError {
 	logger := log.Ctx(ctx)
 

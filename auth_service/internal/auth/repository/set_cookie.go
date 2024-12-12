@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// SetCookie sets cookie into Redis
 func (ar *AuthRepository) SetCookie(ctx context.Context, token *dto.TokenData) (*srvDTO.Cookie, error) {
 	start := time.Now()
 	logger := log.Ctx(ctx)
