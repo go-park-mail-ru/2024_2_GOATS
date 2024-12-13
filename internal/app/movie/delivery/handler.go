@@ -31,39 +31,39 @@ func NewMovieHandler(srv MovieServiceInterface) handlers.MovieHandlerInterface {
 
 // TODO раскоментить к 4му РК
 
-// func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
-// 	logger := log.Ctx(r.Context())
-// 	genre := r.URL.Query().Get("genre")
-
-// 	if genre == "" {
-// 		errMsg := errors.New("incorrect genre was given")
-// 		err := errVals.NewDeliveryError(
-// 			http.StatusBadRequest,
-// 			[]errVals.ErrorItem{
-// 				errVals.NewErrorItem("bad_request", errVals.NewCustomError(errMsg.Error())),
-// 			},
-// 		)
-
-// 		logger.Error().Err(errMsg).Interface("getMovieByGenre", err).Msg("request_failed")
-// 		api.Response(r.Context(), w, err.HTTPStatus, err)
-
-// 		return
-// 	}
-
-// 	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
-// 	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
-// 	if errResp != nil {
-// 		errMsg := errors.New("failed to get movies by genre")
-// 		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
-// 		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
-
-// 		return
-// 	}
-
-// 	logger.Info().Interface("getMovieByGenre", resp).Msg("byGenre success")
-
-// 	api.Response(r.Context(), w, http.StatusOK, resp)
-// }
+//func (m *MovieHandler) GetMovieByGenre(w http.ResponseWriter, r *http.Request) {
+//	logger := log.Ctx(r.Context())
+//	genre := r.URL.Query().Get("genre")
+//
+//	if genre == "" {
+//		errMsg := errors.New("incorrect genre was given")
+//		err := errVals.NewDeliveryError(
+//			http.StatusBadRequest,
+//			[]errVals.ErrorItem{
+//				errVals.NewErrorItem("bad_request", errVals.NewCustomError(errMsg.Error())),
+//			},
+//		)
+//
+//		logger.Error().Err(errMsg).Interface("getMovieByGenre", err).Msg("request_failed")
+//		api.Response(r.Context(), w, err.HTTPStatus, err)
+//
+//		return
+//	}
+//
+//	srvResp, errServResp := m.movieService.GetMovieByGenre(r.Context(), genre)
+//	resp, errResp := converter.ToApiMovieShortInfos(srvResp), errVals.ToDeliveryErrorFromService(errServResp)
+//	if errResp != nil {
+//		errMsg := errors.New("failed to get movies by genre")
+//		logger.Error().Err(errMsg).Interface("getMovieByGenre", errResp).Msg("request_failed")
+//		api.Response(r.Context(), w, errResp.HTTPStatus, errResp)
+//
+//		return
+//	}
+//
+//	logger.Info().Interface("getMovieByGenre", resp).Msg("byGenre success")
+//
+//	api.Response(r.Context(), w, http.StatusOK, resp)
+//}
 
 func (m *MovieHandler) GetCollections(w http.ResponseWriter, r *http.Request) {
 	m.collectMovieData(w, r, "")
@@ -104,7 +104,9 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	movieServResp, errServResp := m.movieService.GetMovie(r.Context(), mvID)
-	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp), errVals.ToDeliveryErrorFromService(errServResp)
+	rating, errServResp := m.movieService.GetUserRating(r.Context(), mvID)
+
+	movieResp, errResp := converter.ToApiGetMovieResponse(movieServResp, int64(rating)), errVals.ToDeliveryErrorFromService(errServResp)
 
 	if errResp != nil {
 		errMsg := errors.New("failed to get movie_service")
@@ -214,4 +216,82 @@ func (h *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(actorResponses); err != nil {
 		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (h *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+
+	movieIDStr := r.URL.Query().Get("movie_id")
+
+	movieID, err := strconv.Atoi(movieIDStr)
+	if err != nil {
+		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", err))
+		return
+	}
+
+	rating, errServResp := h.movieService.GetUserRating(r.Context(), movieID)
+	if errServResp != nil {
+		logger.Error().Err(errServResp.Error).Msg("failed to get user rating")
+		api.Response(r.Context(), w, http.StatusInternalServerError, api.PreparedDefaultError("internal_error", err))
+		return
+	}
+
+	api.Response(r.Context(), w, http.StatusOK, map[string]int{"rating": rating})
+}
+
+func (h *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+
+	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
+	if err != nil {
+		errMsg := fmt.Errorf("getMovie action: Bad request - %w", err)
+		logger.Error().Err(errMsg).Msg("bad_request")
+		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
+
+		return
+	}
+
+	var req struct {
+		Rating int `json:"rating"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", err))
+		return
+	}
+
+	if req.Rating < 1 || req.Rating > 10 {
+		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errors.New("rating must be between 1 and 10")))
+		return
+	}
+
+	if errServResp := h.movieService.AddOrUpdateRating(r.Context(), mvID, req.Rating); errServResp != nil {
+		logger.Error().Err(errServResp.Error).Msg("failed to add or update rating")
+		api.Response(r.Context(), w, http.StatusInternalServerError, api.PreparedDefaultError("internal_error", err))
+		return
+	}
+
+	api.Response(r.Context(), w, http.StatusOK, map[string]string{"message": "rating updated"})
+}
+
+func (h *MovieHandler) DeleteRating(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+
+	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
+	if err != nil {
+		errMsg := fmt.Errorf("getMovie action: Bad request - %w", err)
+		logger.Error().Err(errMsg).Msg("bad_request")
+		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
+
+		return
+	}
+
+	errServResp := h.movieService.DeleteRating(r.Context(), mvID)
+	if errServResp != nil {
+		log.Print("errServResp", errServResp)
+		http.Error(w, "failed to delete rating", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

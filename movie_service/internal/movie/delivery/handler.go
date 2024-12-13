@@ -2,11 +2,10 @@ package delivery
 
 import (
 	"context"
-	"log"
-
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 )
 
 type MovieHandler struct {
@@ -288,4 +287,49 @@ func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavorites
 	}
 
 	return &movie.GetFavoritesResponse{Movies: respp}, nil
+}
+
+func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRatingRequest) (*movie.GetUserRatingResponse, error) {
+	if req.MovieId <= 0 || req.UserId <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "invalid req.MovieId or req.UserId")
+	}
+
+	rating, err := h.movieService.GetUserRating(ctx, int(req.UserId), int(req.MovieId))
+	if err != nil {
+		return nil, err
+	}
+
+	return &movie.GetUserRatingResponse{
+		Rating: &movie.UserRating{
+			UserId:  req.UserId,
+			MovieId: req.MovieId,
+			Rating:  rating,
+		},
+	}, nil
+}
+
+func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUpdateRatingRequest) (*movie.AddOrUpdateRatingResponse, error) {
+	if req.MovieId <= 0 || req.UserId <= 0 || req.Rating < 1 || req.Rating > 10 {
+		return nil, status.Error(codes.InvalidArgument, "invalid req.UserId or req.Rating req.Rating")
+	}
+
+	err := h.movieService.AddOrUpdateRating(ctx, int(req.UserId), int(req.MovieId), float32(req.Rating))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRatingRequest) (*movie.DeleteRatingResponse, error) {
+	if req.MovieId <= 0 || req.UserId <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "invalid movie ID or user ID")
+	}
+
+	err := h.movieService.DeleteRating(ctx, int(req.MovieId), int(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

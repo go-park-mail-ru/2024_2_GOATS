@@ -7,17 +7,13 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_GOATS/metrics"
 	"github.com/gorilla/sessions"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc/metadata"
-
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 type statusRecorder struct {
@@ -26,6 +22,9 @@ type statusRecorder struct {
 }
 
 func (rec *statusRecorder) WriteHeader(code int) {
+	if rec.Status != http.StatusOK {
+		return
+	}
 	rec.Status = code
 	rec.ResponseWriter.WriteHeader(code)
 }
@@ -34,8 +33,32 @@ func NewLoggingResponseWriter(w http.ResponseWriter) *statusRecorder {
 	return &statusRecorder{w, http.StatusOK}
 }
 
+//
+//func AccessLogMiddleware(next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		reqID := r.Header.Get("Req-ID")
+//		if reqID == "" {
+//			reqID = generateRequestID()
+//		}
+//
+//		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
+//		w.Header().Set("Req-ID", reqID)
+//		rec := NewLoggingResponseWriter(w)
+//		md := metadata.Pairs(
+//			"request_id", reqID,
+//		)
+//
+//		ctx = metadata.NewOutgoingContext(ctx, md)
+//		start := time.Now()
+//		next.ServeHTTP(rec, r.WithContext(ctx))
+//		status := rec.Status
+//		logRequest(r, start, "accessLogMiddleware", reqID, status)
+//	})
+//}
+
 func AccessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		reqID := r.Header.Get("Req-ID")
 		if reqID == "" {
 			reqID = generateRequestID()
@@ -43,16 +66,9 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 
 		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
 		w.Header().Set("Req-ID", reqID)
-		rec := NewLoggingResponseWriter(w)
-		md := metadata.Pairs(
-			"request_id", reqID,
-		)
+		logRequest(r, start, "accessLogMiddleware", reqID)
 
-		ctx = metadata.NewOutgoingContext(ctx, md)
-		start := time.Now()
-		next.ServeHTTP(rec, r.WithContext(ctx))
-		status := rec.Status
-		logRequest(r, start, "accessLogMiddleware", reqID, status)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -65,7 +81,11 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
+			if rw, ok := w.(*statusRecorder); ok {
+				rw.WriteHeader(http.StatusNoContent)
+			} else {
+				w.WriteHeader(http.StatusNoContent)
+			}
 			return
 		}
 
@@ -89,9 +109,40 @@ func PanicMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func logRequest(r *http.Request, start time.Time, msg string, requestID string, status int) {
+//func logRequest(r *http.Request, start time.Time, msg string, requestID string, status int) {
+//	var bodyCopy bytes.Buffer
+//	duration := time.Since(start)
+//
+//	tee := io.TeeReader(r.Body, &bodyCopy)
+//	r.Body = io.NopCloser(&bodyCopy)
+//	bodyBytes, err := io.ReadAll(tee)
+//	if err != nil {
+//		log.Error().Err(err).Msg("invalid-request-body")
+//	}
+//
+//	log.Info().
+//		Str("method", r.Method).
+//		Str("remote_addr", r.RemoteAddr).
+//		Str("url", r.URL.Path).
+//		Str("request-id", requestID).
+//		Bytes("body", bodyBytes).
+//		Dur("work_time", duration).
+//		Int("status", status).
+//		Str("user_agent", r.UserAgent()).
+//		Str("host", r.Host).
+//		Str("real_ip", realIP(r)).
+//		Int64("content_length", r.ContentLength).
+//		Str("start_time", start.Format(time.RFC3339)).
+//		Str("duration_human", duration.String()).
+//		Int64("duration_ms", duration.Milliseconds()).
+//		Msg(msg)
+//
+//	metrics.HTTPRequestTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(status)).Inc()
+//	metrics.HTTPRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration.Seconds())
+//}
+
+func logRequest(r *http.Request, start time.Time, msg string, requestID string) {
 	var bodyCopy bytes.Buffer
-	duration := time.Since(start)
 
 	tee := io.TeeReader(r.Body, &bodyCopy)
 	r.Body = io.NopCloser(&bodyCopy)
@@ -106,19 +157,8 @@ func logRequest(r *http.Request, start time.Time, msg string, requestID string, 
 		Str("url", r.URL.Path).
 		Str("request-id", requestID).
 		Bytes("body", bodyBytes).
-		Dur("work_time", duration).
-		Int("status", status).
-		Str("user_agent", r.UserAgent()).
-		Str("host", r.Host).
-		Str("real_ip", realIP(r)).
-		Int64("content_length", r.ContentLength).
-		Str("start_time", start.Format(time.RFC3339)).
-		Str("duration_human", duration.String()).
-		Int64("duration_ms", duration.Milliseconds()).
+		Dur("work_time", time.Since(start)).
 		Msg(msg)
-
-	metrics.HTTPRequestTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(status)).Inc()
-	metrics.HTTPRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration.Seconds())
 }
 
 func sanitizeInput(input string) string {

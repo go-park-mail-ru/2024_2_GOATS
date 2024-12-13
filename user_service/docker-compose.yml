@@ -25,7 +25,6 @@ services:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
     volumes:
-      - ./dev/SQL:/docker-entrypoint-initdb.d/
       - postgres_volume:/var/lib/postgresql/data
     ports:
       - "5432:5432"
