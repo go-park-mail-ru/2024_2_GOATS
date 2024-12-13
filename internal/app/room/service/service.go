@@ -154,7 +154,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		log.Println("MovieType==", roomState.Movie.MovieType)
 
 		//if movie_service.MovieType == "serial" {
-		var seasons []*model.Season
+		seasons := []*model.Season{}
 		for _, season := range movie_service.Seasons {
 			sn := season.SeasonNumber
 			var eps []*model.Episode

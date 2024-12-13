@@ -22,6 +22,7 @@ type MovieRepositoryInterface interface {
 	GetUserRating(ctx context.Context, userId int, movieId int) (float32, error)
 	AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error
 	DeleteUserRating(ctx context.Context, userID, movieID int) error
+	UpdateMovieRating(ctx context.Context, movieId int) error
 }
 
 type Favorite struct {
@@ -127,6 +128,11 @@ func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieI
 	err := s.movieRepository.AddOrUpdateRating(ctx, userId, movieId, rating)
 	if err != nil {
 		return fmt.Errorf("movieService.AddOrUpdateRating: %w", err)
+	}
+
+	err = s.movieRepository.UpdateMovieRating(ctx, movieId)
+	if err != nil {
+		return fmt.Errorf("movieService.AddOrUpdateRating (update movie rating): %w", err)
 	}
 
 	return nil
