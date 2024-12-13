@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -345,8 +344,6 @@ func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rat
 	start := time.Now()
 	method := "AddOrUpdateRating"
 
-	log.Println("movieIDclient === ", movieID, userID, rating)
-
 	_, err := m.movieMS.AddOrUpdateRating(ctx, &movie.AddOrUpdateRatingRequest{
 		MovieId: int32(movieID),
 		UserId:  int32(userID),
@@ -362,13 +359,10 @@ func (m *MovieClient) DeleteUserRating(ctx context.Context, userID, movieID int)
 	start := time.Now()
 	method := "AddOrUpdateRating"
 
-	log.Println("CLLCLCLLCLSERV", int32(movieID), int32(userID))
 	_, err := m.movieMS.DeleteRating(ctx, &movie.DeleteRatingRequest{
 		MovieId: int32(movieID),
 		UserId:  int32(userID),
 	})
-
-	log.Println("CererrerrerrLSERV", err)
 
 	saveMetric(start, movieClient, method, err)
 

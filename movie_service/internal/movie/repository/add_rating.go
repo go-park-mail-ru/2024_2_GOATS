@@ -14,7 +14,7 @@ func (r *MovieRepo) AddOrUpdateRating(ctx context.Context, userId int, movieId i
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("repository.AddOrUpdateRating (check rows affected): %w", err)
+		return fmt.Errorf("repository.AddOrUpdateRating: %w", err)
 	}
 	if rowsAffected == 0 {
 		query = `INSERT INTO ratings (user_id, movie_id, rating) VALUES ($1, $2, $3)`

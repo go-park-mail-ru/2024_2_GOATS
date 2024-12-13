@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"log"
 )
 
 func (s *MovieService) AddOrUpdateRating(ctx context.Context, movieID, rating int) *errVals.ServiceError {
@@ -16,8 +15,6 @@ func (s *MovieService) AddOrUpdateRating(ctx context.Context, movieID, rating in
 			Error: errors.New("error usrID = 0"),
 		}
 	}
-
-	log.Println("movieID === ", movieID, usrID, rating)
 
 	err := s.movieClient.AddOrUpdateRating(ctx, movieID, usrID, rating)
 	if err != nil {

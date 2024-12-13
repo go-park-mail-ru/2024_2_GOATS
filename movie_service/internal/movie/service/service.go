@@ -124,7 +124,6 @@ func (s *MovieService) GetUserRating(ctx context.Context, userId int, movieId in
 }
 
 func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error {
-	log.Println("qwerqwer", userId, movieId, rating)
 	err := s.movieRepository.AddOrUpdateRating(ctx, userId, movieId, rating)
 	if err != nil {
 		return fmt.Errorf("movieService.AddOrUpdateRating: %w", err)
@@ -134,10 +133,9 @@ func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieI
 }
 
 func (s *MovieService) DeleteRating(ctx context.Context, userID, movieID int) error {
-	log.Println("DeleteUserRating", userID, movieID)
 	err := s.movieRepository.DeleteUserRating(ctx, userID, movieID)
 	if err != nil {
-		return fmt.Errorf("movie service: failed to delete rating: %w", err)
+		return fmt.Errorf("movieService.DeleteRating: %w", err)
 	}
 	return nil
 }
