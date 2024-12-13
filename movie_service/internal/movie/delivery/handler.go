@@ -294,7 +294,7 @@ func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRati
 		return nil, status.Error(codes.InvalidArgument, "invalid movie ID or user ID")
 	}
 
-	rating, err := h.movieService.GetUserRating(ctx, int(req.MovieId), int(req.UserId))
+	rating, err := h.movieService.GetUserRating(ctx, int(req.UserId), int(req.MovieId))
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +315,7 @@ func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUp
 
 	log.Println("reqreqreqreqreq", int(req.MovieId), int(req.UserId), float32(req.Rating))
 
-	err := h.movieService.AddOrUpdateRating(ctx, int(req.MovieId), int(req.UserId), float32(req.Rating))
+	err := h.movieService.AddOrUpdateRating(ctx, int(req.UserId), int(req.MovieId), float32(req.Rating))
 	if err != nil {
 		return nil, err
 	}
@@ -328,6 +328,7 @@ func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRating
 		return nil, status.Error(codes.InvalidArgument, "invalid movie ID, user ID")
 	}
 
+	log.Println("GGGGFFDDDDEL", int(req.MovieId), int(req.UserId))
 	err := h.movieService.DeleteRating(ctx, int(req.MovieId), int(req.UserId))
 	if err != nil {
 		return nil, err

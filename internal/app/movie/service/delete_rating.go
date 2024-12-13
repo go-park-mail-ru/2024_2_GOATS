@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
+	"log"
 )
 
 func (s *MovieService) DeleteRating(ctx context.Context, movieID int) *errVals.ServiceError {
@@ -16,6 +17,8 @@ func (s *MovieService) DeleteRating(ctx context.Context, movieID int) *errVals.S
 			Error: errors.New("error usrID = 0"),
 		}
 	}
+
+	log.Println("ServiceDEL", movieID, usrID)
 
 	err := s.movieClient.DeleteUserRating(ctx, movieID, usrID)
 

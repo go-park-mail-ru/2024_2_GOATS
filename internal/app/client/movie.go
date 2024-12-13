@@ -362,10 +362,13 @@ func (m *MovieClient) DeleteUserRating(ctx context.Context, userID, movieID int)
 	start := time.Now()
 	method := "AddOrUpdateRating"
 
+	log.Println("CLLCLCLLCLSERV", int32(movieID), int32(userID))
 	_, err := m.movieMS.DeleteRating(ctx, &movie.DeleteRatingRequest{
 		MovieId: int32(movieID),
 		UserId:  int32(userID),
 	})
+
+	log.Println("CererrerrerrLSERV", err)
 
 	saveMetric(start, movieClient, method, err)
 

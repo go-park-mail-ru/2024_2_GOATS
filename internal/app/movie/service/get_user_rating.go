@@ -10,7 +10,7 @@ import (
 func (s *MovieService) GetUserRating(ctx context.Context, movieID int) (int, *errVals.ServiceError) {
 
 	usrID := config.CurrentUserID(ctx)
-	if usrID == 0 {
+	if usrID < 0 {
 		return 0, &errVals.ServiceError{
 			Code:  "USER_ZERO",
 			Error: errors.New("error usrID = 0"),

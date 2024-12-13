@@ -77,7 +77,7 @@ type MovieInfo struct {
 	Actors           []*ActorInfo     `json:"actors_info"`
 	Seasons          []*models.Season `json:"seasons"`
 	IsFavorite       bool             `json:"is_favorite"`
-	//RatingUser       int64            `json:"rating_user"`
+	RatingUser       int64            `json:"rating_user"`
 }
 
 type ActorResponse struct {
