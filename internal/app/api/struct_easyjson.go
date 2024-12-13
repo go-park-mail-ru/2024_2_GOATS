@@ -1060,6 +1060,8 @@ func easyjson9f2eff5fDecodeGithubComGoParkMailRu20242GOATSInternalAppApi11(in *j
 			}
 		case "is_favorite":
 			out.IsFavorite = bool(in.Bool())
+		case "with_subscription":
+			out.WithSubscription = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1183,6 +1185,11 @@ func easyjson9f2eff5fEncodeGithubComGoParkMailRu20242GOATSInternalAppApi11(out *
 		const prefix string = ",\"is_favorite\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsFavorite))
+	}
+	{
+		const prefix string = ",\"with_subscription\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.WithSubscription))
 	}
 	out.RawByte('}')
 }

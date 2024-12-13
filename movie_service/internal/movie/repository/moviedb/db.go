@@ -27,6 +27,7 @@ const (
 			movies.video_url,
 			movies.movie_type,
 			movies.title_url,
+			movies.with_subscription,
 			directors.first_name,
 			directors.second_name,
 			countries.title,

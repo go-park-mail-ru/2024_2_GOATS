@@ -29,6 +29,7 @@ type MovieInfo struct {
 	Director         *DirectorInfo `json:"director_info"`
 	Seasons          []*Season     `json:"seasons"`
 	IsFavorite       bool          `json:"is_favorite"`
+	WithSubscription bool          `json:"with_subscription"`
 }
 
 // Season represents movie's season full info

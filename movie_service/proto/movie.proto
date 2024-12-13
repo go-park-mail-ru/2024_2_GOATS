@@ -60,6 +60,7 @@ message MovieInfo {
   DirectorInfo director_info = 14;
   repeated Season seasons = 15;
   bool is_favorite = 16;
+  bool with_subscription = 17;
 }
 
 

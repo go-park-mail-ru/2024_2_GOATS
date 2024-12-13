@@ -150,6 +150,7 @@ func ToAPIGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		Director:         mv.Director.FullName(),
 		IsFavorite:       mv.IsFavorite,
 		Seasons:          mv.Seasons,
+		WithSubscription: mv.WithSubscription,
 	}
 
 	var actors = make([]*api.ActorInfo, 0, len(mv.Actors))

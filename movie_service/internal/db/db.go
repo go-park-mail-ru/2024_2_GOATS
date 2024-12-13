@@ -101,6 +101,9 @@ func migDB(db *sql.DB) error {
 		return errMsg
 	}
 
-	log.Error().Err(m.Up())
+	if err = m.Up(); err != nil {
+		log.Error().Err(err).Msg("failed_to_migrate_db")
+	}
+
 	return nil
 }

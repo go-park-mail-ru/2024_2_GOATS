@@ -81,6 +81,7 @@ func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest)
 	respp.FullDescription = movieg.FullDescription
 	respp.ShortDescription = movieg.ShortDescription
 	respp.TitleUrl = movieg.TitleURL
+	respp.WithSubscription = movieg.WithSubscription
 
 	var actors []*movie.ActorInfo
 	for _, actor := range movieg.Actors {

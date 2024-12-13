@@ -91,6 +91,7 @@ type MovieInfo struct {
 	Actors           []*ActorInfo     `json:"actors_info"`
 	Seasons          []*models.Season `json:"seasons"`
 	IsFavorite       bool             `json:"is_favorite"`
+	WithSubscription bool             `json:"with_subscription"`
 }
 
 // ActorResponse json struct

@@ -111,6 +111,7 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	respp.FullDescription = respMov.FullDescription
 	respp.ShortDescription = respMov.ShortDescription
 	respp.TitleURL = respMov.TitleUrl
+	respp.WithSubscription = respMov.WithSubscription
 
 	var actors []*models.ActorInfo
 	for _, actor := range respMov.ActorsInfo {
