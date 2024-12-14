@@ -10,8 +10,6 @@ import (
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"log"
 	"strconv"
-	"sync"
-	"time"
 )
 
 // TODO раскоментить к 4му РК
@@ -45,24 +43,11 @@ type RoomService struct {
 	roomRepository RoomRepositoryInterface
 	movieService   client.MovieClientInterface
 	userService    client.UserClientInterface
-	timerManager   *TimerManager
+	timerManager   *ws.TimerManager
 	hub            *ws.RoomHub
 }
 
-type TimerManager struct {
-	mu     sync.Mutex
-	timers map[string]chan struct{}
-	hub    *ws.RoomHub
-}
-
-func NewTimerManager(hub *ws.RoomHub) *TimerManager {
-	return &TimerManager{
-		timers: make(map[string]chan struct{}),
-		hub:    hub,
-	}
-}
-
-func NewService(repo RoomRepositoryInterface, movieService client.MovieClientInterface, userService client.UserClientInterface, hub *ws.RoomHub, TimerManager *TimerManager) *RoomService {
+func NewService(repo RoomRepositoryInterface, movieService client.MovieClientInterface, userService client.UserClientInterface, hub *ws.RoomHub, TimerManager *ws.TimerManager) *RoomService {
 	return &RoomService{
 		roomRepository: repo,
 		movieService:   movieService,
@@ -347,52 +332,3 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 //	log.Println("TTTTTTTTTT22222")
 //
 //}
-
-func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(int64), duration int64) {
-	tm.mu.Lock()
-	if _, exists := tm.timers[roomID]; exists {
-		tm.mu.Unlock()
-		return
-	}
-	quit := make(chan struct{})
-	tm.timers[roomID] = quit
-	tm.mu.Unlock()
-
-	go func() {
-		timeCode := startTime
-		ticker := time.NewTicker(3 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ticker.C:
-				timeCode += 3
-
-				if duration > 0 && timeCode >= duration {
-					tm.Stop(roomID)
-					return
-				}
-
-				tm.hub.Broadcast <- ws.BroadcastMessage{
-					Action: map[string]interface{}{
-						"type":     "timer",
-						"timeCode": timeCode,
-					},
-					RoomID: roomID,
-				}
-				updateFunc(timeCode)
-			case <-quit:
-				return
-			}
-		}
-	}()
-}
-
-func (tm *TimerManager) Stop(roomID string) {
-	tm.mu.Lock()
-	if quit, exists := tm.timers[roomID]; exists {
-		close(quit)
-		delete(tm.timers, roomID)
-	}
-	tm.mu.Unlock()
-}
