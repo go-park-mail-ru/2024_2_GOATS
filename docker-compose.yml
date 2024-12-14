@@ -1,5 +1,6 @@
 volumes:
   grafana-data:
+  redis:
 
 services:
   facade_app:
@@ -67,10 +68,10 @@ services:
     depends_on:
       - facade_app
 
-  redis:
+  facade_redis:
     image: 'redis:latest'
     command: redis-server
-    container_name: redis
+    container_name: facade_redis
     volumes:
       - redis:/data
     networks:
