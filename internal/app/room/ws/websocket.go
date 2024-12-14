@@ -2,6 +2,7 @@ package websocket
 
 import (
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	roomService "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
 	"github.com/gorilla/websocket"
 	"sync"
 )
@@ -13,12 +14,13 @@ type BroadcastMessage struct {
 }
 
 type RoomHub struct {
-	Rooms      map[string]map[*websocket.Conn]bool
-	Users      map[*websocket.Conn]models.User
-	Register   chan *Client
-	Unregister chan *websocket.Conn
-	Broadcast  chan BroadcastMessage
-	mu         sync.RWMutex
+	Rooms        map[string]map[*websocket.Conn]bool
+	Users        map[*websocket.Conn]models.User
+	Register     chan *Client
+	Unregister   chan *websocket.Conn
+	Broadcast    chan BroadcastMessage
+	mu           sync.RWMutex
+	timerManager *roomService.TimerManager
 }
 
 type Client struct {
@@ -80,6 +82,10 @@ func (hub *RoomHub) removeClient(conn *websocket.Conn) {
 			delete(clients, conn)
 			if len(clients) == 0 {
 				delete(hub.Rooms, roomID)
+
+				if hub.timerManager != nil {
+					hub.timerManager.Stop(roomID)
+				}
 			}
 			break
 		}
@@ -100,4 +106,8 @@ func (hub *RoomHub) broadcastToRoom(message BroadcastMessage) {
 			}
 		}
 	}
+}
+
+func (hub *RoomHub) SetTimerManager(manager *roomService.TimerManager) {
+	hub.timerManager = manager
 }

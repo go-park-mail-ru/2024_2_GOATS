@@ -122,7 +122,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		s.timerManager.Start(roomID, int64(roomState.TimeCode), func(updatedTime int64) {
 			roomState.TimeCode = float64(updatedTime)
 			_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-		})
+		}, int64(roomState.Duration))
 
 	case "rewind":
 		roomState.TimeCode = action.TimeCode
@@ -131,13 +131,10 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 			s.timerManager.Start(roomID, int64(roomState.TimeCode), func(updatedTime int64) {
 				roomState.TimeCode = float64(updatedTime)
 				_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-			})
+			}, int64(roomState.Duration))
 		} else {
 			roomState.TimeCode = action.TimeCode
 		}
-
-	//case "timer":
-	//	roomState.TimeCode = action.TimeCode
 
 	case "message":
 		roomState.Message.Text = action.Message.Text
@@ -183,7 +180,6 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		roomState.Movie.Seasons = seasons
 		log.Println("SeasonNumber==")
 
-		//}
 		roomState.Movie.AlbumURL = movie_service.AlbumURL
 		log.Println("roomState.Movie.AlbumURL==", roomState.Movie.AlbumURL)
 		roomState.Movie.CardURL = movie_service.CardURL
@@ -195,15 +191,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		roomState.Movie.VideoURL = movie_service.VideoURL
 		roomState.Movie.Rating = movie_service.Rating
 		roomState.Movie.ShortDescription = movie_service.ShortDescription
-		//s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-		//roomState1, err1 := s.GetRoomState(ctx, roomID)
-		//if err1 != nil {
-		//	log.Println("Failed to get room state from Redis:", err)
-		//} else {
-		//if err := conn.WriteJSON(roomState); err != nil {
-		//	log.Println("Failed to send room state:", err)
-		//}
-		//}
+
 		s.hub.Broadcast <- ws.BroadcastMessage{
 			Action: map[string]interface{}{
 				"name":   "change_movie",
@@ -211,8 +199,16 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 			},
 			RoomID: roomID,
 		}
+
+	case "change_series":
+		roomState.SeasonNow = action.SeasonNow
+		roomState.EpisodeNow = action.EpisodeNow
+		_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
+
+	case "duration":
+		roomState.Duration = action.Duration
+		_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
 	}
-	log.Println("roomState.Movie==", roomState.Movie)
 
 	//case "change":
 	//	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
@@ -236,7 +232,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 	//movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
 	//	if errMovie != nil {
 	//		return nil, fmt.Errorf("errMovie = %+v", errMovie)
-	//	}
+	//	}x
 	//	roomState.Movie = model.MovieInfo{
 	//		ID:               movie_service.ID,
 	//		Title:            movie_service.Title,
@@ -352,7 +348,7 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 //
 //}
 
-func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(int64)) {
+func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(int64), duration int64) {
 	tm.mu.Lock()
 	if _, exists := tm.timers[roomID]; exists {
 		tm.mu.Unlock()
@@ -371,6 +367,12 @@ func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(in
 			select {
 			case <-ticker.C:
 				timeCode += 3
+
+				if duration > 0 && timeCode >= duration {
+					tm.Stop(roomID)
+					return
+				}
+
 				tm.hub.Broadcast <- ws.BroadcastMessage{
 					Action: map[string]interface{}{
 						"type":     "timer",
@@ -394,107 +396,3 @@ func (tm *TimerManager) Stop(roomID string) {
 	}
 	tm.mu.Unlock()
 }
-
-//func (s *RoomService) startTimer(ctx context.Context, roomID string, roomState *model.RoomState) {
-//	timeCode := int(roomState.TimeCode)
-//	ticker := time.NewTicker(1 * time.Second)
-//	defer ticker.Stop()
-//
-//	for {
-//		select {
-//		case <-ticker.C:
-//			timeCode++
-//			roomState.TimeCode = float64(int64(timeCode))
-//
-//			// Сохраняем обновлённое состояние комнаты
-//			err := s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-//			if err != nil {
-//				log.Println("Error updating room state:", err)
-//				return
-//			}
-//
-//		case <-roomState.TimerQuit:
-//			log.Println("Timer stopped for room:", roomID)
-//			return
-//		}
-//	}
-//}
-
-//func (s *RoomService) stopTimer(roomID string) {
-//	if timer, ok := s.timers[roomID]; ok {
-//		timer.Ticker.Stop()
-//		close(timer.Quit)
-//		delete(s.timers, roomID)
-//	}
-//}
-
-//
-//func (s *RoomService) HandleAction(ctx context.Context, roomID string, action model.Action) error {
-//	// Получаем текущее состояние комнаты
-//	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
-//	if err != nil {
-//		return err
-//	}
-//
-//	log.Println("roomState.Status === ", roomState.Status)
-//	log.Println("action.Name === ", action.Name)
-//	log.Println("action.TimeCode === ", action.TimeCode)
-//
-//	switch action.Name {
-//	case "pause":
-//		// Ставим статус в "paused" и сохраняем текущий timeCode
-//		roomState.Status = "paused"
-//		roomState.TimeCode = action.TimeCode
-//
-//		// Останавливаем таймер
-//		//if timer, ok := s.timers[roomID]; ok {
-//		//	timer.Quit <- struct{}{}
-//		//	delete(s.timers, roomID)
-//		//}
-//
-//		if roomState.TimerQuit != nil {
-//			close(roomState.TimerQuit)
-//			roomState.TimerQuit = nil
-//		}
-//
-//	case "play":
-//		// Ставим статус в "playing"
-//		roomState.Status = "playing"
-//
-//		// Запускаем таймер, если он ещё не запущен
-//		//if _, ok := s.timers[roomID]; !ok {
-//		//	s.startTimer(ctx, roomID, int(roomState.TimeCode))
-//		//}
-//		if roomState.TimerQuit == nil {
-//			roomState.TimerQuit = make(chan struct{})
-//			go s.startTimer(ctx, roomID, roomState)
-//		}
-//
-//	case "rewind":
-//		// Обновляем timeCode
-//		roomState.TimeCode = action.TimeCode
-//
-//		// Останавливаем текущий таймер и запускаем новый
-//		//if timer, ok := s.timers[roomID]; ok {
-//		//	timer.Quit <- struct{}{}
-//		//	delete(s.timers, roomID)
-//		//}
-//		//s.startTimer(ctx, roomID, int(roomState.TimeCode))
-//
-//		if roomState.TimerQuit == nil {
-//			roomState.TimerQuit = make(chan struct{})
-//			go s.startTimer(ctx, roomID, roomState)
-//		}
-
-//	case "timer":
-//		// Просто обновляем текущее время
-//		roomState.TimeCode = action.TimeCode
-//
-//	case "message":
-//		// Обновляем сообщение
-//		roomState.Message.Text = action.Message.Text
-//	}
-//
-//	// Обновляем состояние комнаты
-//	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-//}

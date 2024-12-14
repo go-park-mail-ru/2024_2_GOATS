@@ -105,20 +105,26 @@ type ActorInfo struct {
 }
 
 type RoomState struct {
-	Id       string    `json:"id"`
-	Status   string    `json:"status"` // paused, playing
-	TimeCode float64   `json:"time_code"`
-	Movie    MovieInfo `json:"movie"`
-	Message  Msg       `json:"message"`
+	Id         string    `json:"id"`
+	Status     string    `json:"status"` // paused, playing
+	TimeCode   float64   `json:"time_code"`
+	Movie      MovieInfo `json:"movie"`
+	Message    Msg       `json:"message"`
+	Duration   int       `json:"duration"`
+	SeasonNow  int       `json:"season_now"`
+	EpisodeNow int       `json:"episode_now"`
 	//TimerQuit chan struct{} `json:"timerQuit"`
 }
 
 type Action struct {
-	Name     string    `json:"name"` // pause, play, rewind
-	TimeCode float64   `json:"time_code"`
-	Message  Msg       `json:"message"`
-	MovieId  int       `json:"movie_id"`
-	Movie    MovieInfo `json:"movie"`
+	Name       string    `json:"name"` // pause, play, rewind
+	TimeCode   float64   `json:"time_code"`
+	Message    Msg       `json:"message"`
+	MovieId    int       `json:"movie_id"`
+	Movie      MovieInfo `json:"movie"`
+	SeasonNow  int       `json:"season_number"`
+	EpisodeNow int       `json:"episode_number"`
+	Duration   int       `json:"duration"`
 }
 
 //	type ActionMsg struct {

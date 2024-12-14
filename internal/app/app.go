@@ -27,11 +27,11 @@ import (
 
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
+	payApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery"
+	payServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/service"
 	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
 	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
 	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
-	payApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery"
-	payServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	subApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/delivery"
 	subServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/service"
@@ -152,6 +152,7 @@ func (a *App) Run() {
 	repoRoom := roomRepo.NewRepository(rdb)
 	roomHub := ws.NewRoomHub()
 	timer := roomServ.NewTimerManager(roomHub)
+	roomHub.SetTimerManager(timer)
 	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager, roomHub, timer)
 	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
 
