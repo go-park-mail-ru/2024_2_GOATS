@@ -238,12 +238,41 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.R
 	if errMovie != nil {
 		return nil, fmt.Errorf("errMovie = %+v", errMovie)
 	}
+
+	var seasons []*model.Season
+
+	for _, season := range movie_service.Seasons {
+		sn := season.SeasonNumber
+		var eps []*model.Episode
+		for _, ep := range season.Episodes {
+			cur := &model.Episode{
+				ID:            ep.ID,
+				Description:   ep.Description,
+				EpisodeNumber: ep.EpisodeNumber,
+				Title:         ep.Title,
+				Rating:        ep.Rating,
+				ReleaseDate:   ep.ReleaseDate,
+				VideoURL:      ep.VideoURL,
+				PreviewURL:    ep.PreviewURL,
+			}
+			eps = append(eps, cur)
+		}
+
+		curSeas := &model.Season{
+			SeasonNumber: int(sn),
+			Episodes:     eps,
+		}
+
+		seasons = append(seasons, curSeas)
+	}
+
 	roomState.Movie = model.MovieInfo{
 		ID:               movie_service.ID,
 		Title:            movie_service.Title,
 		TitleURL:         movie_service.TitleURL,
 		ShortDescription: movie_service.ShortDescription,
 		VideoURL:         movie_service.VideoURL,
+		Seasons:          seasons,
 	}
 	return roomState, err
 }

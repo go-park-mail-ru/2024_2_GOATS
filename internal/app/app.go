@@ -151,7 +151,7 @@ func (a *App) Run() {
 
 	repoRoom := roomRepo.NewRepository(rdb)
 	roomHub := ws.NewRoomHub()
-	timer := roomServ.NewTimerManager(roomHub)
+	timer := ws.NewTimerManager(roomHub)
 	roomHub.SetTimerManager(timer)
 	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager, roomHub, timer)
 	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
