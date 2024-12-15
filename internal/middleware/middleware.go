@@ -55,16 +55,25 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 
 		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
 		w.Header().Set("Req-ID", reqID)
-		rec := NewLoggingResponseWriter(w, r.URL.Path)
+		var customRec *statusRecorder
+		if !strings.HasPrefix(r.URL.Path, "/api/room/join") {
+			customRec = NewLoggingResponseWriter(w, r.URL.Path)
+		}
+
 		md := metadata.Pairs(
 			"request_id", reqID,
 		)
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		start := time.Now()
-		next.ServeHTTP(rec, r.WithContext(ctx))
-		status := rec.Status
-		logRequest(r, start, "accessLogMiddleware", reqID, status, requestPath(w, r))
+
+		if customRec != nil {
+			next.ServeHTTP(customRec, r.WithContext(ctx))
+			status := customRec.Status
+			logRequest(r, start, "accessLogMiddleware", reqID, status, requestPath(w, r))
+		} else {
+			next.ServeHTTP(w, r.WithContext(ctx))
+		}
 	})
 }
 
