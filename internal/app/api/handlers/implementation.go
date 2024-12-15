@@ -15,7 +15,6 @@ type MovieHandlerInterface interface {
 	SearchActors(w http.ResponseWriter, r *http.Request)
 	GetUserRating(w http.ResponseWriter, r *http.Request)
 	AddOrUpdateRating(w http.ResponseWriter, r *http.Request)
-	DeleteRating(w http.ResponseWriter, r *http.Request)
 }
 
 // AuthHandlerInterface defines auth_handler methods

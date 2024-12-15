@@ -24,7 +24,6 @@ type MovieClientInterface interface {
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error)
 	GetUserRating(ctx context.Context, movieID, userID int) (int, error)
 	AddOrUpdateRating(ctx context.Context, movieID, userID, rating int) error
-	DeleteUserRating(ctx context.Context, movieID, userID int) error
 }
 
 // MovieClient struct implements MovieClientInterface
@@ -359,20 +358,6 @@ func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rat
 		MovieId: int32(movieID),
 		UserId:  int32(userID),
 		Rating:  int32(rating),
-	})
-
-	saveMetric(start, movieClient, method, err)
-
-	return err
-}
-
-func (m *MovieClient) DeleteUserRating(ctx context.Context, userID, movieID int) error {
-	start := time.Now()
-	method := "AddOrUpdateRating"
-
-	_, err := m.movieMS.DeleteRating(ctx, &movie.DeleteRatingRequest{
-		MovieId: int32(movieID),
-		UserId:  int32(userID),
 	})
 
 	saveMetric(start, movieClient, method, err)

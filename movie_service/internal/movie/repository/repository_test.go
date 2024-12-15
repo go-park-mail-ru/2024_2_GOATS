@@ -630,3 +630,195 @@ func TestGetFavorites_ScanError(t *testing.T) {
 	assert.Contains(t, errObj.Error(), "error getting movie collections")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetGenreCollections_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	mockRows := sqlmock.NewRows([]string{"id", "title", "mv_id", "mv_title", "card_url", "album_url", "rating", "release_date", "movie_type", "c_title"}).
+		AddRow(1, "Horror", 1, "It", "card_url", "album_url", 9.3, "2020-10-10", "film", "USA").
+		AddRow(2, "Comedy", 2, "Lalaland", "card_url", "album_url", 9.3, "2020-10-10", "film", "USA")
+
+	mock.ExpectPrepare(`
+		SELECT genres.id, genres.title, movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM genres
+		JOIN movie_genres ON movie_genres.genre_id = genres.id
+		JOIN movies ON movies.id = movie_genres.movie_id
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		ExpectQuery().
+		WillReturnRows(mockRows)
+
+	colls, err := r.GetCollection(context.Background(), "genres")
+
+	assert.NoError(t, err)
+	assert.NotNil(t, colls)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetGenreCollections_PrepareError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	mock.ExpectPrepare(`
+		SELECT genres.id, genres.title, movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM genres
+		JOIN movie_genres ON movie_genres.genre_id = genres.id
+		JOIN movies ON movies.id = movie_genres.movie_id
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		WillReturnError(errors.New("prepare statement error"))
+
+	colls, err := r.GetCollection(context.Background(), "genres")
+
+	assert.Error(t, err)
+	assert.Nil(t, colls)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetGenreCollections_QueryError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	mock.ExpectPrepare(`
+		SELECT genres.id, genres.title, movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM genres
+		JOIN movie_genres ON movie_genres.genre_id = genres.id
+		JOIN movies ON movies.id = movie_genres.movie_id
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		ExpectQuery().
+		WillReturnError(errors.New("query execution error"))
+
+	colls, err := r.GetCollection(context.Background(), "genres")
+
+	assert.Nil(t, colls)
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetMovieByGenre_Success(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	genre := "Action"
+	expectedMovies := []models.MovieShortInfo{
+		{
+			ID:          1,
+			Title:       "Die Hard",
+			CardURL:     "card1.jpg",
+			AlbumURL:    "album1.jpg",
+			Rating:      4.7,
+			ReleaseDate: "1988-07-15",
+			MovieType:   "Action",
+			Country:     "USA",
+		},
+		{
+			ID:          2,
+			Title:       "Mad Max: Fury Road",
+			CardURL:     "card2.jpg",
+			AlbumURL:    "album2.jpg",
+			Rating:      4.8,
+			ReleaseDate: "2015-05-15",
+			MovieType:   "Action",
+			Country:     "Australia",
+		},
+	}
+
+	mockRows := sqlmock.NewRows([]string{"id", "title", "card_url", "album_url", "rating", "release_date", "movie_type", "country"}).
+		AddRow(1, "Die Hard", "card1.jpg", "album1.jpg", 4.7, "1988-07-15", "Action", "USA").
+		AddRow(2, "Mad Max: Fury Road", "card2.jpg", "album2.jpg", 4.8, "2015-05-15", "Action", "Australia")
+
+	mock.ExpectPrepare(`
+		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
+		JOIN movie_genres ON movie_genres.movie_id = movies.id
+		JOIN genres ON genres.id = movie_genres.genre_id AND genres.title = \$1
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		ExpectQuery().
+		WithArgs(genre).
+		WillReturnRows(mockRows)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movies, err := r.GetMovieByGenre(context.Background(), genre)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedMovies, movies)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetMovieByGenre_PrepareError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	genre := "Action"
+
+	mock.ExpectPrepare(`
+		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
+		JOIN movie_genres ON movie_genres.movie_id = movies.id
+		JOIN genres ON genres.id = movie_genres.genre_id AND genres.title = \$1
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		WillReturnError(errors.New("prepare statement error"))
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movies, err := r.GetMovieByGenre(context.Background(), genre)
+
+	assert.Nil(t, movies)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "prepareStatement#movieByGenre: prepare statement error")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetMovieByGenre_QueryError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	genre := "Action"
+
+	mock.ExpectPrepare(`
+		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
+		JOIN movie_genres ON movie_genres.movie_id = movies.id
+		JOIN genres ON genres.id = movie_genres.genre_id AND genres.title = \$1
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		ExpectQuery().
+		WithArgs(genre).
+		WillReturnError(errors.New("query execution error"))
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movies, err := r.GetMovieByGenre(context.Background(), genre)
+
+	assert.Nil(t, movies)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "postgres: error while selecting movies by genre: query execution error")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetMovieByGenre_ScanError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+
+	genre := "Action"
+
+	mockRows := sqlmock.NewRows([]string{"id", "title", "card_url", "album_url", "rating", "release_date", "movie_type", "country"}).
+		AddRow(1, "Die Hard", "card1.jpg", "album1.jpg", "INVALID_RATING", "1988-07-15", "Action", "USA")
+
+	mock.ExpectPrepare(`
+		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
+		JOIN movie_genres ON movie_genres.movie_id = movies.id
+		JOIN genres ON genres.id = movie_genres.genre_id AND genres.title = \$1
+		JOIN countries ON countries.id = movies.country_id
+	`).
+		ExpectQuery().
+		WithArgs(genre).
+		WillReturnRows(mockRows)
+
+	r := NewMovieRepository(db, &elasticsearch.Client{})
+	movies, err := r.GetMovieByGenre(context.Background(), genre)
+
+	assert.Nil(t, movies)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "GetMovieByGenreRepoError")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
