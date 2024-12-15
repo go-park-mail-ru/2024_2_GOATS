@@ -177,10 +177,13 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		roomState.Movie.Rating = movie_service.Rating
 		roomState.Movie.ShortDescription = movie_service.ShortDescription
 
+		roomState.SeasonNow = 0
+		roomState.EpisodeNow = 0
+
 		s.hub.Broadcast <- ws.BroadcastMessage{
 			Action: map[string]interface{}{
-				"name":   "change_movie",
-				"movie ": roomState.Movie,
+				"name":  "change_movie",
+				"movie": roomState.Movie,
 			},
 			RoomID: roomID,
 		}
