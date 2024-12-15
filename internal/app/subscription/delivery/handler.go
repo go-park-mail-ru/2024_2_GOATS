@@ -28,7 +28,9 @@ func NewSubscriptionHandler(srv SubscriptionServiceInterface) handlers.Subscript
 func (sh *SubscriptionHandler) Subscribe(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	createSubReq := &api.SubscribeRequest{}
-	api.DecodeBody(w, r, createSubReq)
+	if !api.DecodeBody(w, r, createSubReq) {
+		return
+	}
 
 	usrID := config.CurrentUserID(r.Context())
 	if usrID == 0 {

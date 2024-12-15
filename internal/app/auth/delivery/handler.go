@@ -77,7 +77,10 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	loginRequest := &api.LoginRequest{}
 
-	api.DecodeBody(w, r, loginRequest)
+	if !api.DecodeBody(w, r, loginRequest) {
+		return
+	}
+
 	loginServData := converter.ToServLoginData(loginRequest)
 	authSrvResp, errSrvResp := a.authService.Login(r.Context(), loginServData)
 
@@ -112,7 +115,9 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
 	registerReq := &api.RegisterRequest{}
-	api.DecodeBody(w, r, registerReq)
+	if !api.DecodeBody(w, r, registerReq) {
+		return
+	}
 
 	errs := make([]errVals.ErrorItem, 0)
 

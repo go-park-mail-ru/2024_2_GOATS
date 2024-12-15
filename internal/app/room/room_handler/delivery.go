@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
@@ -42,8 +43,7 @@ func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHand
 
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var room model.RoomState
-	if err := json.NewDecoder(r.Body).Decode(&room); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+	if !api.DecodeBody(w, r, room) {
 		return
 	}
 
