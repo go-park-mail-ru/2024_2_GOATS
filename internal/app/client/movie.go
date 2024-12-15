@@ -265,6 +265,7 @@ func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.M
 			AlbumURL: mov.AlbumUrl,
 			Rating:   mov.Rating,
 			Title:    mov.Title,
+			VerURL:   mov.VerUrl,
 		}
 	}
 	return respp, nil

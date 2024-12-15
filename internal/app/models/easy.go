@@ -19,6 +19,7 @@ type MovieInfo struct {
 	FullDescription  string        `json:"full_description"`
 	CardURL          string        `json:"card_url"`
 	AlbumURL         string        `json:"album_url"`
+	VerURL           string        `json:"ver_url"`
 	TitleURL         string        `json:"title_url"`
 	Rating           float32       `json:"rating"`
 	ReleaseDate      string        `json:"release_date"`

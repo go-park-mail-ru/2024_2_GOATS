@@ -15,6 +15,7 @@ type Movie struct {
 	Title       string  `json:"title"`
 	CardURL     string  `json:"card_url"`
 	AlbumURL    string  `json:"album_url"`
+	VerURL      string  `json:"ver_url"`
 	Rating      float64 `json:"rating"`
 	ReleaseDate string  `json:"release_date"`
 	MovieType   string  `json:"movie_type"`
@@ -33,7 +34,7 @@ type Actor struct {
 }
 
 func delIndex(indexName string) {
-	url := fmt.Sprintf("http://83.166.232.3:9200/%s", indexName)
+	url := fmt.Sprintf("http://localhost:9200/%s", indexName)
 	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer([]byte("")))
 	if err != nil {
 		log.Fatalf("Error creating request for index %s: %v", indexName, err)
@@ -64,7 +65,7 @@ func delIndex(indexName string) {
 }
 
 func createIndex(indexName, mapping string) {
-	url := fmt.Sprintf("http://83.166.232.3:9200/%s", indexName)
+	url := fmt.Sprintf("http://localhost:9200/%s", indexName)
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer([]byte(mapping)))
 	if err != nil {
 		log.Fatalf("Error creating request for index %s: %v", indexName, err)
@@ -101,7 +102,7 @@ func addMovie(id int, movie Movie) {
 		log.Fatalf("Error marshaling movie_service data: %v", err)
 	}
 
-	url := fmt.Sprintf("http://83.166.232.3:9200/movies/_doc/%d", id)
+	url := fmt.Sprintf("http://localhost:9200/movies/_doc/%d", id)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		log.Fatalf("Error sending HTTP request: %v", err)
@@ -130,7 +131,7 @@ func addActor(id int, actor Actor) {
 		log.Fatalf("Error marshaling actor data: %v", err)
 	}
 
-	url := fmt.Sprintf("http://83.166.232.3:9200/actors/_doc/%d", id)
+	url := fmt.Sprintf("http://localhost:9200/actors/_doc/%d", id)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		log.Fatalf("Error sending HTTP request: %v", err)
@@ -181,6 +182,7 @@ func main() {
 				"title": { "type": "text" },
 				"card_url": { "type": "text" },
 				"album_url": { "type": "text" },
+				"ver_url": { "type": "text" },
 				"rating": { "type": "float" },
 				"release_date": {
 					"type": "date",
@@ -203,6 +205,7 @@ func main() {
 			Title:     "Игра в кальмара",
 			CardURL:   "/static/movies_all/squid-game/card.webp",
 			AlbumURL:  "/static/movies_all/squid-game/poster.webp",
+			VerURL:    "/static/movies_all/squid-game/album.webp",
 			Rating:    7.6,
 			MovieType: "film",
 			Country:   "Франция",
@@ -212,6 +215,7 @@ func main() {
 			Title:     "Бумажный дом",
 			CardURL:   "/static/movies_all/paper_house/card.webp",
 			AlbumURL:  "/static/movies_all/paper_house/poster.webp",
+			VerURL:    "/static/movies_all/paper_house/album.webp",
 			Rating:    8.2,
 			MovieType: "film",
 			Country:   "Франция",
@@ -221,6 +225,7 @@ func main() {
 			Title:     "Кухня",
 			CardURL:   "/static/movies_all/kitcnen/card.webp",
 			AlbumURL:  "/static/movies_all/kitcnen/poster.webp",
+			VerURL:    "/static/movies_all/kitcnen/album.webp",
 			Rating:    8.2,
 			MovieType: "film",
 			Country:   "Франция",
@@ -230,6 +235,7 @@ func main() {
 			Title:     "1+1",
 			CardURL:   "/static/movies_all/1_plus_1/card.webp",
 			AlbumURL:  "/static/movies_all/1_plus_1/poster.webp",
+			VerURL:    "/static/movies_all/1_plus_1/album.webp",
 			Rating:    8.8,
 			MovieType: "film",
 			Country:   "Франция",
@@ -239,6 +245,7 @@ func main() {
 			Title:     "Аватар",
 			CardURL:   "/static/movies_all/avatar/card.webp",
 			AlbumURL:  "/static/movies_all/avatar/poster.webp",
+			VerURL:    "/static/movies_all/avatar/album.webp",
 			Rating:    8.0,
 			MovieType: "film",
 			Country:   "США",
@@ -248,6 +255,7 @@ func main() {
 			Title:     "Иллюзия обмана",
 			CardURL:   "/static/movies_all/how-you-see-me/card.webp",
 			AlbumURL:  "/static/movies_all/how-you-see-me/poster.webp",
+			VerURL:    "/static/movies_all/how-you-see-me/album.webp",
 			Rating:    7.7,
 			MovieType: "film",
 			Country:   "США",
@@ -257,6 +265,7 @@ func main() {
 			Title:     "Бесславные ублюдки",
 			CardURL:   "/static/movies_all/inglourious-basterds/card.webp",
 			AlbumURL:  "/static/movies_all/inglourious-basterds/poster.webp",
+			VerURL:    "/static/movies_all/inglourious-basterds/album.webp",
 			Rating:    8.0,
 			MovieType: "film",
 			Country:   "США",
@@ -266,6 +275,7 @@ func main() {
 			Title:     "Интерстеллар",
 			CardURL:   "/static/movies_all/interstellar/card.webp",
 			AlbumURL:  "/static/movies_all/interstellar/poster.webp",
+			VerURL:    "/static/movies_all/interstellar/album.webp",
 			Rating:    8.6,
 			MovieType: "film",
 			Country:   "США",
@@ -275,6 +285,7 @@ func main() {
 			Title:     "Легенда №17",
 			CardURL:   "/static/movies_all/legend17/card.webp",
 			AlbumURL:  "/static/movies_all/legend17/poster.webp",
+			VerURL:    "/static/movies_all/legend17/album.webp",
 			Rating:    8.0,
 			MovieType: "film",
 			Country:   "США",
@@ -284,6 +295,7 @@ func main() {
 			Title:     "Человек, который изменил все",
 			CardURL:   "/static/movies_all/moneyball/card.webp",
 			AlbumURL:  "/static/movies_all/moneyball/poster.webp",
+			VerURL:    "/static/movies_all/moneyball/album.webp",
 			Rating:    7.7,
 			MovieType: "film",
 			Country:   "США",
@@ -293,6 +305,7 @@ func main() {
 			Title:     "Остров проклятых",
 			CardURL:   "/static/movies_all/shutter-island/card.webp",
 			AlbumURL:  "/static/movies_all/shutter-island/poster.webp",
+			VerURL:    "/static/movies_all/shutter-island/album.webp",
 			Rating:    8.5,
 			MovieType: "film",
 			Country:   "США",
@@ -302,6 +315,7 @@ func main() {
 			Title:     "Такси 2",
 			CardURL:   "/static/movies_all/taxi2/card.webp",
 			AlbumURL:  "/static/movies_all/taxi2/poster.webp",
+			VerURL:    "/static/movies_all/taxi2/album.webp",
 			Rating:    7.7,
 			MovieType: "film",
 			Country:   "США",
@@ -311,6 +325,7 @@ func main() {
 			Title:     "Множественные святые Ньюагка",
 			CardURL:   "/static/movies_all/the-many-saints-of-newark/card.webp",
 			AlbumURL:  "/static/movies_all/the-many-saints-of-newark/poster.webp",
+			VerURL:    "/static/movies_all/the-many-saints-of-newark/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -320,6 +335,7 @@ func main() {
 			Title:     "Перевозчик",
 			CardURL:   "/static/movies_all/the-transporter/card.webp",
 			AlbumURL:  "/static/movies_all/the-transporter/poster.webp",
+			VerURL:    "/static/movies_all/the-transporter/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -329,6 +345,7 @@ func main() {
 			Title:     "Трансформеры",
 			CardURL:   "/static/movies_all/transformers/card.webp",
 			AlbumURL:  "/static/movies_all/transformers/poster.webp",
+			VerURL:    "/static/movies_all/transformers/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -338,6 +355,7 @@ func main() {
 			Title:     "Волк с Уолл-Стрит",
 			CardURL:   "/static/movies_all/wolf-of-wall-street/card.webp",
 			AlbumURL:  "/static/movies_all/wolf-of-wall-street/poster.webp",
+			VerURL:    "/static/movies_all/wolf-of-wall-street/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -347,6 +365,7 @@ func main() {
 			Title:     "Мстители",
 			CardURL:   "/static/movies_all/avengers/card.webp",
 			AlbumURL:  "/static/movies_all/avengers/poster.webp",
+			VerURL:    "/static/movies_all/avengers/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -356,6 +375,7 @@ func main() {
 			Title:     "Еще по одной",
 			CardURL:   "/static/movies_all/drunk/card.webp",
 			AlbumURL:  "/static/movies_all/drunk/poster.webp",
+			VerURL:    "/static/movies_all/drunk/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -365,6 +385,7 @@ func main() {
 			Title:     "Форд против Феррари",
 			CardURL:   "/static/movies_all/ford-v-ferrari/card.webp",
 			AlbumURL:  "/static/movies_all/ford-v-ferrari/poster.webp",
+			VerURL:    "/static/movies_all/ford-v-ferrari/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -374,6 +395,7 @@ func main() {
 			Title:     "Зеленая книга",
 			CardURL:   "/static/movies_all/greenbook/card.webp",
 			AlbumURL:  "/static/movies_all/greenbook/poster.webp",
+			VerURL:    "/static/movies_all/greenbook/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -383,6 +405,7 @@ func main() {
 			Title:     "Однажды в Голливуде",
 			CardURL:   "/static/movies_all/once-in-hollywood/card.webp",
 			AlbumURL:  "/static/movies_all/once-in-hollywood/poster.webp",
+			VerURL:    "/static/movies_all/once-in-hollywood/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -392,6 +415,7 @@ func main() {
 			Title:     "Ламборгини",
 			CardURL:   "/static/movies_all/lamborgini/card.webp",
 			AlbumURL:  "/static/movies_all/lamborgini/poster.webp",
+			VerURL:    "/static/movies_all/lamborgini/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -401,6 +425,7 @@ func main() {
 			Title:     "Легенда",
 			CardURL:   "/static/movies_all/legend/card.webp",
 			AlbumURL:  "/static/movies_all/legend/poster.webp",
+			VerURL:    "/static/movies_all/legend/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -410,6 +435,7 @@ func main() {
 			Title:     "Пеле: Рождение легенды",
 			CardURL:   "/static/movies_all/pele/card.webp",
 			AlbumURL:  "/static/movies_all/pele/poster.webp",
+			VerURL:    "/static/movies_all/pele/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -419,6 +445,7 @@ func main() {
 			Title:     "Стрельцов",
 			CardURL:   "/static/movies_all/streltsov/card.webp",
 			AlbumURL:  "/static/movies_all/streltsov/poster.webp",
+			VerURL:    "/static/movies_all/streltsov/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -428,6 +455,7 @@ func main() {
 			Title:     "Гнев человеческий",
 			CardURL:   "/static/movies_all/wrath-of-man/card.webp",
 			AlbumURL:  "/static/movies_all/wrath-of-man/poster.webp",
+			VerURL:    "/static/movies_all/wrath-of-man/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
@@ -437,6 +465,7 @@ func main() {
 			Title:     "Брат 2",
 			CardURL:   "/static/movies_all/brother2/card.webp",
 			AlbumURL:  "/static/movies_all/brother2/poster.webp",
+			VerURL:    "/static/movies_all/brother2/album.webp",
 			Rating:    5.9,
 			MovieType: "film",
 			Country:   "США",
