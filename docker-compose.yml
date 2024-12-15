@@ -52,6 +52,22 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
 
+watchtower:
+  image: containrrr/watchtower:latest
+  container_name: watchtower
+  environment:
+    - TZ=Europe/London
+    - WATCHTOWER_CLEANUP=true
+    - WATCHTOWER_ROLLING_RESTART=true
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  restart: unless-stopped
+  command: --interval 30 facade_app user_app payment_app movie_app auth_app
+  networks:
+    - cassette-world
+  depends_on:
+    - facade_app
+
   facade_redis:
     image: 'redis:latest'
     command: redis-server
