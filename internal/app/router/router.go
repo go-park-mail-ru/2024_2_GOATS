@@ -38,9 +38,9 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 	movieRouter.HandleFunc("/movies/search", delLayer.SearchMovies).Methods(http.MethodGet, http.MethodOptions).Name("MovieSearchRoute")
 	movieRouter.HandleFunc("/actors/search", delLayer.SearchActors).Methods(http.MethodGet, http.MethodOptions).Name("ActorSearchRoute")
 
-	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.GetUserRating).Methods("GET")
-	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.AddOrUpdateRating).Methods("POST")
-	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.DeleteRating).Methods("DELETE")
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.GetUserRating).Methods(http.MethodGet, http.MethodOptions)
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.AddOrUpdateRating).Methods(http.MethodPost, http.MethodOptions)
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.DeleteRating).Methods(http.MethodDelete, http.MethodOptions)
 }
 
 // SetupUser setups users subrouter

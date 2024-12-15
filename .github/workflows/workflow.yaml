@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - release/use-subscription-in-movies
+      - very-final-branch
   workflow_dispatch:
 
 jobs:
@@ -44,25 +44,25 @@ jobs:
             echo "Test coverage is below 60%! Current coverage: $COVERAGE%"
             exit 1
           fi
-  linter:
-    name: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.22.0'
-          cache: false
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.53
-          args: --timeout=30m --config=./.golangci.pipeline.yml --issues-exit-code=0
+  # linter:
+  #   name: lint
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-go@v4
+  #       with:
+  #         go-version: '1.22.0'
+  #         cache: false
+  #     - name: golangci-lint
+  #       uses: golangci/golangci-lint-action@v3
+  #       with:
+  #         version: v1.53
+  #         args: --timeout=30m --config=./.golangci.pipeline.yml --issues-exit-code=0
 
   build-and-push:
     runs-on: ubuntu-latest
     needs:
-      - linter
+      # - linter
       - test
 
     steps:

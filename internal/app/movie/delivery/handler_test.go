@@ -85,15 +85,17 @@ func TestDelivery_GetCollection(t *testing.T) {
 
 func TestDelivery_GetMovie(t *testing.T) {
 	tests := []struct {
-		name       string
-		mockReturn *models.MovieInfo
-		mockErr    *errVals.ServiceError
-		statusCode int
-		resp       string
-		badReq     bool
+		name           string
+		mockReturn     *models.MovieInfo
+		mockRateReturn int
+		mockErr        *errVals.ServiceError
+		statusCode     int
+		resp           string
+		badReq         bool
 	}{
 		{
 			name: "Success",
+			mockRateReturn: 9,
 			mockReturn: &models.MovieInfo{
 				ID:               1,
 				Title:            "Test",
@@ -107,7 +109,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 				Director:         &models.DirectorInfo{},
 				WithSubscription: false,
 			},
-			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[],"seasons":null,"is_favorite":false,"with_subscription":false}}`,
+			resp:       `{"movie_info":{"id":1,"title":"Test","full_description":"Test desc","short_description":"","card_url":"card_link","album_url":"album_link","title_url":"","rating":7.8,"release_date":"","movie_type":"film","country":"Russia","video_url":"video_link","director":"","actors_info":[],"seasons":null,"is_favorite":false,"with_subscription":false,"rating_user":9}}`,
 			statusCode: http.StatusOK,
 		},
 		{
@@ -144,6 +146,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 			vars := map[string]string{}
 			if !test.badReq {
 				ms.EXPECT().GetMovie(gomock.Any(), gomock.Any()).Return(test.mockReturn, test.mockErr)
+				ms.EXPECT().GetUserRating(gomock.Any(), gomock.Any()).Return(test.mockRateReturn, test.mockErr)
 				vars["movie_id"] = "1"
 			}
 

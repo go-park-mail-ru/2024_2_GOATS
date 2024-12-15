@@ -3,11 +3,13 @@ package delivery
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	websocket "github.com/gorilla/websocket"
+
 	//zlog "github.com/rs/zerolog/log"
 	"log"
 	"net/http"
@@ -88,6 +90,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	// Обновление соединения до WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
 		return
 	}
