@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 
 	zl "github.com/rs/zerolog/log"
@@ -51,7 +50,6 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 	}()
 
 	bodyBytes, _ := io.ReadAll(res.Body)
-	log.Println("ElasticSearch Response:", string(bodyBytes))
 
 	if res.IsError() {
 		return nil, fmt.Errorf("search error: %s", res.String())
@@ -62,8 +60,6 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 	if err := esResponse.UnmarshalJSON(bodyBytes); err != nil {
 		return nil, fmt.Errorf("error decoding search response: %w", err)
 	}
-
-	log.Println("Hits:", esResponse.ActorHits.ActorHits)
 
 	if len(esResponse.ActorHits.ActorHits) == 0 {
 		return []models.ActorInfo{}, nil

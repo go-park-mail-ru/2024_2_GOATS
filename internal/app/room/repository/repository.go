@@ -1,7 +1,5 @@
 package repository
 
-// TODO раскоментить к 4му РК
-
 import (
 	"context"
 	"database/sql"
@@ -14,10 +12,10 @@ import (
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	"github.com/google/uuid"
 
-	// user "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/user/repository/userdb"
 	"github.com/go-redis/redis/v8"
 )
 
+// RoomRepositoryInterface интерфейс репозитория комнаты
 type RoomRepositoryInterface interface {
 	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
 	UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error
@@ -26,31 +24,34 @@ type RoomRepositoryInterface interface {
 	//UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int)
 }
 
+// Repo структура репоитория
 type Repo struct {
 	Database *sql.DB
 	Redis    *redis.Client
 }
 
+// NewRepository конструктор репоитория
 func NewRepository(rdb *redis.Client) RoomRepositoryInterface {
 	return &Repo{
 		Redis: rdb,
 	}
 }
 
+// CreateRoom создание комнаты
 func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
-	room.Id = uuid.New().String()
+	room.ID = uuid.New().String()
 	data, err := room.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	log.Println("data", string(data))
-	err = r.Redis.Set(ctx, "room_state:"+room.Id, data, 0).Err()
+	err = r.Redis.Set(ctx, "room_state:"+room.ID, data, 0).Err()
 	if err != nil {
 		return nil, err
 	}
 	return room, nil
 }
 
+// UpdateRoomState создание комнаты
 func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error {
 	data, err := state.MarshalJSON()
 	if err != nil {
@@ -59,9 +60,10 @@ func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *model.
 	return r.Redis.Set(ctx, "room_state:"+roomID, data, 0).Err()
 }
 
+// GetRoomState получение статистики комнаты
 func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error) {
 	data, err := r.Redis.Get(ctx, "room_state:"+roomID).Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil, errors.New("room state not found")
 	} else if err != nil {
 		return nil, err
@@ -76,10 +78,10 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*model.RoomStat
 	return &state, nil
 }
 
+// GetFromCookie получение данных из куков
 func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int) {
 	var userID string
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)
-	log.Println("err =", err)
 	if err != nil {
 		return "", errVals.NewRepoError(
 			errVals.ErrCreateUserCode,
@@ -89,28 +91,3 @@ func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVa
 
 	return userID, nil, http.StatusOK
 }
-
-//
-//func (r *Repo) UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int) {
-//	userIdInt, err := strconv.Atoi(userId)
-//	if err != nil {
-//		log.Println("Ошибка перевода str в int", err)
-//	}
-//	usr, err := userdb.FindByID(ctx, uint64(userIdInt), r.Database)
-//	if err != nil {
-//		if errors.Is(err, sql.ErrNoRows) {
-//			return nil, errVals.NewRepoError(errVals.ErrUserNotFoundCode, errVals.ErrUserNotFound), http.StatusNotFound
-//		}
-//
-//		return nil, errVals.NewRepoError(errVals.ErrServerCode, errVals.CustomError{Err: err}), http.StatusUnprocessableEntity
-//	}
-//
-//	return &model.User{
-//		ID:        int(usr.ID),
-//		Email:     usr.Email,
-//		Username:  usr.Username,
-//		Password:  usr.Password,
-//		AvatarURL: usr.AvatarURL,
-//	}, nil, http.StatusOK
-//	//return *model.User(usr), nil, http.StatusOK
-//}

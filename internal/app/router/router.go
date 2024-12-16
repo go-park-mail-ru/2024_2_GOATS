@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/handlers"
-	webSocket "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	csrf_handle "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/secur/csrf/handlers"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/middleware"
 	"github.com/gorilla/mux"
@@ -70,7 +69,8 @@ func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *m
 	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions).Name("SubscribeRoute")
 }
 
-func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
+// SetupRoom создание комнаты
+func SetupRoom(roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()
 	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions).Name("CreateRoomRoute")

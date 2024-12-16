@@ -194,6 +194,7 @@ type ActorSearchData struct {
 // easyjson:json
 type ActorSearchList []ActorSearchData
 
+// AddOrUpdateRatingReq json struct
 type AddOrUpdateRatingReq struct {
 	Rating int `json:"rating"`
 }

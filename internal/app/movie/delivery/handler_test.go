@@ -88,7 +88,7 @@ func TestDelivery_GetMovie(t *testing.T) {
 	tests := []struct {
 		name           string
 		mockReturn     *models.MovieInfo
-		mockRateReturn int
+		mockRateReturn int32
 		mockErr        *errVals.ServiceError
 		statusCode     int
 		resp           string
@@ -302,7 +302,10 @@ func TestMovieHandler_SearchMovies(t *testing.T) {
 			handler.SearchMovies(w, req)
 			res := w.Result()
 
-			defer res.Body.Close()
+			defer func() {
+				clErr := res.Body.Close()
+				assert.NoError(t, clErr)
+			}()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
 
@@ -388,7 +391,10 @@ func TestMovieHandler_SearchActors(t *testing.T) {
 			handler.SearchActors(w, req)
 			res := w.Result()
 
-			defer res.Body.Close()
+			defer func() {
+				clErr := res.Body.Close()
+				assert.NoError(t, clErr)
+			}()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
 
@@ -406,7 +412,7 @@ func TestMovieHandler_GetUserRating(t *testing.T) {
 	tests := []struct {
 		name         string
 		queryParam   string
-		mockRating   int
+		mockRating   int32
 		mockErr      *errVals.ServiceError
 		expectedResp string
 		statusCode   int
@@ -414,7 +420,7 @@ func TestMovieHandler_GetUserRating(t *testing.T) {
 		{
 			name:         "Success - Valid Rating",
 			queryParam:   "1",
-			mockRating:   5,
+			mockRating:   int32(5),
 			expectedResp: `{"rating":5}`,
 			statusCode:   http.StatusOK,
 		},
@@ -443,12 +449,12 @@ func TestMovieHandler_GetUserRating(t *testing.T) {
 
 			if test.mockErr == nil && test.queryParam != "invalid" {
 				mockService.EXPECT().
-					GetUserRating(gomock.Any(), gomock.Eq(1)).
+					GetUserRating(gomock.Any(), gomock.Eq(int32(1))).
 					Return(test.mockRating, nil)
 			} else if test.mockErr != nil {
 				mockService.EXPECT().
 					GetUserRating(gomock.Any(), gomock.Any()).
-					Return(0, test.mockErr)
+					Return(int32(0), test.mockErr)
 			}
 
 			req := httptest.NewRequest(http.MethodGet, "/movies/rating?movie_id="+test.queryParam, nil)
@@ -457,7 +463,10 @@ func TestMovieHandler_GetUserRating(t *testing.T) {
 			handler.GetUserRating(w, req)
 			res := w.Result()
 
-			defer res.Body.Close()
+			defer func() {
+				clErr := res.Body.Close()
+				assert.NoError(t, clErr)
+			}()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
 
@@ -523,7 +532,7 @@ func TestMovieHandler_AddOrUpdateRating(t *testing.T) {
 
 			if test.mockErr == nil && test.movieID != "invalid" && !test.skipService {
 				mockService.EXPECT().
-					AddOrUpdateRating(gomock.Any(), gomock.Eq(1), gomock.Eq(8)).
+					AddOrUpdateRating(gomock.Any(), gomock.Eq(int32(1)), gomock.Eq(int32(8))).
 					Return(nil)
 			} else if test.mockErr != nil {
 				mockService.EXPECT().
@@ -540,7 +549,10 @@ func TestMovieHandler_AddOrUpdateRating(t *testing.T) {
 			handler.AddOrUpdateRating(w, req)
 			res := w.Result()
 
-			defer res.Body.Close()
+			defer func() {
+				clErr := res.Body.Close()
+				assert.NoError(t, clErr)
+			}()
 
 			assert.Equal(t, test.statusCode, res.StatusCode)
 

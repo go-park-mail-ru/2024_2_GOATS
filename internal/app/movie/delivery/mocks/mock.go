@@ -37,7 +37,7 @@ func (m *MockMovieServiceInterface) EXPECT() *MockMovieServiceInterfaceMockRecor
 }
 
 // AddOrUpdateRating mocks base method.
-func (m *MockMovieServiceInterface) AddOrUpdateRating(ctx context.Context, movieID, rating int) *errors.ServiceError {
+func (m *MockMovieServiceInterface) AddOrUpdateRating(ctx context.Context, movieID, rating int32) *errors.ServiceError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddOrUpdateRating", ctx, movieID, rating)
 	ret0, _ := ret[0].(*errors.ServiceError)
@@ -48,20 +48,6 @@ func (m *MockMovieServiceInterface) AddOrUpdateRating(ctx context.Context, movie
 func (mr *MockMovieServiceInterfaceMockRecorder) AddOrUpdateRating(ctx, movieID, rating interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrUpdateRating", reflect.TypeOf((*MockMovieServiceInterface)(nil).AddOrUpdateRating), ctx, movieID, rating)
-}
-
-// DeleteRating mocks base method.
-func (m *MockMovieServiceInterface) DeleteRating(ctx context.Context, movieID int) *errors.ServiceError {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteRating", ctx, movieID)
-	ret0, _ := ret[0].(*errors.ServiceError)
-	return ret0
-}
-
-// DeleteRating indicates an expected call of DeleteRating.
-func (mr *MockMovieServiceInterfaceMockRecorder) DeleteRating(ctx, movieID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRating", reflect.TypeOf((*MockMovieServiceInterface)(nil).DeleteRating), ctx, movieID)
 }
 
 // GetActor mocks base method.
@@ -110,10 +96,10 @@ func (mr *MockMovieServiceInterfaceMockRecorder) GetMovie(ctx, mvID interface{})
 }
 
 // GetUserRating mocks base method.
-func (m *MockMovieServiceInterface) GetUserRating(ctx context.Context, movieID int) (int, *errors.ServiceError) {
+func (m *MockMovieServiceInterface) GetUserRating(ctx context.Context, movieID int32) (int32, *errors.ServiceError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserRating", ctx, movieID)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(int32)
 	ret1, _ := ret[1].(*errors.ServiceError)
 	return ret0, ret1
 }

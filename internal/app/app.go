@@ -5,27 +5,16 @@ import (
 	"errors"
 	"fmt"
 
-	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-	"github.com/go-redis/redis/v8"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	"log"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/rs/zerolog"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
-	"github.com/gorilla/mux"
 
 	auth "github.com/go-park-mail-ru/2024_2_GOATS/auth_service/pkg/auth_v1"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	authApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/delivery"
 	authServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/auth/service"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
-
 	movieApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/delivery"
 	movieServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/movie/service"
 	payApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/payment/delivery"
@@ -33,6 +22,7 @@ import (
 	roomRepo "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/repository"
 	roomApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/room_handler"
 	roomServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
+	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/router"
 	subApi "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/delivery"
 	subServ "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/subscription/service"
@@ -42,6 +32,12 @@ import (
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	payment "github.com/go-park-mail-ru/2024_2_GOATS/payment_service/pkg/payment_v1"
 	user "github.com/go-park-mail-ru/2024_2_GOATS/user_service/pkg/user_v1"
+	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // App root facade struct
@@ -175,7 +171,7 @@ func (a *App) Run() {
 
 	ctxValues := config.FromContext(ctx)
 
-	router.SetupRoom(roomHub, delRoom, mx)
+	router.SetupRoom(delRoom, mx)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", ctxValues.Listener.Port),

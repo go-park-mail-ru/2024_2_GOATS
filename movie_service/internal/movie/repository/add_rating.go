@@ -5,9 +5,14 @@ import (
 	"fmt"
 )
 
-func (r *MovieRepo) AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error {
-	query := `UPDATE ratings SET rating = $1 WHERE user_id = $2 AND movie_id = $3`
-	res, err := r.Database.ExecContext(ctx, query, rating, userId, movieId)
+const (
+	addOrUpdateRatingUpdateQuery = `UPDATE ratings SET rating = $1 WHERE user_id = $2 AND movie_id = $3`
+	addOrUpdateRatingInsertQuery = `INSERT INTO ratings (user_id, movie_id, rating) VALUES ($1, $2, $3)`
+)
+
+// AddOrUpdateRating добавление рейтинга
+func (r *MovieRepo) AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error {
+	res, err := r.Database.ExecContext(ctx, addOrUpdateRatingUpdateQuery, rating, userID, movieID)
 	if err != nil {
 		return fmt.Errorf("repository.AddOrUpdateRating (update): %w", err)
 	}
@@ -17,8 +22,7 @@ func (r *MovieRepo) AddOrUpdateRating(ctx context.Context, userId int, movieId i
 		return fmt.Errorf("repository.AddOrUpdateRating: %w", err)
 	}
 	if rowsAffected == 0 {
-		query = `INSERT INTO ratings (user_id, movie_id, rating) VALUES ($1, $2, $3)`
-		_, err = r.Database.ExecContext(ctx, query, userId, movieId, rating)
+		_, err = r.Database.ExecContext(ctx, addOrUpdateRatingInsertQuery, userID, movieID, rating)
 		if err != nil {
 			return fmt.Errorf("repository.AddOrUpdateRating (insert): %w", err)
 		}

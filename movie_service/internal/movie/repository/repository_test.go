@@ -15,6 +15,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 )
 
+var genre = "Action"
+
 func TestGetActor_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
@@ -701,7 +703,6 @@ func TestGetMovieByGenre_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 
-	genre := "Action"
 	expectedMovies := []models.MovieShortInfo{
 		{
 			ID:          1,
@@ -751,8 +752,6 @@ func TestGetMovieByGenre_PrepareError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 
-	genre := "Action"
-
 	mock.ExpectPrepare(`
 		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
 		JOIN movie_genres ON movie_genres.movie_id = movies.id
@@ -798,8 +797,6 @@ func TestGetMovieByGenre_QueryError(t *testing.T) {
 func TestGetMovieByGenre_ScanError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-
-	genre := "Action"
 
 	mockRows := sqlmock.NewRows([]string{"id", "title", "card_url", "album_url", "rating", "release_date", "movie_type", "country"}).
 		AddRow(1, "Die Hard", "card1.jpg", "album1.jpg", "INVALID_RATING", "1988-07-15", "Action", "USA")

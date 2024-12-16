@@ -54,6 +54,15 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
 
+  facade_redis:
+    image: 'redis:latest'
+    command: redis-server
+    container_name: facade_redis
+    volumes:
+      - redis:/data
+    networks:
+      - cassette-world
+
   watchtower:
     image: containrrr/watchtower:latest
     container_name: watchtower
@@ -69,15 +78,6 @@ services:
       - cassette-world
     depends_on:
       - facade_app
-
-  facade_redis:
-    image: 'redis:latest'
-    command: redis-server
-    container_name: facade_redis
-    volumes:
-      - redis:/data
-    networks:
-      - cassette-world
 
 networks:
   cassette-world:

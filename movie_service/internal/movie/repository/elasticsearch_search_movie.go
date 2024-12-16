@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
@@ -50,7 +49,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 	}()
 
 	bodyBytes, _ := io.ReadAll(res.Body)
-	log.Println("ElasticSearch Response:", string(bodyBytes))
 
 	if res.IsError() {
 		return nil, fmt.Errorf("search error: %s", res.String())
@@ -61,8 +59,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 	if err := esResponse.UnmarshalJSON(bodyBytes); err != nil {
 		return nil, fmt.Errorf("error decoding search response: %w", err)
 	}
-
-	log.Println("Hits:", esResponse.MovieHits.MovieHits)
 
 	if len(esResponse.MovieHits.MovieHits) == 0 {
 		return []models.MovieInfo{}, nil

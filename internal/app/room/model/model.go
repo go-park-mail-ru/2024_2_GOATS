@@ -6,8 +6,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
-// TODO раскоментить к 4му РК
-
+// Room структура комнаты
 type Room struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
@@ -15,6 +14,7 @@ type Room struct {
 	AdminID string `json:"admin_id"`
 }
 
+// MovieInfo структура фильмов
 type MovieInfo struct {
 	ID               int          `json:"id"`
 	Title            string       `json:"title"`
@@ -34,11 +34,13 @@ type MovieInfo struct {
 	IsFavorite       bool         `json:"is_favorite"`
 }
 
+// Season структура сезонов
 type Season struct {
 	SeasonNumber int        `json:"season_number"`
 	Episodes     []*Episode `json:"episodes"`
 }
 
+// Episode структура эпизодов
 type Episode struct {
 	ID            int     `json:"id"`
 	Title         string  `json:"title"`
@@ -50,28 +52,23 @@ type Episode struct {
 	VideoURL      string  `json:"video_url"`
 }
 
+// StaffInfo структура актеров
 type StaffInfo struct {
-	Id            int          `json:"id"`
+	ID            int          `json:"id"`
 	Name          string       `json:"name"`
 	Surname       string       `json:"surname"`
 	Patronymic    string       `json:"patronymic"`
 	Biography     string       `json:"biography"`
 	Post          string       `json:"post"`
 	Birthdate     sql.NullTime `json:"birthdate"`
-	SmallPhotoUrl string       `json:"small_photo_url"`
-	BigPhotoUrl   string       `json:"big_photo_url"`
+	SmallPhotoURL string       `json:"small_photo_url"`
+	BigPhotoURL   string       `json:"big_photo_url"`
 	Country       string       `json:"country"`
 }
 
-type ActorInfo struct {
-	ID       int    `json:"id"`
-	FullName string `json:"full_name"`
-	PhotoURL string `json:"photo_url"`
-	Country  string `json:"country"`
-}
-
+// RoomState структура данных о комнате
 type RoomState struct {
-	Id         string    `json:"id"`
+	ID         string    `json:"id"`
 	Status     string    `json:"status"` // paused, playing
 	TimeCode   float64   `json:"time_code"`
 	Movie      MovieInfo `json:"movie"`
@@ -82,23 +79,26 @@ type RoomState struct {
 	//TimerQuit chan struct{} `json:"timerQuit"`
 }
 
+// Action структура события
 type Action struct {
 	Name       string    `json:"name"` // pause, play, rewind
 	TimeCode   float64   `json:"time_code"`
 	Message    Msg       `json:"message"`
-	MovieId    int       `json:"movie_id"`
+	MovieID    int       `json:"movie_id"`
 	Movie      MovieInfo `json:"movie"`
 	SeasonNow  int       `json:"season_number"`
 	EpisodeNow int       `json:"episode_number"`
 	Duration   int       `json:"duration"`
 }
 
+// Msg структура сообщения
 type Msg struct {
 	Text   string `json:"text"` // pause, play, rewind
 	Sender string `json:"sender"`
 	Avatar string `json:"avatar"`
 }
 
+// User структура юзера
 type User struct {
 	ID         int    `json:"id"`
 	Email      string `json:"email"`
@@ -108,10 +108,13 @@ type User struct {
 	AvatarName string `json:"avatar_name"`
 }
 
+// SessionRespData структура ответа
 type SessionRespData struct {
 	UserData User `json:"user_data"`
 }
 
+// ErrorRespData структура ошибки
+//
 //easyjson:skip
 type ErrorRespData struct {
 	StatusCode int
