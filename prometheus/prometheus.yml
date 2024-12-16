@@ -24,5 +24,7 @@ scrape_configs:
       - targets: ['prometheus:9090']
 
   - job_name: "node"
+    scrape_interval: 30s
+    scrape_timeout: 30s
     static_configs:
       - targets: ['83.166.232.3:9100']
