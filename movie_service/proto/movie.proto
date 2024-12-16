@@ -61,7 +61,6 @@ message MovieInfo {
   repeated Season seasons = 15;
   bool is_favorite = 16;
   bool with_subscription = 17;
-  string ver_url = 18;
 }
 
 

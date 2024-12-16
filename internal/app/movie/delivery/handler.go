@@ -142,7 +142,6 @@ func (m *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 			"title":        movie.Title,
 			"card_url":     movie.CardURL,
 			"album_url":    movie.AlbumURL,
-			"ver_url":      movie.VerURL,
 			"rating":       strconv.FormatFloat(float64(movie.Rating), 'f', -1, 32),
 			"release_date": movie.ReleaseDate,
 			"movie_type":   movie.MovieType,

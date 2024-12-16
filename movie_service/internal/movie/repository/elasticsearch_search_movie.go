@@ -59,7 +59,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 					Rating   float32 `json:"rating"`
 					AlbumURL string  `json:"album_url"`
 					CardURL  string  `json:"card_url"`
-					VerURL   string  `json:"ver_url"`
 				} `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`

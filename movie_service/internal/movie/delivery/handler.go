@@ -199,7 +199,6 @@ func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMovies
 			ReleaseDate: mov.ReleaseDate,
 			IsFavorite:  mov.IsFavorite,
 			VideoUrl:    mov.VideoURL,
-			VerUrl:      mov.VerURL,
 
 			FullDescription:  mov.FullDescription,
 			ShortDescription: mov.ShortDescription,
