@@ -24,5 +24,7 @@ scrape_configs:
       - targets: ['prometheus:9090']
 
   - job_name: "node"
+    scrape_interval: 60s
+    scrape_timeout: 55s
     static_configs:
-      - targets: ['83.166.232.3:9100']
+      - targets: ['cassette-world.ru:9100']

@@ -2,10 +2,12 @@ package delivery
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
+
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
@@ -26,6 +28,7 @@ type RoomServiceInterface interface {
 type RoomHandler struct {
 	roomService RoomServiceInterface
 	roomHub     *ws.RoomHub
+	cfg         *config.Config
 }
 
 var upgrader = websocket.Upgrader{
@@ -35,34 +38,32 @@ var upgrader = websocket.Upgrader{
 }
 
 // NewRoomHandler конструктор хэндлера комнаты
-func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHandler {
+func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub, cfg *config.Config) *RoomHandler {
 	return &RoomHandler{
 		roomService: service,
 		roomHub:     roomHub,
+		cfg:         cfg,
 	}
 }
 
 // CreateRoom создание комнаты
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	var room model.RoomState
+	room := &model.RoomState{}
 	logger := log.Ctx(r.Context())
 
-	if err := json.NewDecoder(r.Body).Decode(&room); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+	if !api.DecodeBody(w, r, room) {
 		return
 	}
 
-	createdRoom, err := h.roomService.CreateRoom(r.Context(), &room)
+	createdRoom, err := h.roomService.CreateRoom(r.Context(), room)
 	if err != nil {
-		http.Error(w, "Failed to create room", http.StatusInternalServerError)
+		logger.Error().Err(err).Msg("cannot_create_room")
+		http.Error(w, fmt.Sprintf("Failed to create room: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(createdRoom)
-	if err != nil {
-		logger.Error().Err(err).Msg("Metrics stopped")
-	}
+	api.Response(r.Context(), w, http.StatusOK, createdRoom)
 }
 
 // JoinRoom функция входа в комнату
@@ -75,12 +76,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, err := config.New(false)
-	if err != nil {
-		http.Error(w, "error initialize app cfg", http.StatusInternalServerError)
-	}
-
-	ctx := config.WrapContext(r.Context(), cfg)
+	ctx := config.WrapContext(r.Context(), h.cfg)
 
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
 	if errSrvResp != nil {
@@ -96,6 +92,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	roomID := r.URL.Query().Get("room_id")
 	if roomID == "" {
+		logger.Error().Msg("empty room id")
 		http.Error(w, "Missing room_id", http.StatusBadRequest)
 		return
 	}
@@ -103,6 +100,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	// Обновление соединения до WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		logger.Error().Err(err).Msg("Failed to upgrade to WebSocket")
 		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
 		return
 	}

@@ -329,20 +329,6 @@ func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUp
 	return &movie.AddOrUpdateRatingResponse{}, nil
 }
 
-// DeleteRating удаление рейтинга пользователя
-func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRatingRequest) (*movie.DeleteRatingResponse, error) {
-	if req.MovieId <= 0 || req.UserId <= 0 {
-		return nil, status.Error(codes.InvalidArgument, "invalid movie ID or user ID")
-	}
-
-	err := h.movieService.DeleteRating(ctx, int(req.MovieId), int(req.UserId))
-	if err != nil {
-		return nil, err
-	}
-
-	return &movie.DeleteRatingResponse{}, nil
-}
-
 // sanitizeInput санитайз
 func sanitizeInput(input string) string {
 	policy := bluemonday.UGCPolicy()

@@ -230,17 +230,17 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 	}
 	user, sesErr := s.userService.FindByID(ctx, uint64(id))
 	if sesErr != nil {
-		//errors := make([]errVals.RepoError, 1)
-		//errors[0] = *sesErr
 		return nil, errVals.NewServiceError(errVals.ErrGetUserCode, fmt.Errorf("failed to login: %w", sesErr))
-
-		//return nil, &model.ErrorRespData{
-		//	Errors:     errors,
-		//	StatusCode: code,
-		//}
 	}
 
 	return &model.SessionRespData{
-		UserData: *user,
+		UserData: model.User{
+			ID:         user.ID,
+			Email:      user.Email,
+			Username:   user.Username,
+			Password:   user.Password,
+			AvatarURL:  user.AvatarURL,
+			AvatarName: user.AvatarName,
+		},
 	}, nil
 }

@@ -19,5 +19,4 @@ type MovieServiceInterface interface {
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetUserRating(ctx context.Context, movieID int32) (int32, *errVals.ServiceError)
 	AddOrUpdateRating(ctx context.Context, movieID, rating int32) *errVals.ServiceError
-	DeleteRating(ctx context.Context, movieID int32) *errVals.ServiceError
 }

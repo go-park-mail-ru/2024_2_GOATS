@@ -2,10 +2,8 @@ package models
 
 import (
 	"database/sql"
-	"mime/multipart"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 )
 
 // Room структура комнаты
@@ -108,15 +106,16 @@ type User struct {
 	Password   string `json:"password"`
 	AvatarURL  string `json:"avatar_url"`
 	AvatarName string `json:"avatar_name"`
-	AvatarFile multipart.File
 }
 
 // SessionRespData структура ответа
 type SessionRespData struct {
-	UserData model.User `json:"user_data"`
+	UserData User `json:"user_data"`
 }
 
 // ErrorRespData структура ошибки
+//
+//easyjson:skip
 type ErrorRespData struct {
 	StatusCode int
 	Errors     []errVals.RepoError

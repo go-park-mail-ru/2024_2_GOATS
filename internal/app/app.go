@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"log"
 	"net/http"
 	"os"
@@ -150,7 +151,7 @@ func (a *App) Run() {
 	timer := ws.NewTimerManager(roomHub)
 	roomHub.SetTimerManager(timer)
 	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager, roomHub, timer)
-	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub, a.Config)
 
 	go roomHub.Run()
 

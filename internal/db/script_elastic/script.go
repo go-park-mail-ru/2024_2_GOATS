@@ -2,35 +2,13 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/db/script_elastic/models"
 )
-
-// Movie data for elasticsearch
-type Movie struct {
-	ID          string  `json:"id"`
-	Title       string  `json:"title"`
-	CardURL     string  `json:"card_url"`
-	AlbumURL    string  `json:"album_url"`
-	Rating      float64 `json:"rating"`
-	ReleaseDate string  `json:"release_date"`
-	MovieType   string  `json:"movie_type"`
-	Country     string  `json:"country"`
-}
-
-// Actor data for elasticsearch
-type Actor struct {
-	ID          string `json:"id"`
-	FullName    string `json:"full_name"`
-	PhotoURL    string `json:"photo_url"`
-	PhotoBigURL string `json:"photo_big_url"`
-	Biography   string `json:"biography"`
-	Country     string `json:"country"`
-	BirthDate   string `json:"birth_date"`
-}
 
 func delIndex(indexName string) {
 	url := fmt.Sprintf("http://localhost:9200/%s", indexName)
@@ -95,8 +73,8 @@ func createIndex(indexName, mapping string) {
 	fmt.Printf("Response body: %s\n", body)
 }
 
-func addMovie(id int, movie Movie) {
-	data, err := json.Marshal(movie)
+func addMovie(id int, movie models.Movie) {
+	data, err := movie.MarshalJSON()
 	if err != nil {
 		log.Fatalf("Error marshaling movie_service data: %v", err)
 	}
@@ -124,8 +102,8 @@ func addMovie(id int, movie Movie) {
 	fmt.Printf("Response body: %s\n", body)
 }
 
-func addActor(id int, actor Actor) {
-	data, err := json.Marshal(actor)
+func addActor(id int, actor models.Actor) {
+	data, err := actor.MarshalJSON()
 	if err != nil {
 		log.Fatalf("Error marshaling actor data: %v", err)
 	}
@@ -198,7 +176,7 @@ func main() {
 	// Подождем, чтобы индексы были созданы
 	time.Sleep(2 * time.Second)
 
-	movies := []Movie{
+	movies := []models.Movie{
 		{
 			ID:        "1",
 			Title:     "Игра в кальмара",
@@ -538,7 +516,7 @@ func main() {
 		addMovie(i+1, movie)
 	}
 
-	actors := []Actor{
+	actors := []models.Actor{
 		{
 			ID:          "1",
 			FullName:    "Педро Гонсалес Алонсо",

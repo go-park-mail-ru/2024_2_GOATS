@@ -3,15 +3,16 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // RoomRepositoryInterface интерфейс репозитория комнаты
@@ -39,7 +40,7 @@ func NewRepository(rdb *redis.Client) RoomRepositoryInterface {
 // CreateRoom создание комнаты
 func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
 	room.ID = uuid.New().String()
-	data, err := json.Marshal(room)
+	data, err := room.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.Ro
 
 // UpdateRoomState создание комнаты
 func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error {
-	data, err := json.Marshal(state)
+	data, err := state.MarshalJSON()
 	if err != nil {
 		return err
 	}
@@ -69,7 +70,8 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*model.RoomStat
 	}
 
 	var state model.RoomState
-	err = json.Unmarshal([]byte(data), &state)
+	err = state.UnmarshalJSON([]byte(data))
+	log.Println("state =", state)
 	if err != nil {
 		return nil, err
 	}

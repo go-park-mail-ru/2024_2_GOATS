@@ -3,7 +3,6 @@ package repository
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -16,17 +15,22 @@ import (
 // SearchActors search_actors in elasticsearch
 func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
 	logger := zl.Ctx(ctx)
-	searchQuery := map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_phrase_prefix": map[string]interface{}{
-				"full_name": query,
+	searchQuery := models.SearchActorQuery{
+		ActorQuery: models.ActorQuery{
+			MatchActorPhrasePrefix: models.MatchActorPhrasePrefix{
+				FullName: query,
 			},
 		},
 	}
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(searchQuery); err != nil {
+	data, err := searchQuery.MarshalJSON()
+	if err != nil {
 		return nil, fmt.Errorf("error encoding search query: %w", err)
+	}
+
+	if _, err := buf.Write(data); err != nil {
+		return nil, fmt.Errorf("error writing to buffer: %w", err)
 	}
 
 	res, err := r.Elasticsearch.Search(
@@ -51,37 +55,27 @@ func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]models.Ac
 		return nil, fmt.Errorf("search error: %s", res.String())
 	}
 
-	var esResponse struct {
-		Hits struct {
-			Hits []struct {
-				Source struct {
-					ID          string `json:"id"`
-					Name        string `json:"full_name"`
-					PhotoBigURL string `json:"photo_big_url"`
-				} `json:"_source"`
-			} `json:"hits"`
-		} `json:"hits"`
-	}
+	var esResponse models.ActorESResponse
 
-	if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&esResponse); err != nil {
+	if err := esResponse.UnmarshalJSON(bodyBytes); err != nil {
 		return nil, fmt.Errorf("error decoding search response: %w", err)
 	}
 
-	if len(esResponse.Hits.Hits) == 0 {
+	if len(esResponse.ActorHits.ActorHits) == 0 {
 		return []models.ActorInfo{}, nil
 	}
 
-	actors := make([]models.ActorInfo, len(esResponse.Hits.Hits))
-	for i, hit := range esResponse.Hits.Hits {
-		id, err := strconv.Atoi(hit.Source.ID)
+	actors := make([]models.ActorInfo, len(esResponse.ActorHits.ActorHits))
+	for i, hit := range esResponse.ActorHits.ActorHits {
+		id, err := strconv.Atoi(hit.ActorSource.ID)
 		if err != nil {
 			return nil, fmt.Errorf("error converting id to int: %w", err)
 		}
 		actors[i] = models.ActorInfo{
 			ID:          id,
-			BigPhotoURL: hit.Source.PhotoBigURL,
+			BigPhotoURL: hit.ActorSource.PhotoBigURL,
 			Person: models.Person{
-				Name: hit.Source.Name,
+				Name: hit.ActorSource.Name,
 			},
 		}
 	}
