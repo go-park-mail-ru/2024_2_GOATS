@@ -3,7 +3,6 @@ package repository
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -16,17 +15,22 @@ import (
 // SearchMovies search movies via Elasticsearch
 func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
 	logger := zl.Ctx(ctx)
-	searchQuery := map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_phrase_prefix": map[string]interface{}{
-				"title": query,
+	searchQuery := models.SearchMovieQuery{
+		MovieQuery: models.MovieQuery{
+			MatchMoviePhrasePrefix: models.MatchMoviePhrasePrefix{
+				Title: query,
 			},
 		},
 	}
 
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(searchQuery); err != nil {
+	data, err := searchQuery.MarshalJSON()
+	if err != nil {
 		return nil, fmt.Errorf("error encoding search query: %w", err)
+	}
+
+	var buf bytes.Buffer
+	if _, err := buf.Write(data); err != nil {
+		return nil, fmt.Errorf("error writing to buffer: %w", err)
 	}
 
 	res, err := r.Elasticsearch.Search(
@@ -52,33 +56,21 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 		return nil, fmt.Errorf("search error: %s", res.String())
 	}
 
-	var esResponse struct {
-		Hits struct {
-			Hits []struct {
-				Source struct {
-					ID       string  `json:"id"`
-					Title    string  `json:"title"`
-					Rating   float32 `json:"rating"`
-					AlbumURL string  `json:"album_url"`
-					CardURL  string  `json:"card_url"`
-				} `json:"_source"`
-			} `json:"hits"`
-		} `json:"hits"`
+	var esResponse models.MovieESResponse
+
+	if err := esResponse.UnmarshalJSON(bodyBytes); err != nil {
+		return nil, fmt.Errorf("error decoding search response: %w", err)
 	}
 
-	if decErr := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&esResponse); decErr != nil {
-		return nil, fmt.Errorf("error decoding search response: %w", decErr)
-	}
+	log.Println("Hits:", esResponse.MovieHits.MovieHits)
 
-	log.Println("Hits:", esResponse.Hits.Hits)
-
-	if len(esResponse.Hits.Hits) == 0 {
+	if len(esResponse.MovieHits.MovieHits) == 0 {
 		return []models.MovieInfo{}, nil
 	}
 
-	movies := make([]models.MovieInfo, len(esResponse.Hits.Hits))
-	for i, hit := range esResponse.Hits.Hits {
-		id := hit.Source.ID
+	movies := make([]models.MovieInfo, len(esResponse.MovieHits.MovieHits))
+	for i, hit := range esResponse.MovieHits.MovieHits {
+		id := hit.MovieSource.ID
 		if err != nil {
 			return nil, fmt.Errorf("error converting id to int: %w", err)
 		}
@@ -91,10 +83,10 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 		}
 		movies[i] = models.MovieInfo{
 			ID:       idInt,
-			Title:    hit.Source.Title,
-			Rating:   hit.Source.Rating,
-			CardURL:  hit.Source.CardURL,
-			AlbumURL: hit.Source.AlbumURL,
+			Title:    hit.MovieSource.Title,
+			Rating:   hit.MovieSource.Rating,
+			CardURL:  hit.MovieSource.CardURL,
+			AlbumURL: hit.MovieSource.AlbumURL,
 		}
 	}
 

@@ -2,7 +2,7 @@ package delivery
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
@@ -26,6 +26,7 @@ type RoomServiceInterface interface {
 type RoomHandler struct {
 	roomService RoomServiceInterface
 	roomHub     *ws.RoomHub
+	cfg         *config.Config
 }
 
 var upgrader = websocket.Upgrader{
@@ -34,27 +35,28 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHandler {
+func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub, cfg *config.Config) *RoomHandler {
 	return &RoomHandler{
 		roomService: service,
 		roomHub:     roomHub,
+		cfg:         cfg,
 	}
 }
 
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	var room model.RoomState
+	room := &model.RoomState{}
 	if !api.DecodeBody(w, r, room) {
 		return
 	}
 
-	createdRoom, err := h.roomService.CreateRoom(r.Context(), &room)
+	createdRoom, err := h.roomService.CreateRoom(r.Context(), room)
 	if err != nil {
-		http.Error(w, "Failed to create room", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to create room: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createdRoom)
+	api.Response(r.Context(), w, http.StatusOK, createdRoom)
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
@@ -64,9 +66,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, err := config.New(false)
-
-	ctx := config.WrapContext(r.Context(), cfg)
+	ctx := config.WrapContext(r.Context(), h.cfg)
 
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
 

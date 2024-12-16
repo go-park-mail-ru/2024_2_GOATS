@@ -2,3 +2,5 @@ internal/app/models/easy.go
 internal/app/api/struct.go
 internal/app/errors/errors.go
 internal/app/room/model/model.go
+internal/db/script_elastic/models/models.go
+movie_service/internal/movie/models/easy.go

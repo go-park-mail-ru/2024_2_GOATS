@@ -127,21 +127,6 @@ func logRequest(r *http.Request, start time.Time, msg string, requestID string, 
 		log.Error().Err(err).Msg("invalid-request-body")
 	}
 
-	if isWebSocket(r) {
-		log.Info().
-			Str("websocket", path).
-			Str("request-id", requestID).
-			Bytes("body", bodyBytes).
-			Str("real_ip", realIP(r)).
-			Int64("content_length", r.ContentLength).
-			Str("start_time", start.Format(time.RFC3339)).
-			Str("duration_human", duration.String()).
-			Int64("duration_ms", duration.Milliseconds()).
-			Msg(msg)
-
-		return
-	}
-
 	log.Info().
 		Str("method", r.Method).
 		Str("remote_addr", r.RemoteAddr).
@@ -235,6 +220,10 @@ func realIP(r *http.Request) string {
 }
 
 func requestPath(w http.ResponseWriter, r *http.Request) string {
+	if strings.HasPrefix(r.URL.Path, "/metrics") {
+		return "/metrics"
+	}
+
 	route := mux.CurrentRoute(r)
 	if route == nil {
 		http.Error(w, "Route not found", http.StatusNotFound)
@@ -242,8 +231,4 @@ func requestPath(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	return route.GetName()
-}
-
-func isWebSocket(r *http.Request) bool {
-	return r.Header.Get("Upgrade") == "websocket" && r.Header.Get("Connection") == "Upgrade"
 }

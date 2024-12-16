@@ -59,7 +59,7 @@ func SetupPayment(delLayer handlers.PaymentHandlerInterface, router *mux.Router)
 	apiMux := router.PathPrefix("/api").Subrouter()
 	paymentRouter := apiMux.PathPrefix("/payments").Subrouter()
 
-	paymentRouter.HandleFunc("/notify_yoo_money", delLayer.NotifyYooMoney).Methods(http.MethodPost, http.MethodOptions).Name("NotifyYooMoney")
+	paymentRouter.HandleFunc("/notify_yoo_money", delLayer.NotifyYooMoney).Methods(http.MethodPost, http.MethodOptions).Name("NotifyYooMoneyRoute")
 }
 
 // SetupSubscription setups subscription subrouter
@@ -67,14 +67,14 @@ func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *m
 	apiMux := router.PathPrefix("/api").Subrouter()
 	subscrRouter := apiMux.PathPrefix("/subscription").Subrouter()
 
-	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions).Name("Subscribe")
+	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions).Name("SubscribeRoute")
 }
 
 func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()
-	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions).Name("CreateRoom")
-	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet).Name("JoinRoom")
+	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions).Name("CreateRoomRoute")
+	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet).Name("JoinRoomRoute")
 }
 
 // UseCommonMiddlewares activates common middlewares
@@ -91,5 +91,5 @@ func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) 
 // SetupCsrf setups csrf router
 func SetupCsrf(router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
-	apiMux.HandleFunc("/csrf-token", csrf_handle.GenerateCSRFTokenHandler).Methods(http.MethodGet)
+	apiMux.HandleFunc("/csrf-token", csrf_handle.GenerateCSRFTokenHandler).Methods(http.MethodGet).Name("CsrfRoute")
 }
