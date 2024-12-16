@@ -22,9 +22,9 @@ type MovieClientInterface interface {
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetCollection(ctx context.Context, filter string) ([]models.Collection, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error)
-	GetUserRating(ctx context.Context, movieID, userID int) (int, error)
-	AddOrUpdateRating(ctx context.Context, movieID, userID, rating int) error
-	DeleteUserRating(ctx context.Context, movieID, userID int) error
+	GetUserRating(ctx context.Context, movieID, userID int32) (int32, error)
+	AddOrUpdateRating(ctx context.Context, movieID, userID, rating int32) error
+	DeleteUserRating(ctx context.Context, movieID, userID int32) error
 }
 
 // MovieClient struct implements MovieClientInterface
@@ -334,13 +334,13 @@ func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models
 	return ans, nil
 }
 
-func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int) (int, error) {
+func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int32) (int32, error) {
 	start := time.Now()
 	method := "GetUserRating"
 
 	resp, err := m.movieMS.GetUserRating(ctx, &movie.GetUserRatingRequest{
-		MovieId: int32(movieID),
-		UserId:  int32(userID),
+		MovieId: movieID,
+		UserId:  userID,
 	})
 
 	saveMetric(start, movieClient, method, err)
@@ -349,10 +349,10 @@ func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int) (in
 		return 0, err
 	}
 
-	return int(resp.Rating.Rating), nil
+	return int32(resp.Rating.Rating), nil
 }
 
-func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rating int) error {
+func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rating int32) error {
 	start := time.Now()
 	method := "AddOrUpdateRating"
 
@@ -367,7 +367,7 @@ func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rat
 	return err
 }
 
-func (m *MovieClient) DeleteUserRating(ctx context.Context, userID, movieID int) error {
+func (m *MovieClient) DeleteUserRating(ctx context.Context, userID, movieID int32) error {
 	start := time.Now()
 	method := "AddOrUpdateRating"
 

@@ -12,8 +12,6 @@ import (
 	"strconv"
 )
 
-// TODO раскоментить к 4му РК
-
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=service
 
 type MovieServiceInterface interface {
@@ -61,35 +59,6 @@ func (s *RoomService) CreateRoom(ctx context.Context, room *model.RoomState) (*m
 	return s.roomRepository.CreateRoom(ctx, room)
 }
 
-//func (s *RoomService) HandleAction(ctx context.Context, roomID string, action model.Action) error {
-//	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
-//	if err != nil {
-//		return err
-//	}
-//
-//	log.Println("roomState.Status === ", roomState.Status)
-//	log.Println("action.Name === ", action.Name)
-//	log.Println("action.TimeCode === ", action.TimeCode)
-//
-//	switch action.Name {
-//	case "pause":
-//		roomState.Status = "paused"
-//		roomState.TimeCode = action.TimeCode
-//	case "play":
-//		roomState.Status = "playing"
-//	case "rewind":
-//		roomState.TimeCode = action.TimeCode
-//	case "timer":
-//		roomState.TimeCode = action.TimeCode
-//		//roomStateRepo, _ := s.roomRepository.GetRoomState(ctx, roomID)
-//		//roomState = roomStateRepo
-//	case "message":
-//		roomState.Message.Text = action.Message.Text
-//		//roomState.Message.Avatar = action.Message.Avatar
-//	}
-//	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-//}
-
 func (s *RoomService) HandleAction(ctx context.Context, roomID string, action model.Action) error {
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 	if err != nil {
@@ -129,13 +98,9 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		if errMovie != nil {
 			log.Println("errMovie", errMovie)
 		}
-		log.Println("movie_service==", movie_service.VideoURL)
-		//roomState.Message.Text = action.Message.Text
 		roomState.Movie.ID = movie_service.ID
 		roomState.Movie.MovieType = movie_service.MovieType
-		log.Println("MovieType==", roomState.Movie.MovieType)
 
-		//if movie_service.MovieType == "serial" {
 		seasons := []*model.Season{}
 		for _, season := range movie_service.Seasons {
 			sn := season.SeasonNumber
@@ -163,16 +128,11 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 			seasons = append(seasons, curSeas)
 		}
 		roomState.Movie.Seasons = seasons
-		log.Println("SeasonNumber==")
 
 		roomState.Movie.AlbumURL = movie_service.AlbumURL
-		log.Println("roomState.Movie.AlbumURL==", roomState.Movie.AlbumURL)
 		roomState.Movie.CardURL = movie_service.CardURL
-		log.Println("roomState.Movie.CardURL==", roomState.Movie.CardURL)
 		roomState.Movie.TitleURL = movie_service.TitleURL
-		log.Println("roomState.Movie.TitleURL==", roomState.Movie.TitleURL)
 		roomState.Movie.Title = movie_service.Title
-		log.Println("roomState.Movie.Title==", roomState.Movie.Title)
 		roomState.Movie.VideoURL = movie_service.VideoURL
 		roomState.Movie.Rating = movie_service.Rating
 		roomState.Movie.ShortDescription = movie_service.ShortDescription
@@ -198,44 +158,11 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		_ = s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
 	}
 
-	//case "change":
-	//	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
-	//	roomState.Message.Text = action.Message.Text
-	//
-	//	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
-	//	if err != nil {
-	//	log.Println("Failed to get room state from Redis:", err)
-	//	} else {
-	//	if err := conn.WriteJSON(roomState); err != nil {
-	//	log.Println("Failed to send room state:", err)
-	//	return
-	//	}
-	//	}
-
-	//if errMovie != nil {
-	//return nil, fmt.Errorf("errMovie = %+v", errMovie)
-	//}
-	//}
-
-	//movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
-	//	if errMovie != nil {
-	//		return nil, fmt.Errorf("errMovie = %+v", errMovie)
-	//	}x
-	//	roomState.Movie = model.MovieInfo{
-	//		ID:               movie_service.ID,
-	//		Title:            movie_service.Title,
-	//		TitleURL:         movie_service.TitleURL,
-	//		ShortDescription: movie_service.ShortDescription,
-	//		VideoURL:         movie_service.VideoURL,
-	//	}
-	//	return roomState, err
-
 	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
 }
 
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error) {
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
-	log.Println("GetRoomStateGetRoomStateGetRoomStateGetRoomState", roomState)
 
 	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
 	if errMovie != nil {
@@ -280,9 +207,6 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.R
 	return roomState, err
 }
 
-//errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-//*errVals.ServiceError
-
 func (s *RoomService) Session(ctx context.Context, cookie string) (*model.SessionRespData, *errVals.ServiceError) {
 	//id := config.CurrentUserID(ctx)
 	id, err := strconv.Atoi(cookie)
@@ -294,7 +218,6 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 			Error: err,
 		}
 	}
-	log.Println("ididPP = ", id)
 	user, sesErr := s.userService.FindByID(ctx, uint64(id))
 	if sesErr != nil {
 		//errors := make([]errVals.RepoError, 1)
@@ -311,56 +234,3 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 		UserData: *user,
 	}, nil
 }
-
-//func (s *RoomService) startTimer(ctx context.Context, roomID string, initialTimeCode int) {
-//	if _, ok := s.timers[roomID]; ok {
-//		s.stopTimer(roomID)
-//	}
-//
-//	log.Println("startTimerqwedwedwewd")
-//	log.Println("initialTimeCode ==", initialTimeCode)
-//	log.Println("roomID ==", roomID)
-//
-//	timer := &Timer{
-//		Ticker:   time.NewTicker(3 * time.Second),
-//		Quit:     make(chan struct{}),
-//		TimeCode: initialTimeCode,
-//	}
-//	log.Println("startTimer11", roomID)
-//	log.Println("startTim", timer)
-//	log.Println("startTimqwd", timer.TimeCode)
-//
-//	s.timers[roomID] = timer
-//
-//	log.Println("startTimer22", roomID)
-//	go func() {
-//		for {
-//			log.Println("TTTTTTTTTT")
-//			select {
-//			case <-timer.Ticker.C:
-//				timer.TimeCode += 3
-//				log.Println("timer", timer.TimeCode)
-//
-//				// Отправляем обновление в RoomHub через канал Broadcast
-//				s.hub.Broadcast <- ws.BroadcastMessage{
-//					Action: map[string]interface{}{
-//						"type":     "timer",
-//						"timeCode": timer.TimeCode,
-//					},
-//					RoomID: roomID,
-//				}
-//
-//				log.Println("timer", timer.TimeCode)
-//				// Обновляем состояние комнаты
-//				roomState, _ := s.roomRepository.GetRoomState(ctx, roomID)
-//				roomState.TimeCode = float64(timer.TimeCode)
-//				s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
-//
-//			case <-timer.Quit:
-//				return
-//			}
-//		}
-//	}()
-//	log.Println("TTTTTTTTTT22222")
-//
-//}

@@ -5,8 +5,7 @@ import (
 	"fmt"
 )
 
-func (r *MovieRepo) UpdateMovieRating(ctx context.Context, movieId int) error {
-	query := `
+const UpdateMovieRatingQuery = `
 		UPDATE movies 
 		SET rating = (
 			SELECT COALESCE(AVG(rating), 0) 
@@ -15,7 +14,9 @@ func (r *MovieRepo) UpdateMovieRating(ctx context.Context, movieId int) error {
 		)
 		WHERE id = $1
 	`
-	_, err := r.Database.ExecContext(ctx, query, movieId)
+
+func (r *MovieRepo) UpdateMovieRating(ctx context.Context, movieId int) error {
+	_, err := r.Database.ExecContext(ctx, UpdateMovieRatingQuery, movieId)
 	if err != nil {
 		return fmt.Errorf("repository.UpdateMovieRating: %w", err)
 	}

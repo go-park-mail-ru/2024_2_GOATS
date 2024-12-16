@@ -8,8 +8,8 @@ import (
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	websocket "github.com/gorilla/websocket"
+	"github.com/rs/zerolog/log"
 	//zlog "github.com/rs/zerolog/log"
-	"log"
 	"net/http"
 )
 
@@ -56,6 +56,8 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
+	logger := log.Ctx(r.Context())
+
 	userID := r.URL.Query().Get("user_id")
 	if userID == "" {
 		http.Error(w, "Missing user_id", http.StatusBadRequest)
@@ -63,13 +65,15 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg, err := config.New(false)
+	if err != nil {
+		http.Error(w, "error initialize app cfg", http.StatusInternalServerError)
+	}
 
 	ctx := config.WrapContext(r.Context(), cfg)
 
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
-
 	if errSrvResp != nil {
-		return
+		http.Error(w, "get session error", http.StatusInternalServerError)
 	}
 
 	user := model.User{
@@ -92,7 +96,12 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer conn.Close()
+	defer func(conn *websocket.Conn) {
+		err := conn.Close()
+		if err != nil {
+			logger.Error().Err(err).Msg("Failed to close WS connect")
+		}
+	}(conn)
 
 	// Регистрация клиента в комнате
 	h.roomHub.RegisterClient(conn, roomID)
@@ -100,68 +109,33 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	roomState, err := h.roomService.GetRoomState(r.Context(), roomID)
 	if err != nil {
-		log.Println("Failed to get room state from Redis:", err)
+		logger.Error().Err(err).Msg("Failed to get room state from Redis")
 	} else {
 		if err := conn.WriteJSON(roomState); err != nil {
-			log.Println("Failed to send room state:", err)
+			logger.Error().Err(err).Msg("Failed to send room state")
 			return
 		}
 	}
 
-	h.broadcastUserList(conn, roomID)
+	h.broadcastUserList(roomID)
 
 	for {
 		var action model.Action
 		if err := conn.ReadJSON(&action); err != nil {
 			h.roomHub.Unregister <- conn
 			delete(h.roomHub.Users, conn)
-			h.broadcastUserList(conn, roomID)
+			h.broadcastUserList(roomID)
 			break
 		}
 
 		h.roomHub.Broadcast <- ws.BroadcastMessage{Action: action, RoomID: roomID, ExcludeConn: conn}
 		if err := h.roomService.HandleAction(r.Context(), roomID, action); err != nil {
-			log.Println("Error handling action:", err)
+			logger.Error().Err(err).Msg("Error handling action")
 		}
 	}
 }
 
-//func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
-//	userList := make([]models.User, 0, len(h.roomHub.Users))
-//	for _, user := range h.roomHub.Users {
-//		userList = append(userList, user)
-//	}
-//
-//	for conn := range h.roomHub.GetClients(roomID) {
-//		if err := conn.WriteJSON(userList); err != nil {
-//			h.roomHub.Unregister <- conn
-//			delete(h.roomHub.Users, conn)
-//		}
-//	}
-//}
-
-//func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
-//	// Получаем пользователей, которые находятся только в указанной комнате
-//	userList := make([]models.User, 0)
-//	for conn := range h.roomHub.GetClients(roomID) {
-//		// Извлекаем пользователя, связанного с каждым соединением, если он существует
-//		if user, ok := h.roomHub.Users[conn]; ok {
-//			userList = append(userList, user)
-//		}
-//	}
-//
-//	// Рассылаем обновленный список пользователей всем клиентам в указанной комнате
-//	for conn := range h.roomHub.GetClients(roomID) {
-//		if conn != excludeConn { // исключаем отправителя
-//			if err := conn.WriteJSON(userList); err != nil {
-//				h.roomHub.Unregister <- conn
-//				delete(h.roomHub.Users, conn)
-//			}
-//		}
-//	}
-//}
-
-func (h *RoomHandler) broadcastUserList(excludeConn *websocket.Conn, roomID string) {
+func (h *RoomHandler) broadcastUserList(roomID string) {
 	userList := make([]model.User, 0)
 	for conn := range h.roomHub.GetClients(roomID) {
 		if user, ok := h.roomHub.Users[conn]; ok {

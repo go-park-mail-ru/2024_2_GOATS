@@ -156,9 +156,7 @@ func (a *App) Run() {
 	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager, roomHub, timer)
 	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
 
-	log.Println("XZXZXZ")
 	go roomHub.Run()
-	log.Println("XZ2XZ2XZ2")
 
 	mx := mux.NewRouter()
 	authMW := middleware.NewSessionMiddleware(srvAuth)

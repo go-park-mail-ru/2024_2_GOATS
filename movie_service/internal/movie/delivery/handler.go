@@ -6,7 +6,6 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 )
 
 // MovieHandler grpc handler
@@ -144,8 +143,6 @@ func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest)
 		return nil, err
 	}
 
-	log.Println("actorDel", actor)
-
 	var respp movie.ActorInfo
 	respp.Id = int32(actor.ID)
 	respp.Birthdate = actor.Birthdate.String
@@ -209,7 +206,6 @@ func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMovies
 			TitleUrl:         mov.TitleURL,
 		}
 	}
-	log.Println("resppmovie", respp)
 	return &movie.SearchMoviesResponse{Movies: respp}, nil
 }
 
@@ -220,7 +216,6 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 	}
 
 	actors, err := h.movieService.SearchActors(ctx, req.Query)
-	log.Println("del", actors)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -235,7 +230,6 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 		}
 
 	}
-	log.Println("respp", respp)
 	return &movie.SearchActorsResponse{Actors: respp}, nil
 }
 
@@ -330,7 +324,7 @@ func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUp
 		return nil, err
 	}
 
-	return nil, nil
+	return &movie.AddOrUpdateRatingResponse{}, nil
 }
 
 func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRatingRequest) (*movie.DeleteRatingResponse, error) {
@@ -343,7 +337,7 @@ func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRating
 		return nil, err
 	}
 
-	return nil, nil
+	return &movie.DeleteRatingResponse{}, nil
 }
 
 func sanitizeInput(input string) string {

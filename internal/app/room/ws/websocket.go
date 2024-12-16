@@ -41,8 +41,8 @@ func NewRoomHub() *RoomHub {
 func (hub *RoomHub) Run() {
 	for {
 		select {
-		case clients := <-hub.Register:
-			hub.addClientToRoom(clients)
+		case client := <-hub.Register:
+			hub.addClientToRoom(client)
 		case conn := <-hub.Unregister:
 			hub.removeClient(conn)
 		case message := <-hub.Broadcast:
@@ -62,15 +62,15 @@ func (hub *RoomHub) GetClients(roomID string) map[*websocket.Conn]bool {
 	return hub.Rooms[roomID]
 }
 
-func (hub *RoomHub) addClientToRoom(clients *Client) {
+func (hub *RoomHub) addClientToRoom(client *Client) {
 	hub.mu.Lock()
 	defer hub.mu.Unlock()
 
 	// Создаем комнату, если её нет
-	if hub.Rooms[clients.RoomID] == nil {
-		hub.Rooms[clients.RoomID] = make(map[*websocket.Conn]bool)
+	if hub.Rooms[client.RoomID] == nil {
+		hub.Rooms[client.RoomID] = make(map[*websocket.Conn]bool)
 	}
-	hub.Rooms[clients.RoomID][clients.Conn] = true
+	hub.Rooms[client.RoomID][client.Conn] = true
 }
 
 func (hub *RoomHub) removeClient(conn *websocket.Conn) {

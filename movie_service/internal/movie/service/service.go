@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 )
@@ -92,7 +90,6 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 // GetActor gets actor by id
 func (s *MovieService) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	actor, err := s.movieRepository.GetActor(ctx, actorID)
-	log.Println("actorServ", actor)
 	if err != nil {
 		return nil, fmt.Errorf("movieService.GetActor: %w", err)
 	}
@@ -127,7 +124,6 @@ func (s *MovieService) GetUserRating(ctx context.Context, userId int, movieId in
 		return 0, fmt.Errorf("movieService.GetUserRating: %w", err)
 	}
 
-	log.Println("rating", rating)
 	return rating, nil
 }
 

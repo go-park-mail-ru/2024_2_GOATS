@@ -17,7 +17,7 @@ type MovieServiceInterface interface {
 	// GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.ServiceError)
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
-	GetUserRating(ctx context.Context, movieID int) (int, *errVals.ServiceError)
-	AddOrUpdateRating(ctx context.Context, movieID, rating int) *errVals.ServiceError
-	DeleteRating(ctx context.Context, movieID int) *errVals.ServiceError
+	GetUserRating(ctx context.Context, movieID int32) (int32, *errVals.ServiceError)
+	AddOrUpdateRating(ctx context.Context, movieID, rating int32) *errVals.ServiceError
+	DeleteRating(ctx context.Context, movieID int32) *errVals.ServiceError
 }

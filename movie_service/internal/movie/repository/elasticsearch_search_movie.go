@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
@@ -46,7 +45,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 	}()
 
 	bodyBytes, _ := io.ReadAll(res.Body)
-	log.Println("ElasticSearch Response:", string(bodyBytes))
 
 	if res.IsError() {
 		return nil, fmt.Errorf("search error: %s", res.String())
@@ -70,8 +68,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 	if decErr := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&esResponse); decErr != nil {
 		return nil, fmt.Errorf("error decoding search response: %w", decErr)
 	}
-
-	log.Println("Hits:", esResponse.Hits.Hits)
 
 	if len(esResponse.Hits.Hits) == 0 {
 		return []models.MovieInfo{}, nil
