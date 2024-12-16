@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - very-final-branch
+      - release/use-subscription-in-movies
   workflow_dispatch:
 
 jobs:
