@@ -5,12 +5,9 @@ import (
 	"context"
 	"crypto/subtle"
 	"io"
-	"net"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/gorilla/mux"
 
 	"github.com/gorilla/sessions"
 	"github.com/microcosm-cc/bluemonday"
@@ -223,30 +220,4 @@ func CsrfMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-func realIP(r *http.Request) string {
-	rIP := r.Header.Get("X-Real-IP")
-	if rIP == "" {
-		rIP = r.Header.Get("X-Forwarded-For")
-		if rIP != "" {
-			rIP = strings.Split(rIP, ",")[0]
-		}
-	}
-
-	if rIP == "" {
-		rIP, _, _ = net.SplitHostPort(r.RemoteAddr)
-	}
-
-	return rIP
-}
-
-func requestPath(w http.ResponseWriter, r *http.Request) string {
-	route := mux.CurrentRoute(r)
-	if route == nil {
-		http.Error(w, "Route not found", http.StatusNotFound)
-		return ""
-	}
-
-	return route.GetName()
 }

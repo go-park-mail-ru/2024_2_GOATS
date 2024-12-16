@@ -3,16 +3,20 @@ package websocket
 import (
 	models "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	"github.com/gorilla/websocket"
+
+	"log"
 	"sync"
 	"time"
 )
 
+// BroadcastMessage структура сообщения рассылаемое бродкастом
 type BroadcastMessage struct {
 	Action      interface{}
 	RoomID      string
 	ExcludeConn *websocket.Conn
 }
 
+// RoomHub структура хаба
 type RoomHub struct {
 	Rooms        map[string]map[*websocket.Conn]bool
 	Users        map[*websocket.Conn]models.User
@@ -23,11 +27,13 @@ type RoomHub struct {
 	timerManager *TimerManager
 }
 
+// Client структура клиента
 type Client struct {
 	Conn   *websocket.Conn
 	RoomID string
 }
 
+// NewRoomHub конструктор хаба
 func NewRoomHub() *RoomHub {
 	return &RoomHub{
 		Rooms:      make(map[string]map[*websocket.Conn]bool),
@@ -38,6 +44,7 @@ func NewRoomHub() *RoomHub {
 	}
 }
 
+// Run запуск
 func (hub *RoomHub) Run() {
 	for {
 		select {
@@ -51,11 +58,13 @@ func (hub *RoomHub) Run() {
 	}
 }
 
+// RegisterClient функция регистрации клиента
 func (hub *RoomHub) RegisterClient(conn *websocket.Conn, roomID string) {
 	clients := &Client{Conn: conn, RoomID: roomID}
 	hub.Register <- clients
 }
 
+// GetClients функция получения клиента
 func (hub *RoomHub) GetClients(roomID string) map[*websocket.Conn]bool {
 	hub.mu.RLock()
 	defer hub.mu.RUnlock()
@@ -91,9 +100,13 @@ func (hub *RoomHub) removeClient(conn *websocket.Conn) {
 		}
 	}
 	delete(hub.Users, conn)
-	conn.Close()
+	err := conn.Close()
+	if err != nil {
+		log.Println("close websocket err:", err)
+	}
 }
 
+// broadcastToRoom бродкаст для комнаты
 func (hub *RoomHub) broadcastToRoom(message BroadcastMessage) {
 	hub.mu.RLock()
 	defer hub.mu.RUnlock()
@@ -108,22 +121,27 @@ func (hub *RoomHub) broadcastToRoom(message BroadcastMessage) {
 	}
 }
 
+// SetTimerManager установка таймера
 func (hub *RoomHub) SetTimerManager(manager *TimerManager) {
 	hub.timerManager = manager
 }
 
+// TimerManager структура таймера
 type TimerManager struct {
 	mu     sync.Mutex
 	timers map[string]chan struct{}
 	hub    *RoomHub
 }
 
+// NewTimerManager конструктор таймера
 func NewTimerManager(hub *RoomHub) *TimerManager {
 	return &TimerManager{
 		timers: make(map[string]chan struct{}),
 		hub:    hub,
 	}
 }
+
+// Start старт таймерв
 func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(int64), duration int64) {
 	tm.mu.Lock()
 	if _, exists := tm.timers[roomID]; exists {
@@ -164,6 +182,7 @@ func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(in
 	}()
 }
 
+// Stop остановка таймера
 func (tm *TimerManager) Stop(roomID string) {
 	tm.mu.Lock()
 	if quit, exists := tm.timers[roomID]; exists {

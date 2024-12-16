@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"math"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"math"
 )
 
+// GetUserRating получение рейтинга
 func (s *MovieService) GetUserRating(ctx context.Context, movieID int32) (int32, *errVals.ServiceError) {
 
 	usrID := config.CurrentUserID(ctx)

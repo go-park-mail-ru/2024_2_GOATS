@@ -91,7 +91,6 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]models.Mo
 			Rating:   hit.Source.Rating,
 			CardURL:  hit.Source.CardURL,
 			AlbumURL: hit.Source.AlbumURL,
-			VerURL:   hit.Source.VerURL,
 		}
 	}
 

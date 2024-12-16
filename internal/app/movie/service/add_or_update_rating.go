@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"math"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"math"
 )
 
+// AddOrUpdateRating добавление рейтинга
 func (s *MovieService) AddOrUpdateRating(ctx context.Context, movieID, rating int32) *errVals.ServiceError {
 	usrID := config.CurrentUserID(ctx)
 	if usrID == 0 {

@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	"github.com/microcosm-cc/bluemonday"
 	"google.golang.org/grpc/codes"
@@ -294,9 +295,10 @@ func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavorites
 	return &movie.GetFavoritesResponse{Movies: respp}, nil
 }
 
+// GetUserRating получение рейтинга пользователя
 func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRatingRequest) (*movie.GetUserRatingResponse, error) {
 	if req.MovieId <= 0 || req.UserId <= 0 {
-		return nil, status.Error(codes.InvalidArgument, "invalid req.MovieId or req.UserId")
+		return nil, status.Error(codes.InvalidArgument, "invalid req.MovieID or req.UserId")
 	}
 
 	rating, err := h.movieService.GetUserRating(ctx, int(req.UserId), int(req.MovieId))
@@ -313,6 +315,7 @@ func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRati
 	}, nil
 }
 
+// AddOrUpdateRating добавление рейтинга пользователя
 func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUpdateRatingRequest) (*movie.AddOrUpdateRatingResponse, error) {
 	if req.MovieId <= 0 || req.UserId <= 0 || req.Rating < 1 || req.Rating > 10 {
 		return nil, status.Error(codes.InvalidArgument, "invalid req.UserId or req.Rating req.Rating")
@@ -326,6 +329,7 @@ func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUp
 	return &movie.AddOrUpdateRatingResponse{}, nil
 }
 
+// DeleteRating удаление рейтинга пользователя
 func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRatingRequest) (*movie.DeleteRatingResponse, error) {
 	if req.MovieId <= 0 || req.UserId <= 0 {
 		return nil, status.Error(codes.InvalidArgument, "invalid movie ID or user ID")
@@ -339,6 +343,7 @@ func (h *MovieHandler) DeleteRating(ctx context.Context, req *movie.DeleteRating
 	return &movie.DeleteRatingResponse{}, nil
 }
 
+// sanitizeInput санитайз
 func sanitizeInput(input string) string {
 	policy := bluemonday.UGCPolicy()
 	return policy.Sanitize(input)

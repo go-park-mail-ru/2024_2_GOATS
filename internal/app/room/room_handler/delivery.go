@@ -3,6 +3,8 @@ package delivery
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
@@ -10,9 +12,9 @@ import (
 	websocket "github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	//zlog "github.com/rs/zerolog/log"
-	"net/http"
 )
 
+// RoomServiceInterface интерейс сервиса комнаты
 type RoomServiceInterface interface {
 	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
 	HandleAction(ctx context.Context, roomID string, action model.Action) error
@@ -20,6 +22,7 @@ type RoomServiceInterface interface {
 	GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error)
 }
 
+// RoomHandler структура хэндлера комнаты
 type RoomHandler struct {
 	roomService RoomServiceInterface
 	roomHub     *ws.RoomHub
@@ -28,9 +31,10 @@ type RoomHandler struct {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
+	CheckOrigin:     func(_ *http.Request) bool { return true },
 }
 
+// NewRoomHandler конструктор хэндлера комнаты
 func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHandler {
 	return &RoomHandler{
 		roomService: service,
@@ -38,8 +42,11 @@ func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub) *RoomHand
 	}
 }
 
+// CreateRoom создание комнаты
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var room model.RoomState
+	logger := log.Ctx(r.Context())
+
 	if err := json.NewDecoder(r.Body).Decode(&room); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
@@ -52,9 +59,13 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createdRoom)
+	err = json.NewEncoder(w).Encode(createdRoom)
+	if err != nil {
+		logger.Error().Err(err).Msg("Metrics stopped")
+	}
 }
 
+// JoinRoom функция входа в комнату
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 

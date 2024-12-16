@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 )
@@ -19,10 +20,10 @@ type MovieRepositoryInterface interface {
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
-	GetUserRating(ctx context.Context, userId int, movieId int) (float32, error)
-	AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error
+	GetUserRating(ctx context.Context, userID int, movieID int) (float32, error)
+	AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error
 	DeleteUserRating(ctx context.Context, userID, movieID int) error
-	UpdateMovieRating(ctx context.Context, movieId int) error
+	UpdateMovieRating(ctx context.Context, movieID int) error
 }
 
 // MovieService is a movie_service service layer struct
@@ -118,8 +119,9 @@ func (s *MovieService) GetFavorites(ctx context.Context, mvIDs []uint64) ([]*mod
 	return mvs, nil
 }
 
-func (s *MovieService) GetUserRating(ctx context.Context, userId int, movieId int) (float32, error) {
-	rating, err := s.movieRepository.GetUserRating(ctx, userId, movieId)
+// GetUserRating получение рейтинга пользователя
+func (s *MovieService) GetUserRating(ctx context.Context, userID int, movieID int) (float32, error) {
+	rating, err := s.movieRepository.GetUserRating(ctx, userID, movieID)
 	if err != nil {
 		return 0, fmt.Errorf("movieService.GetUserRating: %w", err)
 	}
@@ -127,13 +129,14 @@ func (s *MovieService) GetUserRating(ctx context.Context, userId int, movieId in
 	return rating, nil
 }
 
-func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error {
-	err := s.movieRepository.AddOrUpdateRating(ctx, userId, movieId, rating)
+// AddOrUpdateRating добавление или обновление рейтинга
+func (s *MovieService) AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error {
+	err := s.movieRepository.AddOrUpdateRating(ctx, userID, movieID, rating)
 	if err != nil {
 		return fmt.Errorf("movieService.AddOrUpdateRating: %w", err)
 	}
 
-	err = s.movieRepository.UpdateMovieRating(ctx, movieId)
+	err = s.movieRepository.UpdateMovieRating(ctx, movieID)
 	if err != nil {
 		return fmt.Errorf("movieService.AddOrUpdateRating (update movie rating): %w", err)
 	}
@@ -141,6 +144,7 @@ func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieI
 	return nil
 }
 
+// DeleteRating удаление рейтинга
 func (s *MovieService) DeleteRating(ctx context.Context, userID, movieID int) error {
 	err := s.movieRepository.DeleteUserRating(ctx, userID, movieID)
 	if err != nil {

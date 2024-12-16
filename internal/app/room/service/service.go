@@ -3,17 +3,19 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-	"log"
-	"strconv"
 )
 
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=service
 
+// MovieServiceInterface интерфейс сервиса фильмов
 type MovieServiceInterface interface {
 	GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError)
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.ServiceError)
@@ -21,6 +23,7 @@ type MovieServiceInterface interface {
 	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.ServiceError)
 }
 
+// RoomRepositoryInterface интерфейс репозитория комнаты
 type RoomRepositoryInterface interface {
 	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
 	UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error
@@ -29,6 +32,7 @@ type RoomRepositoryInterface interface {
 	//UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int)
 }
 
+// UserServiceInterface интерфейс сервиса юзера
 type UserServiceInterface interface {
 	UpdateProfile(ctx context.Context, profileData *models.User) *errVals.ServiceError
 	UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errVals.ServiceError
@@ -37,6 +41,7 @@ type UserServiceInterface interface {
 	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.ServiceError)
 }
 
+// RoomService структура сервиса комнаты
 type RoomService struct {
 	roomRepository RoomRepositoryInterface
 	movieService   client.MovieClientInterface
@@ -45,6 +50,7 @@ type RoomService struct {
 	hub            *ws.RoomHub
 }
 
+// NewService конструктор сервиса
 func NewService(repo RoomRepositoryInterface, movieService client.MovieClientInterface, userService client.UserClientInterface, hub *ws.RoomHub, TimerManager *ws.TimerManager) *RoomService {
 	return &RoomService{
 		roomRepository: repo,
@@ -55,10 +61,12 @@ func NewService(repo RoomRepositoryInterface, movieService client.MovieClientInt
 	}
 }
 
+// CreateRoom создание комнаты
 func (s *RoomService) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
 	return s.roomRepository.CreateRoom(ctx, room)
 }
 
+// HandleAction отлов событий
 func (s *RoomService) HandleAction(ctx context.Context, roomID string, action model.Action) error {
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 	if err != nil {
@@ -94,15 +102,15 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		roomState.Message.Text = action.Message.Text
 
 	case "change":
-		movie_service, errMovie := s.movieService.GetMovie(ctx, action.MovieId)
+		movieService, errMovie := s.movieService.GetMovie(ctx, action.MovieID)
 		if errMovie != nil {
 			log.Println("errMovie", errMovie)
 		}
-		roomState.Movie.ID = movie_service.ID
-		roomState.Movie.MovieType = movie_service.MovieType
+		roomState.Movie.ID = movieService.ID
+		roomState.Movie.MovieType = movieService.MovieType
 
 		seasons := []*model.Season{}
-		for _, season := range movie_service.Seasons {
+		for _, season := range movieService.Seasons {
 			sn := season.SeasonNumber
 			var eps []*model.Episode
 			for _, ep := range season.Episodes {
@@ -129,13 +137,13 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 		}
 		roomState.Movie.Seasons = seasons
 
-		roomState.Movie.AlbumURL = movie_service.AlbumURL
-		roomState.Movie.CardURL = movie_service.CardURL
-		roomState.Movie.TitleURL = movie_service.TitleURL
-		roomState.Movie.Title = movie_service.Title
-		roomState.Movie.VideoURL = movie_service.VideoURL
-		roomState.Movie.Rating = movie_service.Rating
-		roomState.Movie.ShortDescription = movie_service.ShortDescription
+		roomState.Movie.AlbumURL = movieService.AlbumURL
+		roomState.Movie.CardURL = movieService.CardURL
+		roomState.Movie.TitleURL = movieService.TitleURL
+		roomState.Movie.Title = movieService.Title
+		roomState.Movie.VideoURL = movieService.VideoURL
+		roomState.Movie.Rating = movieService.Rating
+		roomState.Movie.ShortDescription = movieService.ShortDescription
 
 		roomState.SeasonNow = 0
 		roomState.EpisodeNow = 0
@@ -161,17 +169,18 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
 }
 
+// GetRoomState получение статистики
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error) {
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 
-	movie_service, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
+	movieService, errMovie := s.movieService.GetMovie(ctx, roomState.Movie.ID)
 	if errMovie != nil {
 		return nil, fmt.Errorf("errMovie = %+v", errMovie)
 	}
 
 	var seasons []*model.Season
 
-	for _, season := range movie_service.Seasons {
+	for _, season := range movieService.Seasons {
 		sn := season.SeasonNumber
 		var eps []*model.Episode
 		for _, ep := range season.Episodes {
@@ -197,16 +206,17 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.R
 	}
 
 	roomState.Movie = model.MovieInfo{
-		ID:               movie_service.ID,
-		Title:            movie_service.Title,
-		TitleURL:         movie_service.TitleURL,
-		ShortDescription: movie_service.ShortDescription,
-		VideoURL:         movie_service.VideoURL,
+		ID:               movieService.ID,
+		Title:            movieService.Title,
+		TitleURL:         movieService.TitleURL,
+		ShortDescription: movieService.ShortDescription,
+		VideoURL:         movieService.VideoURL,
 		Seasons:          seasons,
 	}
 	return roomState, err
 }
 
+// Session функция сессия
 func (s *RoomService) Session(ctx context.Context, cookie string) (*model.SessionRespData, *errVals.ServiceError) {
 	//id := config.CurrentUserID(ctx)
 	id, err := strconv.Atoi(cookie)

@@ -72,8 +72,8 @@ func (m *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movieServResp, errServResp := m.movieService.GetMovie(r.Context(), mvID)
-	rating, errServResp := m.movieService.GetUserRating(r.Context(), mvID)
+	movieServResp, _ := m.movieService.GetMovie(r.Context(), mvID)
+	rating, errServResp := m.movieService.GetUserRating(r.Context(), int32(mvID))
 
 	movieResp, errResp := converter.ToAPIGetMovieResponse(movieServResp, int64(rating)), errVals.ToDeliveryErrorFromService(errServResp)
 
@@ -190,7 +190,8 @@ func (m *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
+// GetUserRating получение рейтинга
+func (m *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
 	movieIDStr := r.URL.Query().Get("movie_id")
@@ -201,17 +202,18 @@ func (h *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rating, errServResp := h.movieService.GetUserRating(r.Context(), movieID)
+	rating, errServResp := m.movieService.GetUserRating(r.Context(), int32(movieID))
 	if errServResp != nil {
 		logger.Error().Err(errServResp.Error).Msg("failed to get user rating")
 		api.Response(r.Context(), w, http.StatusInternalServerError, api.PreparedDefaultError("internal_error", err))
 		return
 	}
 
-	api.Response(r.Context(), w, http.StatusOK, map[string]int{"rating": rating})
+	api.Response(r.Context(), w, http.StatusOK, map[string]int{"rating": int(rating)})
 }
 
-func (h *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request) {
+// AddOrUpdateRating добавление рейтинга
+func (m *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
 	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
@@ -237,7 +239,7 @@ func (h *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if errServResp := h.movieService.AddOrUpdateRating(r.Context(), mvID, req.Rating); errServResp != nil {
+	if errServResp := m.movieService.AddOrUpdateRating(r.Context(), int32(mvID), int32(req.Rating)); errServResp != nil {
 		logger.Error().Err(errServResp.Error).Msg("failed to add or update rating")
 		api.Response(r.Context(), w, http.StatusInternalServerError, api.PreparedDefaultError("internal_error", err))
 		return
@@ -246,7 +248,8 @@ func (h *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request)
 	api.Response(r.Context(), w, http.StatusOK, map[string]string{"message": "rating updated"})
 }
 
-func (h *MovieHandler) DeleteRating(w http.ResponseWriter, r *http.Request) {
+// DeleteRating удаление рейтинга
+func (m *MovieHandler) DeleteRating(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
 	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
@@ -258,7 +261,7 @@ func (h *MovieHandler) DeleteRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errServResp := h.movieService.DeleteRating(r.Context(), mvID)
+	errServResp := m.movieService.DeleteRating(r.Context(), int32(mvID))
 	if errServResp != nil {
 		http.Error(w, "failed to delete rating", http.StatusInternalServerError)
 		return
