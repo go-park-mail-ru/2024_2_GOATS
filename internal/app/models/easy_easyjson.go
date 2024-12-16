@@ -281,6 +281,8 @@ func easyjson97766e5aDecodeGithubComGoParkMailRu20242GOATSInternalAppModels2(in 
 			out.CardURL = string(in.String())
 		case "album_url":
 			out.AlbumURL = string(in.String())
+		case "ver_url":
+			out.VerURL = string(in.String())
 		case "title_url":
 			out.TitleURL = string(in.String())
 		case "rating":
@@ -412,6 +414,11 @@ func easyjson97766e5aEncodeGithubComGoParkMailRu20242GOATSInternalAppModels2(out
 		const prefix string = ",\"album_url\":"
 		out.RawString(prefix)
 		out.String(string(in.AlbumURL))
+	}
+	{
+		const prefix string = ",\"ver_url\":"
+		out.RawString(prefix)
+		out.String(string(in.VerURL))
 	}
 	{
 		const prefix string = ",\"title_url\":"
