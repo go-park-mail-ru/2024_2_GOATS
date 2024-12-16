@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/delivery"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
@@ -21,6 +20,9 @@ type MovieRepositoryInterface interface {
 	SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error)
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
+	GetUserRating(ctx context.Context, userID int, movieID int) (float32, error)
+	AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error
+	UpdateMovieRating(ctx context.Context, movieID int) error
 }
 
 // MovieService is a movie_service service layer struct
@@ -88,7 +90,6 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 // GetActor gets actor by id
 func (s *MovieService) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	actor, err := s.movieRepository.GetActor(ctx, actorID)
-	log.Println("actorServ", actor)
 	if err != nil {
 		return nil, fmt.Errorf("movieService.GetActor: %w", err)
 	}
@@ -115,4 +116,29 @@ func (s *MovieService) GetFavorites(ctx context.Context, mvIDs []uint64) ([]*mod
 	}
 
 	return mvs, nil
+}
+
+// GetUserRating получение рейтинга пользователя
+func (s *MovieService) GetUserRating(ctx context.Context, userID int, movieID int) (float32, error) {
+	rating, err := s.movieRepository.GetUserRating(ctx, userID, movieID)
+	if err != nil {
+		return 0, fmt.Errorf("movieService.GetUserRating: %w", err)
+	}
+
+	return rating, nil
+}
+
+// AddOrUpdateRating добавление или обновление рейтинга
+func (s *MovieService) AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error {
+	err := s.movieRepository.AddOrUpdateRating(ctx, userID, movieID, rating)
+	if err != nil {
+		return fmt.Errorf("movieService.AddOrUpdateRating: %w", err)
+	}
+
+	err = s.movieRepository.UpdateMovieRating(ctx, movieID)
+	if err != nil {
+		return fmt.Errorf("movieService.AddOrUpdateRating (update movie rating): %w", err)
+	}
+
+	return nil
 }

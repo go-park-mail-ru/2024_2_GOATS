@@ -65,7 +65,7 @@ func Response(ctx context.Context, w http.ResponseWriter, code int, obj interfac
 }
 
 // DecodeBody decodes http request body
-func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
+func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) bool {
 	logger := log.Ctx(r.Context())
 
 	unmarshaler, ok := obj.(easyjson.Unmarshaler)
@@ -75,21 +75,23 @@ func DecodeBody(w http.ResponseWriter, r *http.Request, obj interface{}) {
 			logger.Error().Err(err).Msg("cannot parse request")
 			Response(r.Context(), w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
 		}
-		return
+		return false
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		logger.Error().Err(err).Msg("cannot read request body")
 		Response(r.Context(), w, http.StatusInternalServerError, fmt.Errorf("cannot read request body: %w", err))
-		return
+		return false
 	}
 
 	if err := easyjson.Unmarshal(body, unmarshaler); err != nil {
 		logger.Error().Err(err).Msg("cannot parse request")
 		Response(r.Context(), w, http.StatusBadRequest, fmt.Errorf("cannot parse request: %w", err))
-		return
+		return false
 	}
+
+	return true
 }
 
 // PreparedDefaultError is a prepared default http error

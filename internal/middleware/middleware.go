@@ -11,30 +11,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
-
 	"github.com/go-park-mail-ru/2024_2_GOATS/metrics"
-	"github.com/gorilla/sessions"
-	"github.com/spf13/viper"
+	"github.com/gorilla/mux"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/gorilla/sessions"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 type statusRecorder struct {
 	http.ResponseWriter
+	Path   string
 	Status int
 }
 
 func (rec *statusRecorder) WriteHeader(code int) {
+	if strings.HasPrefix(rec.Path, "/api/room/join") {
+		return
+	}
+
+	if rec.Status != http.StatusOK {
+		return
+	}
+
 	rec.Status = code
 	rec.ResponseWriter.WriteHeader(code)
 }
 
 // NewLoggingResponseWriter wraps resonseWriter with status
-func NewLoggingResponseWriter(w http.ResponseWriter) *statusRecorder {
-	return &statusRecorder{w, http.StatusOK}
+func NewLoggingResponseWriter(w http.ResponseWriter, path string) *statusRecorder {
+	return &statusRecorder{w, path, http.StatusOK}
 }
 
 // AccessLogMiddleware logs any request
@@ -47,17 +55,25 @@ func AccessLogMiddleware(next http.Handler) http.Handler {
 
 		ctx := context.WithValue(r.Context(), requestIDKey, reqID)
 		w.Header().Set("Req-ID", reqID)
-		rec := NewLoggingResponseWriter(w)
+		var customRec *statusRecorder
+		if !strings.HasPrefix(r.URL.Path, "/api/room/join") {
+			customRec = NewLoggingResponseWriter(w, r.URL.Path)
+		}
+
 		md := metadata.Pairs(
 			"request_id", reqID,
 		)
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		start := time.Now()
-		next.ServeHTTP(rec, r.WithContext(ctx))
-		status := rec.Status
-		reqPath := requestPath(w, r)
-		logRequest(r, start, "accessLogMiddleware", reqID, status, reqPath)
+
+		if customRec != nil {
+			next.ServeHTTP(customRec, r.WithContext(ctx))
+			status := customRec.Status
+			logRequest(r, start, "accessLogMiddleware", reqID, status, requestPath(w, r))
+		} else {
+			next.ServeHTTP(w, r.WithContext(ctx))
+		}
 	})
 }
 
@@ -71,7 +87,11 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Type, X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
+			if rw, ok := w.(*statusRecorder); ok {
+				rw.WriteHeader(http.StatusNoContent)
+			} else {
+				w.WriteHeader(http.StatusNoContent)
+			}
 			return
 		}
 
@@ -110,7 +130,7 @@ func logRequest(r *http.Request, start time.Time, msg string, requestID string, 
 	log.Info().
 		Str("method", r.Method).
 		Str("remote_addr", r.RemoteAddr).
-		Str("url", r.URL.Path).
+		Str("url", path).
 		Str("request-id", requestID).
 		Bytes("body", bodyBytes).
 		Dur("work_time", duration).
@@ -200,6 +220,10 @@ func realIP(r *http.Request) string {
 }
 
 func requestPath(w http.ResponseWriter, r *http.Request) string {
+	if strings.HasPrefix(r.URL.Path, "/metrics") {
+		return "/metrics"
+	}
+
 	route := mux.CurrentRoute(r)
 	if route == nil {
 		http.Error(w, "Route not found", http.StatusNotFound)

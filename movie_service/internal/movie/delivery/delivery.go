@@ -18,4 +18,6 @@ type MovieServiceInterface interface {
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetMovieActors(ctx context.Context, mvID int) ([]*models.ActorInfo, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
+	GetUserRating(ctx context.Context, userID int, movieID int) (float32, error)
+	AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error
 }

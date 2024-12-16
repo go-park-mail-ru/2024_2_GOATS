@@ -36,6 +36,9 @@ func SetupMovie(delLayer handlers.MovieHandlerInterface, router *mux.Router) {
 
 	movieRouter.HandleFunc("/movies/search", delLayer.SearchMovies).Methods(http.MethodGet, http.MethodOptions).Name("MovieSearchRoute")
 	movieRouter.HandleFunc("/actors/search", delLayer.SearchActors).Methods(http.MethodGet, http.MethodOptions).Name("ActorSearchRoute")
+
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.GetUserRating).Methods(http.MethodGet, http.MethodOptions).Name("GetUserRating")
+	movieRouter.HandleFunc("/{movie_id:[0-9]+}/rating", delLayer.AddOrUpdateRating).Methods(http.MethodPost, http.MethodOptions).Name("AddOrUpdateRating")
 }
 
 // SetupUser setups users subrouter
@@ -55,7 +58,7 @@ func SetupPayment(delLayer handlers.PaymentHandlerInterface, router *mux.Router)
 	apiMux := router.PathPrefix("/api").Subrouter()
 	paymentRouter := apiMux.PathPrefix("/payments").Subrouter()
 
-	paymentRouter.HandleFunc("/notify_yoo_money", delLayer.NotifyYooMoney).Methods(http.MethodPost, http.MethodOptions)
+	paymentRouter.HandleFunc("/notify_yoo_money", delLayer.NotifyYooMoney).Methods(http.MethodPost, http.MethodOptions).Name("NotifyYooMoneyRoute")
 }
 
 // SetupSubscription setups subscription subrouter
@@ -63,15 +66,16 @@ func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *m
 	apiMux := router.PathPrefix("/api").Subrouter()
 	subscrRouter := apiMux.PathPrefix("/subscription").Subrouter()
 
-	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions)
+	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions).Name("SubscribeRoute")
 }
 
-//func SetupRoom(hub *webSocket.RoomHub, roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
-//	apiMux := router.PathPrefix("/api").Subrouter()
-//	roomRouter := apiMux.PathPrefix("/room").Subrouter()
-//	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions)
-//	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet)
-//}
+// SetupRoom создание комнаты
+func SetupRoom(roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
+	apiMux := router.PathPrefix("/api").Subrouter()
+	roomRouter := apiMux.PathPrefix("/room").Subrouter()
+	roomRouter.HandleFunc("/create", roomHandler.CreateRoom).Methods(http.MethodPost, http.MethodOptions).Name("CreateRoomRoute")
+	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodGet).Name("JoinRoomRoute")
+}
 
 // UseCommonMiddlewares activates common middlewares
 func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) {
@@ -87,5 +91,5 @@ func UseCommonMiddlewares(mx *mux.Router, authMW *middleware.SessionMiddleware) 
 // SetupCsrf setups csrf router
 func SetupCsrf(router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
-	apiMux.HandleFunc("/csrf-token", csrf_handle.GenerateCSRFTokenHandler).Methods(http.MethodGet)
+	apiMux.HandleFunc("/csrf-token", csrf_handle.GenerateCSRFTokenHandler).Methods(http.MethodGet).Name("CsrfRoute")
 }

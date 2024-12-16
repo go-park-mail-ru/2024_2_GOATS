@@ -31,3 +31,7 @@ github.com/go-park-mail-ru/2024_2_GOATS/internal/db/script_elastic
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models/easy_easyjson.go
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api/struct_easyjson.go
 github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors/errors_easyjson.go
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors/errors_easyjson.go
+github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model/model_easyjson.go
+github.com/go-park-mail-ru/2024_2_GOATS/internal/db/script_elastic/models/models_easyjson.go
+github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models/easy_easyjson.go

@@ -80,18 +80,18 @@ package service
 // 				m.roomRepository.EXPECT().GetRoomState(
 // 					gomock.Any(), "1").
 // 					Return(&models.RoomState{
-// 						Id: "1",
+// 						ID: "1",
 // 					}, nil)
 
 // 				m.movieService.EXPECT().GetMovie(
 // 					gomock.Any(), 0).
 // 					Return(&model.MovieInfo{
-// 						Id: 1,
+// 						ID: 1,
 // 					}, nil)
 // 			},
 // 			assert: func(t *testing.T, o out) {
 // 				assert.NoError(t, o.err)
-// 				assert.Equal(t, roomIdTest, o.roomState.Movie.Id)
+// 				assert.Equal(t, roomIdTest, o.roomState.Movie.ID)
 // 			},
 // 		},
 // 	}
@@ -141,7 +141,7 @@ package service
 // 				m.roomRepository.EXPECT().GetRoomState(
 // 					gomock.Any(), "1").
 // 					Return(&models.RoomState{
-// 						Id: "1",
+// 						ID: "1",
 // 					}, terr)
 // 			},
 // 			assert: func(t *testing.T, o out) {
@@ -159,12 +159,12 @@ package service
 // 				m.roomRepository.EXPECT().GetRoomState(
 // 					gomock.Any(), "1").
 // 					Return(&models.RoomState{
-// 						Id: "1",
+// 						ID: "1",
 // 					}, nil)
 
 // 				m.roomRepository.EXPECT().UpdateRoomState(
 // 					gomock.Any(), "1", &models.RoomState{
-// 						Id: "1",
+// 						ID: "1",
 // 					}).
 // 					Return(nil)
 // 			},
@@ -183,12 +183,12 @@ package service
 // 				m.roomRepository.EXPECT().GetRoomState(
 // 					gomock.Any(), "1").
 // 					Return(&models.RoomState{
-// 						Id: "1",
+// 						ID: "1",
 // 					}, nil)
 
 // 				m.roomRepository.EXPECT().UpdateRoomState(
 // 					gomock.Any(), "1", &models.RoomState{
-// 						Id:     "1",
+// 						ID:     "1",
 // 						Status: "paused",
 // 					}).
 // 					Return(nil)

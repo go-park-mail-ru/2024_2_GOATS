@@ -71,6 +71,7 @@ type MovieShortInfos struct {
 // MovieResponse json struct
 type MovieResponse struct {
 	MovieInfo *MovieInfo `json:"movie_info"`
+	//Rating    int64      `json:"rating_info"`
 }
 
 // MovieInfo json struct
@@ -92,6 +93,7 @@ type MovieInfo struct {
 	Seasons          []*models.Season `json:"seasons"`
 	IsFavorite       bool             `json:"is_favorite"`
 	WithSubscription bool             `json:"with_subscription"`
+	RatingUser       int64            `json:"rating_user"`
 }
 
 // ActorResponse json struct
@@ -162,4 +164,37 @@ type SubscribeRequest struct {
 // SubscribeResponse json struct
 type SubscribeResponse struct {
 	SubscriptionIDP string `json:"subscription_idp"`
+}
+
+// MovieSearchData json struct
+type MovieSearchData struct {
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	CardURL     string `json:"card_url"`
+	AlbumURL    string `json:"album_url"`
+	Rating      string `json:"rating"`
+	ReleaseDate string `json:"release_date"`
+	MovieType   string `json:"movie_type"`
+	Country     string `json:"country"`
+}
+
+// MovieSearchList type
+// easyjson:json
+type MovieSearchList []MovieSearchData
+
+// ActorSearchData json struct
+type ActorSearchData struct {
+	ID       int    `json:"id"`
+	FullName string `json:"full_name"`
+	PhotoURL string `json:"photo_url"`
+	Country  string `json:"country"`
+}
+
+// ActorSearchList type
+// easyjson:json
+type ActorSearchList []ActorSearchData
+
+// AddOrUpdateRatingReq json struct
+type AddOrUpdateRatingReq struct {
+	Rating int `json:"rating"`
 }

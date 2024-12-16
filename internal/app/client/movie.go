@@ -13,6 +13,8 @@ import (
 //
 //go:generate mockgen -source=movie.go -destination=../user/service/mocks/movie_mock.go
 //go:generate mockgen -source=movie.go -destination=../movie/service/mocks/mock.go
+
+// MovieClientInterface интерфейс клиента фильмов
 type MovieClientInterface interface {
 	// GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error)
@@ -21,6 +23,8 @@ type MovieClientInterface interface {
 	SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error)
 	GetCollection(ctx context.Context, filter string) ([]models.Collection, error)
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]models.MovieShortInfo, error)
+	GetUserRating(ctx context.Context, movieID, userID int32) (int32, error)
+	AddOrUpdateRating(ctx context.Context, movieID, userID, rating int32) error
 }
 
 // MovieClient struct implements MovieClientInterface
@@ -135,6 +139,7 @@ func (m MovieClient) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo,
 	respp.Actors = actors
 
 	var seasons []*models.Season
+
 	for _, season := range respMov.Seasons {
 		sn := season.SeasonNumber
 		var eps []*models.Episode
@@ -224,7 +229,7 @@ func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorIn
 // var respp = make([]models.MovieShortInfo, 0, len(respMovie))
 
 // 	for i, movie := range respMovie {
-// 		respp[i].ID = int(movie.Id)
+// 		respp[i].ID = int(movie.ID)
 // 		respp[i].CardURL = movie.CardUrl
 // 		respp[i].MovieType = movie.MovieType
 // 		respp[i].AlbumURL = movie.AlbumUrl
@@ -326,4 +331,39 @@ func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models
 	}
 
 	return ans, nil
+}
+
+// GetUserRating получение рейтинга
+func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int32) (int32, error) {
+	start := time.Now()
+	method := "GetUserRating"
+
+	resp, err := m.movieMS.GetUserRating(ctx, &movie.GetUserRatingRequest{
+		MovieId: movieID,
+		UserId:  userID,
+	})
+
+	saveMetric(start, movieClient, method, err)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int32(resp.Rating.Rating), nil
+}
+
+// AddOrUpdateRating добавление рейтинга
+func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rating int32) error {
+	start := time.Now()
+	method := "AddOrUpdateRating"
+
+	_, err := m.movieMS.AddOrUpdateRating(ctx, &movie.AddOrUpdateRatingRequest{
+		MovieId: movieID,
+		UserId:  userID,
+		Rating:  rating,
+	})
+
+	saveMetric(start, movieClient, method, err)
+
+	return err
 }

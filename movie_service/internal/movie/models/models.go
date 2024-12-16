@@ -116,3 +116,10 @@ type Favorite struct {
 func (p Person) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
 }
+
+// UserRating структура рейтинга
+type UserRating struct {
+	UserID  int
+	MovieID int
+	Rating  float64
+}

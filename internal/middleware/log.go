@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"net/http"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 )
@@ -18,6 +19,11 @@ const (
 // WithLogger wraps logger into context
 func WithLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/room") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		reqID := getRequestID(r.Context())
 		logger := log.With().Str("request_id", reqID).Caller().Logger()
 		ctx := logger.WithContext(r.Context())

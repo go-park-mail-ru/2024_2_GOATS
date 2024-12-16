@@ -42,7 +42,9 @@ func NewUserHandler(srv UserServiceInterface) handlers.UserHandlerInterface {
 func (u *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 	passwordReq := &api.UpdatePasswordRequest{}
-	api.DecodeBody(w, r, passwordReq)
+	if !api.DecodeBody(w, r, passwordReq) {
+		return
+	}
 
 	vars := mux.Vars(r)
 	usrID, err := getUserID(vars)
@@ -202,7 +204,10 @@ func (u *UserHandler) toggleFavorite(w http.ResponseWriter, r *http.Request) {
 
 	logger := log.Ctx(r.Context())
 	favReq := &api.FavReq{}
-	api.DecodeBody(w, r, favReq)
+	if !api.DecodeBody(w, r, favReq) {
+		return
+	}
+
 	favReq.UserID = config.CurrentUserID(r.Context())
 
 	favSrvData := converter.ToServFavData(favReq)

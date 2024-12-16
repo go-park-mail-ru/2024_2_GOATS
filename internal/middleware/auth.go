@@ -38,13 +38,13 @@ func (mw *SessionMiddleware) AuthMiddleware(next http.Handler) http.Handler {
 		logger := log.Ctx(r.Context())
 		ck, err := r.Cookie("session_id")
 
-		if strings.HasPrefix(r.URL.Path, "/api/movies") && err == http.ErrNoCookie {
+		if strings.HasPrefix(r.URL.Path, "/api/movies") && errors.Is(err, http.ErrNoCookie) {
 			ctx := context.WithValue(r.Context(), config.CurrentUserKey{}, 0)
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
 
-		if err == http.ErrNoCookie {
+		if errors.Is(err, http.ErrNoCookie) {
 			logger.Error().Err(fmt.Errorf("sessionMiddleware: no cookie %w", err)).Msg("no_cookie_err")
 			w.WriteHeader(http.StatusForbidden)
 			return
