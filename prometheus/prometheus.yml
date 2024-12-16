@@ -27,4 +27,4 @@ scrape_configs:
     scrape_interval: 30s
     scrape_timeout: 30s
     static_configs:
-      - targets: ['83.166.232.3:9100']
+      - targets: ['cassette-world.ru:9100']
