@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-	"log"
-	"strconv"
 )
 
 // TODO раскоментить к 4му РК
@@ -297,18 +298,18 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 	log.Println("ididPP = ", id)
 	user, sesErr := s.userService.FindByID(ctx, uint64(id))
 	if sesErr != nil {
-		//errors := make([]errVals.RepoError, 1)
-		//errors[0] = *sesErr
 		return nil, errVals.NewServiceError(errVals.ErrGetUserCode, fmt.Errorf("failed to login: %w", sesErr))
-
-		//return nil, &model.ErrorRespData{
-		//	Errors:     errors,
-		//	StatusCode: code,
-		//}
 	}
 
 	return &model.SessionRespData{
-		UserData: *user,
+		UserData: model.User{
+			ID:         user.ID,
+			Email:      user.Email,
+			Username:   user.Username,
+			Password:   user.Password,
+			AvatarURL:  user.AvatarURL,
+			AvatarName: user.AvatarName,
+		},
 	}, nil
 }
 

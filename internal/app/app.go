@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	"github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -154,11 +155,9 @@ func (a *App) Run() {
 	timer := ws.NewTimerManager(roomHub)
 	roomHub.SetTimerManager(timer)
 	srvRoom := roomServ.NewService(repoRoom, mvManager, usrManager, roomHub, timer)
-	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub)
+	delRoom := roomApi.NewRoomHandler(srvRoom, roomHub, a.Config)
 
-	log.Println("XZXZXZ")
 	go roomHub.Run()
-	log.Println("XZ2XZ2XZ2")
 
 	mx := mux.NewRouter()
 	authMW := middleware.NewSessionMiddleware(srvAuth)

@@ -23,7 +23,6 @@ type MovieRepositoryInterface interface {
 	GetFavorites(ctx context.Context, mvIDs []uint64) ([]*models.MovieShortInfo, error)
 	GetUserRating(ctx context.Context, userId int, movieId int) (float32, error)
 	AddOrUpdateRating(ctx context.Context, userId int, movieId int, rating float32) error
-	DeleteUserRating(ctx context.Context, userID, movieID int) error
 	UpdateMovieRating(ctx context.Context, movieId int) error
 }
 
@@ -142,13 +141,5 @@ func (s *MovieService) AddOrUpdateRating(ctx context.Context, userId int, movieI
 		return fmt.Errorf("movieService.AddOrUpdateRating (update movie rating): %w", err)
 	}
 
-	return nil
-}
-
-func (s *MovieService) DeleteRating(ctx context.Context, userID, movieID int) error {
-	err := s.movieRepository.DeleteUserRating(ctx, userID, movieID)
-	if err != nil {
-		return fmt.Errorf("movieService.DeleteRating: %w", err)
-	}
 	return nil
 }

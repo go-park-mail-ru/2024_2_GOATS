@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -168,26 +167,35 @@ func (m *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var movieResponses []map[string]interface{}
-	if len(movies) == 0 {
-		movieResponses = append(movieResponses, map[string]interface{}{})
-	}
+	var movieResponses api.MovieSearchList
+
 	for _, movie := range movies {
-		movieResponses = append(movieResponses, map[string]interface{}{
-			"id":           movie.ID,
-			"title":        movie.Title,
-			"card_url":     movie.CardURL,
-			"album_url":    movie.AlbumURL,
-			"rating":       strconv.FormatFloat(float64(movie.Rating), 'f', -1, 32),
-			"release_date": movie.ReleaseDate,
-			"movie_type":   movie.MovieType,
-			"country":      movie.Country,
+		movieResponses = append(movieResponses, api.MovieSearchData{
+			ID:          movie.ID,
+			Title:       movie.Title,
+			CardURL:     movie.CardURL,
+			AlbumURL:    movie.AlbumURL,
+			Rating:      strconv.FormatFloat(float64(movie.Rating), 'f', -1, 32),
+			ReleaseDate: movie.ReleaseDate,
+			MovieType:   movie.MovieType,
+			Country:     movie.Country,
 		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(movieResponses); err != nil {
-		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+	var jsonData []byte
+	if len(movieResponses) > 0 {
+		jsonData, err = movieResponses.MarshalJSON()
+		if err != nil {
+			http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			return
+		}
+
+		w.Write(jsonData)
+	} else {
+		w.Write([]byte(`[{}]`))
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -205,24 +213,31 @@ func (m *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var actorResponses []map[string]interface{}
-
-	if len(actors) == 0 {
-		actorResponses = append(actorResponses, map[string]interface{}{})
-	}
+	var actorResponses api.ActorSearchList
 
 	for _, actor := range actors {
-		actorResponses = append(actorResponses, map[string]interface{}{
-			"id":        actor.ID,
-			"full_name": actor.Name,
-			"photo_url": actor.BigPhotoURL,
-			"country":   actor.Country,
+		actorResponses = append(actorResponses, api.ActorSearchData{
+			ID:       actor.ID,
+			FullName: actor.FullName(),
+			PhotoURL: actor.BigPhotoURL,
+			Country:  actor.Country,
 		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(actorResponses); err != nil {
-		http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+	var jsonData []byte
+	if len(actorResponses) > 0 {
+		jsonData, err = actorResponses.MarshalJSON()
+		if err != nil {
+			http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			return
+		}
+
+		w.Write(jsonData)
+	} else {
+		w.Write([]byte(`[{}]`))
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -240,7 +255,7 @@ func (h *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
 	rating, errServResp := h.movieService.GetUserRating(r.Context(), movieID)
 	if errServResp != nil {
 		logger.Error().Err(errServResp.Error).Msg("failed to get user rating")
-		api.Response(r.Context(), w, http.StatusInternalServerError, api.PreparedDefaultError("internal_error", err))
+		api.Response(r.Context(), w, http.StatusInternalServerError, errVals.ToDeliveryErrorFromService(errServResp))
 		return
 	}
 
@@ -259,12 +274,8 @@ func (h *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var req struct {
-		Rating int `json:"rating"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", err))
+	req := &api.AddOrUpdateRatingReq{}
+	if !api.DecodeBody(w, r, req) {
 		return
 	}
 
@@ -275,31 +286,9 @@ func (h *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request)
 
 	if errServResp := h.movieService.AddOrUpdateRating(r.Context(), mvID, req.Rating); errServResp != nil {
 		logger.Error().Err(errServResp.Error).Msg("failed to add or update rating")
-		api.Response(r.Context(), w, http.StatusInternalServerError, api.PreparedDefaultError("internal_error", err))
+		api.Response(r.Context(), w, http.StatusInternalServerError, errVals.ToDeliveryErrorFromService(errServResp))
 		return
 	}
 
 	api.Response(r.Context(), w, http.StatusOK, map[string]string{"message": "rating updated"})
-}
-
-func (h *MovieHandler) DeleteRating(w http.ResponseWriter, r *http.Request) {
-	logger := log.Ctx(r.Context())
-
-	mvID, err := strconv.Atoi(mux.Vars(r)["movie_id"])
-	if err != nil {
-		errMsg := fmt.Errorf("getMovie action: Bad request - %w", err)
-		logger.Error().Err(errMsg).Msg("bad_request")
-		api.Response(r.Context(), w, http.StatusBadRequest, api.PreparedDefaultError("bad_request", errMsg))
-
-		return
-	}
-
-	errServResp := h.movieService.DeleteRating(r.Context(), mvID)
-	if errServResp != nil {
-		log.Print("errServResp", errServResp)
-		http.Error(w, "failed to delete rating", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
