@@ -10,6 +10,7 @@ func main() {
 	a, err := movie.New(false)
 	if err != nil {
 		log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	a.Run()
