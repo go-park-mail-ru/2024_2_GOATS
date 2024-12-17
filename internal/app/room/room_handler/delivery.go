@@ -134,9 +134,23 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		h.roomHub.Broadcast <- ws.BroadcastMessage{Action: action, RoomID: roomID, ExcludeConn: conn}
-		if err := h.roomService.HandleAction(r.Context(), roomID, action); err != nil {
-			logger.Error().Err(err).Msg("Error handling action")
+		validActions := []string{"pause", "play", "rewind", "message", "change"}
+		isValid := false
+
+		for _, validAction := range validActions {
+			if action.Name == validAction {
+				isValid = true
+				break
+			}
+		}
+
+		if !isValid {
+			logger.Error().Msg("Invalid action")
+		} else {
+			h.roomHub.Broadcast <- ws.BroadcastMessage{Action: action, RoomID: roomID, ExcludeConn: conn}
+			if err := h.roomService.HandleAction(r.Context(), roomID, action); err != nil {
+				logger.Error().Err(err).Msg("Error handling action")
+			}
 		}
 	}
 }
