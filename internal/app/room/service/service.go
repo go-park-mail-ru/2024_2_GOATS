@@ -14,7 +14,7 @@ import (
 
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=service
 
-// RoomRepositoryInterface интерфейс репозитория комнаты
+// RoomRepositoryInterface defines methods for room repository
 type RoomRepositoryInterface interface {
 	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
 	UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error
@@ -22,7 +22,7 @@ type RoomRepositoryInterface interface {
 	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int)
 }
 
-// RoomService структура сервиса комнаты
+// RoomService service struct
 type RoomService struct {
 	roomRepository RoomRepositoryInterface
 	movieService   client.MovieClientInterface
@@ -31,7 +31,7 @@ type RoomService struct {
 	hub            *ws.RoomHub
 }
 
-// NewService конструктор сервиса
+// NewService returns an instance of RoomService
 func NewService(
 	repo RoomRepositoryInterface,
 	movieService client.MovieClientInterface,
@@ -48,12 +48,12 @@ func NewService(
 	}
 }
 
-// CreateRoom создание комнаты
+// CreateRoom creates room
 func (s *RoomService) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
 	return s.roomRepository.CreateRoom(ctx, room)
 }
 
-// HandleAction отлов событий
+// HandleAction handles actions from frontend
 func (s *RoomService) HandleAction(ctx context.Context, roomID string, action model.Action) error {
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 	if err != nil {
@@ -156,7 +156,7 @@ func (s *RoomService) HandleAction(ctx context.Context, roomID string, action mo
 	return s.roomRepository.UpdateRoomState(ctx, roomID, roomState)
 }
 
-// GetRoomState получение статистики
+// GetRoomState gets room state
 func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error) {
 	roomState, err := s.roomRepository.GetRoomState(ctx, roomID)
 
@@ -203,9 +203,8 @@ func (s *RoomService) GetRoomState(ctx context.Context, roomID string) (*model.R
 	return roomState, err
 }
 
-// Session функция сессия
+// Session checks session
 func (s *RoomService) Session(ctx context.Context, cookie string) (*model.SessionRespData, *errVals.ServiceError) {
-	//id := config.CurrentUserID(ctx)
 	id, err := strconv.Atoi(cookie)
 	log.Println("ididDD = ", id)
 

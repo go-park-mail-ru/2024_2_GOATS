@@ -14,7 +14,7 @@ import (
 //go:generate mockgen -source=movie.go -destination=../user/service/mocks/movie_mock.go
 //go:generate mockgen -source=movie.go -destination=../movie/service/mocks/mock.go
 
-// MovieClientInterface интерфейс клиента фильмов
+// MovieClientInterface defines methods for movie client
 type MovieClientInterface interface {
 	// GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error)
 	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, error)
@@ -310,7 +310,7 @@ func (m MovieClient) GetFavorites(ctx context.Context, mvIDs []uint64) ([]models
 	return ans, nil
 }
 
-// GetUserRating получение рейтинга
+// GetUserRating collects user rating for movie
 func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int32) (int32, error) {
 	start := time.Now()
 	method := "GetUserRating"
@@ -329,7 +329,7 @@ func (m MovieClient) GetUserRating(ctx context.Context, movieID, userID int32) (
 	return int32(resp.Rating.Rating), nil
 }
 
-// AddOrUpdateRating добавление рейтинга
+// AddOrUpdateRating creates user rating for movie
 func (m MovieClient) AddOrUpdateRating(ctx context.Context, movieID, userID, rating int32) error {
 	start := time.Now()
 	method := "AddOrUpdateRating"

@@ -6,7 +6,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
-// Room структура комнаты
+// Room struct
 type Room struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
@@ -14,7 +14,7 @@ type Room struct {
 	AdminID string `json:"admin_id"`
 }
 
-// MovieInfo структура фильмов
+// MovieInfo struct
 type MovieInfo struct {
 	ID               int          `json:"id"`
 	Title            string       `json:"title"`
@@ -34,13 +34,13 @@ type MovieInfo struct {
 	IsFavorite       bool         `json:"is_favorite"`
 }
 
-// Season структура сезонов
+// Season struct
 type Season struct {
 	SeasonNumber int        `json:"season_number"`
 	Episodes     []*Episode `json:"episodes"`
 }
 
-// Episode структура эпизодов
+// Episode struct
 type Episode struct {
 	ID            int     `json:"id"`
 	Title         string  `json:"title"`
@@ -52,7 +52,7 @@ type Episode struct {
 	VideoURL      string  `json:"video_url"`
 }
 
-// StaffInfo структура актеров
+// StaffInfo struct
 type StaffInfo struct {
 	ID            int          `json:"id"`
 	Name          string       `json:"name"`
@@ -66,22 +66,21 @@ type StaffInfo struct {
 	Country       string       `json:"country"`
 }
 
-// RoomState структура данных о комнате
+// RoomState struct
 type RoomState struct {
 	ID         string    `json:"id"`
-	Status     string    `json:"status"` // paused, playing
+	Status     string    `json:"status"`
 	TimeCode   float64   `json:"time_code"`
 	Movie      MovieInfo `json:"movie"`
 	Message    Msg       `json:"message"`
 	Duration   int       `json:"duration"`
 	SeasonNow  int       `json:"season_now"`
 	EpisodeNow int       `json:"episode_now"`
-	//TimerQuit chan struct{} `json:"timerQuit"`
 }
 
-// Action структура события
+// Action struct
 type Action struct {
-	Name       string    `json:"name"` // pause, play, rewind
+	Name       string    `json:"name"`
 	TimeCode   float64   `json:"time_code"`
 	Message    Msg       `json:"message"`
 	MovieID    int       `json:"movie_id"`
@@ -91,14 +90,14 @@ type Action struct {
 	Duration   int       `json:"duration"`
 }
 
-// Msg структура сообщения
+// Msg struct
 type Msg struct {
-	Text   string `json:"text"` // pause, play, rewind
+	Text   string `json:"text"`
 	Sender string `json:"sender"`
 	Avatar string `json:"avatar"`
 }
 
-// User структура юзера
+// User struct
 type User struct {
 	ID         int    `json:"id"`
 	Email      string `json:"email"`
@@ -108,12 +107,12 @@ type User struct {
 	AvatarName string `json:"avatar_name"`
 }
 
-// SessionRespData структура ответа
+// SessionRespData struct
 type SessionRespData struct {
 	UserData User `json:"user_data"`
 }
 
-// ErrorRespData структура ошибки
+// ErrorRespData struct
 //
 //easyjson:skip
 type ErrorRespData struct {

@@ -224,7 +224,7 @@ func (m *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetUserRating получение рейтинга
+// GetUserRating gets user_rating for movie
 func (m *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
@@ -246,7 +246,7 @@ func (m *MovieHandler) GetUserRating(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, map[string]int{"rating": int(rating)})
 }
 
-// AddOrUpdateRating добавление рейтинга
+// AddOrUpdateRating creates user_rating for movie
 func (m *MovieHandler) AddOrUpdateRating(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 

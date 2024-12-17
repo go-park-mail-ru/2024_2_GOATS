@@ -295,7 +295,7 @@ func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavorites
 	return &movie.GetFavoritesResponse{Movies: respp}, nil
 }
 
-// GetUserRating получение рейтинга пользователя
+// GetUserRating gets user_rating for movie
 func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRatingRequest) (*movie.GetUserRatingResponse, error) {
 	if req.MovieId <= 0 || req.UserId <= 0 {
 		return nil, status.Error(codes.InvalidArgument, "invalid req.MovieID or req.UserId")
@@ -315,7 +315,7 @@ func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRati
 	}, nil
 }
 
-// AddOrUpdateRating добавление рейтинга пользователя
+// AddOrUpdateRating creates user_rating for movie
 func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUpdateRatingRequest) (*movie.AddOrUpdateRatingResponse, error) {
 	if req.MovieId <= 0 || req.UserId <= 0 || req.Rating < 1 || req.Rating > 10 {
 		return nil, status.Error(codes.InvalidArgument, "invalid req.UserId or req.Rating req.Rating")
@@ -329,7 +329,6 @@ func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUp
 	return &movie.AddOrUpdateRatingResponse{}, nil
 }
 
-// sanitizeInput санитайз
 func sanitizeInput(input string) string {
 	policy := bluemonday.UGCPolicy()
 	return policy.Sanitize(input)

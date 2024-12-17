@@ -6,16 +6,16 @@ import (
 )
 
 const updateMovieRatingQuery = `
-		UPDATE movies 
-		SET rating = (
-			SELECT COALESCE(AVG(rating), 0) 
-			FROM ratings 
-			WHERE movie_id = $1
-		)
-		WHERE id = $1
-	`
+	UPDATE movies
+	SET rating = (
+		SELECT COALESCE(AVG(rating), 0)
+		FROM ratings
+		WHERE movie_id = $1
+	)
+	WHERE id = $1
+`
 
-// UpdateMovieRating обновление рейтинга
+// UpdateMovieRating updates movie rating
 func (r *MovieRepo) UpdateMovieRating(ctx context.Context, movieID int) error {
 	_, err := r.Database.ExecContext(ctx, updateMovieRatingQuery, movieID)
 	if err != nil {

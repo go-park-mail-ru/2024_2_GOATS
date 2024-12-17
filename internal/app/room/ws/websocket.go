@@ -9,14 +9,14 @@ import (
 	"time"
 )
 
-// BroadcastMessage структура сообщения рассылаемое бродкастом
+// BroadcastMessage broadcast room message struct
 type BroadcastMessage struct {
 	Action      interface{}
 	RoomID      string
 	ExcludeConn *websocket.Conn
 }
 
-// RoomHub структура хаба
+// RoomHub hub struct
 type RoomHub struct {
 	Rooms        map[string]map[*websocket.Conn]bool
 	Users        map[*websocket.Conn]models.User
@@ -27,13 +27,13 @@ type RoomHub struct {
 	timerManager *TimerManager
 }
 
-// Client структура клиента
+// Client client struct
 type Client struct {
 	Conn   *websocket.Conn
 	RoomID string
 }
 
-// NewRoomHub конструктор хаба
+// NewRoomHub returns an instance of RoomHub
 func NewRoomHub() *RoomHub {
 	return &RoomHub{
 		Rooms:      make(map[string]map[*websocket.Conn]bool),
@@ -44,7 +44,7 @@ func NewRoomHub() *RoomHub {
 	}
 }
 
-// Run запуск
+// Run starts hub
 func (hub *RoomHub) Run() {
 	for {
 		select {
@@ -58,13 +58,13 @@ func (hub *RoomHub) Run() {
 	}
 }
 
-// RegisterClient функция регистрации клиента
+// RegisterClient register client in hub
 func (hub *RoomHub) RegisterClient(conn *websocket.Conn, roomID string) {
 	clients := &Client{Conn: conn, RoomID: roomID}
 	hub.Register <- clients
 }
 
-// GetClients функция получения клиента
+// GetClients get clients
 func (hub *RoomHub) GetClients(roomID string) map[*websocket.Conn]bool {
 	hub.mu.RLock()
 	defer hub.mu.RUnlock()
@@ -75,7 +75,6 @@ func (hub *RoomHub) addClientToRoom(client *Client) {
 	hub.mu.Lock()
 	defer hub.mu.Unlock()
 
-	// Создаем комнату, если её нет
 	if hub.Rooms[client.RoomID] == nil {
 		hub.Rooms[client.RoomID] = make(map[*websocket.Conn]bool)
 	}
@@ -106,7 +105,6 @@ func (hub *RoomHub) removeClient(conn *websocket.Conn) {
 	}
 }
 
-// broadcastToRoom бродкаст для комнаты
 func (hub *RoomHub) broadcastToRoom(message BroadcastMessage) {
 	hub.mu.RLock()
 	defer hub.mu.RUnlock()
@@ -121,19 +119,19 @@ func (hub *RoomHub) broadcastToRoom(message BroadcastMessage) {
 	}
 }
 
-// SetTimerManager установка таймера
+// SetTimerManager set timer
 func (hub *RoomHub) SetTimerManager(manager *TimerManager) {
 	hub.timerManager = manager
 }
 
-// TimerManager структура таймера
+// TimerManager timer struct
 type TimerManager struct {
 	mu     sync.Mutex
 	timers map[string]chan struct{}
 	hub    *RoomHub
 }
 
-// NewTimerManager конструктор таймера
+// NewTimerManager returns an instance of TimerManager
 func NewTimerManager(hub *RoomHub) *TimerManager {
 	return &TimerManager{
 		timers: make(map[string]chan struct{}),
@@ -141,7 +139,7 @@ func NewTimerManager(hub *RoomHub) *TimerManager {
 	}
 }
 
-// Start старт таймерв
+// Start starts the timer
 func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(int64), duration int64) {
 	tm.mu.Lock()
 	if _, exists := tm.timers[roomID]; exists {
@@ -182,7 +180,7 @@ func (tm *TimerManager) Start(roomID string, startTime int64, updateFunc func(in
 	}()
 }
 
-// Stop остановка таймера
+// Stop stops the timer
 func (tm *TimerManager) Stop(roomID string) {
 	tm.mu.Lock()
 	if quit, exists := tm.timers[roomID]; exists {

@@ -16,20 +16,20 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// Repo структура репоитория
+// Repo room struct
 type Repo struct {
 	Database *sql.DB
 	Redis    *redis.Client
 }
 
-// NewRepository конструктор репоитория
+// NewRepository returns an instance of RoomRepositoryInterface
 func NewRepository(rdb *redis.Client) service.RoomRepositoryInterface {
 	return &Repo{
 		Redis: rdb,
 	}
 }
 
-// CreateRoom создание комнаты
+// CreateRoom creates room
 func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error) {
 	room.ID = uuid.New().String()
 	data, err := room.MarshalJSON()
@@ -43,7 +43,7 @@ func (r *Repo) CreateRoom(ctx context.Context, room *model.RoomState) (*model.Ro
 	return room, nil
 }
 
-// UpdateRoomState создание комнаты
+// UpdateRoomState updates room
 func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error {
 	data, err := state.MarshalJSON()
 	if err != nil {
@@ -52,7 +52,7 @@ func (r *Repo) UpdateRoomState(ctx context.Context, roomID string, state *model.
 	return r.Redis.Set(ctx, "room_state:"+roomID, data, 0).Err()
 }
 
-// GetRoomState получение статистики комнаты
+// GetRoomState gets room stats
 func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error) {
 	data, err := r.Redis.Get(ctx, "room_state:"+roomID).Result()
 	if errors.Is(err, redis.Nil) {
@@ -70,7 +70,7 @@ func (r *Repo) GetRoomState(ctx context.Context, roomID string) (*model.RoomStat
 	return &state, nil
 }
 
-// GetFromCookie получение данных из куков
+// GetFromCookie get user data from cookie
 func (r *Repo) GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int) {
 	var userID string
 	err := r.Redis.Get(ctx, cookie).Scan(&userID)

@@ -9,7 +9,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
-// AddOrUpdateRating добавление рейтинга
+// AddOrUpdateRating creates user_rating for movie
 func (s *MovieService) AddOrUpdateRating(ctx context.Context, movieID, rating int32) *errVals.ServiceError {
 	usrID := config.CurrentUserID(ctx)
 	if usrID == 0 {

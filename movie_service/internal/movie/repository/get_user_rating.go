@@ -9,7 +9,7 @@ import (
 
 const getUserRatingQuery = `SELECT rating FROM ratings WHERE user_id = $1 AND movie_id = $2`
 
-// GetUserRating получение рейтинга
+// GetUserRating gets user_rating for movie
 func (r *MovieRepo) GetUserRating(ctx context.Context, userID int, movieID int) (float32, error) {
 	var rating float32
 	err := r.Database.QueryRowContext(ctx, getUserRatingQuery, userID, movieID).Scan(&rating)

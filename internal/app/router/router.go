@@ -69,7 +69,7 @@ func SetupSubscription(delLayer handlers.SubscriptionHandlerInterface, router *m
 	subscrRouter.HandleFunc("/", delLayer.Subscribe).Methods(http.MethodPost, http.MethodOptions).Name("SubscribeRoute")
 }
 
-// SetupRoom создание комнаты
+// SetupRoom setups room subrouter
 func SetupRoom(roomHandler handlers.RoomImplementationInterface, router *mux.Router) {
 	apiMux := router.PathPrefix("/api").Subrouter()
 	roomRouter := apiMux.PathPrefix("/room").Subrouter()

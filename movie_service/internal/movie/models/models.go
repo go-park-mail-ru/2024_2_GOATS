@@ -117,7 +117,7 @@ func (p Person) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
 }
 
-// UserRating структура рейтинга
+// UserRating user_rating struct
 type UserRating struct {
 	UserID  int
 	MovieID int

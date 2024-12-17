@@ -10,7 +10,7 @@ const (
 	addOrUpdateRatingInsertQuery = `INSERT INTO ratings (user_id, movie_id, rating) VALUES ($1, $2, $3)`
 )
 
-// AddOrUpdateRating добавление рейтинга
+// AddOrUpdateRating creates user_rating for movie
 func (r *MovieRepo) AddOrUpdateRating(ctx context.Context, userID int, movieID int, rating float32) error {
 	res, err := r.Database.ExecContext(ctx, addOrUpdateRatingUpdateQuery, rating, userID, movieID)
 	if err != nil {

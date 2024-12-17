@@ -118,7 +118,7 @@ func (s *MovieService) GetFavorites(ctx context.Context, mvIDs []uint64) ([]*mod
 	return mvs, nil
 }
 
-// GetUserRating получение рейтинга пользователя
+// GetUserRating gets user_rating for movie
 func (s *MovieService) GetUserRating(ctx context.Context, userID int, movieID int) (float32, error) {
 	rating, err := s.movieRepository.GetUserRating(ctx, userID, movieID)
 	if err != nil {

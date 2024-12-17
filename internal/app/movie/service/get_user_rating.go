@@ -9,7 +9,7 @@ import (
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 )
 
-// GetUserRating получение рейтинга
+// GetUserRating gets user_rating for movie
 func (s *MovieService) GetUserRating(ctx context.Context, movieID int32) (int32, *errVals.ServiceError) {
 
 	usrID := config.CurrentUserID(ctx)

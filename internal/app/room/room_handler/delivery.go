@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// RoomServiceInterface интерейс сервиса комнаты
+// RoomServiceInterface defines methods for room service layer
 type RoomServiceInterface interface {
 	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
 	HandleAction(ctx context.Context, roomID string, action model.Action) error
@@ -23,7 +23,7 @@ type RoomServiceInterface interface {
 	GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error)
 }
 
-// RoomHandler структура хэндлера комнаты
+// RoomHandler handler struct
 type RoomHandler struct {
 	roomService RoomServiceInterface
 	roomHub     *ws.RoomHub
@@ -36,7 +36,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(_ *http.Request) bool { return true },
 }
 
-// NewRoomHandler конструктор хэндлера комнаты
+// NewRoomHandler returns an instance of RoomHandler
 func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub, cfg *config.Config) *RoomHandler {
 	return &RoomHandler{
 		roomService: service,
@@ -45,7 +45,7 @@ func NewRoomHandler(service RoomServiceInterface, roomHub *ws.RoomHub, cfg *conf
 	}
 }
 
-// CreateRoom создание комнаты
+// CreateRoom creates room
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	room := &model.RoomState{}
 	logger := log.Ctx(r.Context())
@@ -65,7 +65,7 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, createdRoom)
 }
 
-// JoinRoom функция входа в комнату
+// JoinRoom join user into room
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
@@ -96,7 +96,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Обновление соединения до WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error().Err(err).Msg("Failed to upgrade to WebSocket")
@@ -111,7 +110,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		}
 	}(conn)
 
-	// Регистрация клиента в комнате
 	h.roomHub.RegisterClient(conn, roomID)
 	h.roomHub.Users[conn] = user
 
