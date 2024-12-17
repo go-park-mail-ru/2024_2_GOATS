@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - release/use-subscription-in-movies
   workflow_dispatch:
 
 jobs:
