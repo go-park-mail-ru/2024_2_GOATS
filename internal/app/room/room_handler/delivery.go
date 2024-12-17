@@ -134,7 +134,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		validActions := []string{"pause", "play", "rewind", "message", "change"}
+		validActions := []string{"pause", "play", "rewind", "message", "change", "change_series", "duration"}
 		isValid := false
 
 		for _, validAction := range validActions {
