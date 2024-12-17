@@ -148,7 +148,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push facade
-        if: steps.check_facade.outputs.changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -157,7 +156,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/facade_app:latest
 
       - name: Build and push user_service
-        if: steps.check_user_service.outputs.changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -166,7 +164,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/user_app:latest
 
       - name: Build and push movie_service
-        if: steps.check_movie_service.outputs.changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -175,7 +172,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/movie_app:latest
 
       - name: Build and push payment_service
-        if: steps.check_payment_service.outputs.changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -184,7 +180,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/payment_app:latest
 
       - name: Build and push auth_service
-        if: steps.check_auth_service.outputs.changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
