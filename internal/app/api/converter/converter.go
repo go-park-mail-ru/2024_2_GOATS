@@ -170,7 +170,6 @@ func ToAPIGetMovieResponse(mv *models.MovieInfo, rating int64) *api.MovieRespons
 
 	return &api.MovieResponse{
 		MovieInfo: mvInfo,
-		//Rating:    rating,
 	}
 }
 
@@ -208,30 +207,3 @@ func ToAPIMovieShortInfos(mvs []models.MovieShortInfo) api.MovieShortInfos {
 
 	return api.MovieShortInfos{Movies: mvs}
 }
-
-//func ToApiSessionResponseForRoom(sr *roomsModel.SessionRespData) *api.SessionResponse {
-//	if sr == nil {
-//		return nil
-//	}
-//
-//	return &api.SessionResponse{
-//		UserData: api.User{
-//			ID:       sr.UserData.ID,
-//			Email:    sr.UserData.Email,
-//			Username: sr.UserData.Username,
-//		},
-//	}
-//}
-//
-//func ToApiErrorResponseForRoom(e *roomsModel.ErrorRespData) *errors.DeliveryError {
-//	if e == nil {
-//		return nil
-//	}
-//
-//	return &errors.DeliveryError{
-//		HTTPStatus: 200,
-//		//Errors:     []ErrorItem{NewErrorItem(se.Code, se.Error)},
-//		//HTTPStatus: e.StatusCode,
-//		//Errors:     e.Errors,
-//	}
-//}

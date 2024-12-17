@@ -13,7 +13,6 @@ import (
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 	websocket "github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
-	//zlog "github.com/rs/zerolog/log"
 )
 
 // RoomServiceInterface интерейс сервиса комнаты

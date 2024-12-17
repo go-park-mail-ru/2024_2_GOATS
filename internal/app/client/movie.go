@@ -218,29 +218,6 @@ func (m MovieClient) GetActor(ctx context.Context, actorID int) (*models.ActorIn
 	return respp, nil
 }
 
-// func (m MovieClient) GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, error) {
-// resp, err := m.movieMS.GetMovieByGenre(ctx, &movie.GetMovieByGenreRequest{Genre: genre})
-// if err != nil {
-// 	return nil, err
-// }
-
-// 	respMovie := resp.Movies
-
-// var respp = make([]models.MovieShortInfo, 0, len(respMovie))
-
-// 	for i, movie := range respMovie {
-// 		respp[i].ID = int(movie.ID)
-// 		respp[i].CardURL = movie.CardUrl
-// 		respp[i].MovieType = movie.MovieType
-// 		respp[i].AlbumURL = movie.AlbumUrl
-// 		respp[i].Title = movie.Title
-// 		respp[i].Country = movie.Country
-// 		respp[i].ReleaseDate = movie.ReleaseDate
-// 		respp[i].Rating = movie.Rating
-// 	}
-// 	return respp, nil
-// }
-
 // SearchMovies search movies
 func (m MovieClient) SearchMovies(ctx context.Context, query string) ([]models.MovieInfo, error) {
 	start := time.Now()

@@ -71,7 +71,6 @@ type MovieShortInfos struct {
 // MovieResponse json struct
 type MovieResponse struct {
 	MovieInfo *MovieInfo `json:"movie_info"`
-	//Rating    int64      `json:"rating_info"`
 }
 
 // MovieInfo json struct

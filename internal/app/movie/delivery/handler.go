@@ -149,9 +149,8 @@ func (m *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	var jsonData []byte
 	if len(movieResponses) > 0 {
-		jsonData, err = movieResponses.MarshalJSON()
+		jsonData, err := movieResponses.MarshalJSON()
 		if err != nil {
 			logger.Error().Err(err).Msg("response error")
 			http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
@@ -159,7 +158,7 @@ func (m *MovieHandler) SearchMovies(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err := w.Write(jsonData)
+		_, err = w.Write(jsonData)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to write jsonData")
 		}
@@ -201,9 +200,8 @@ func (m *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	var jsonData []byte
 	if len(actorResponses) > 0 {
-		jsonData, err = actorResponses.MarshalJSON()
+		jsonData, err := actorResponses.MarshalJSON()
 		if err != nil {
 			logger.Error().Err(err).Msg("response error")
 			http.Error(w, "response error: "+err.Error(), http.StatusInternalServerError)
@@ -212,7 +210,7 @@ func (m *MovieHandler) SearchActors(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err := w.Write(jsonData)
+		_, err = w.Write(jsonData)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to write jsonData")
 		}

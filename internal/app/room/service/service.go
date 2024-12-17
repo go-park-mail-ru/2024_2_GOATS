@@ -8,20 +8,11 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/client"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
-	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
 )
 
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=service
-
-// MovieServiceInterface интерфейс сервиса фильмов
-type MovieServiceInterface interface {
-	GetCollection(ctx context.Context, filter string) (*models.CollectionsRespData, *errVals.ServiceError)
-	GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, *errVals.ServiceError)
-	GetActor(ctx context.Context, actorID int) (*models.ActorInfo, *errVals.ServiceError)
-	GetMovieByGenre(ctx context.Context, genre string) ([]models.MovieShortInfo, *errVals.ServiceError)
-}
 
 // RoomRepositoryInterface интерфейс репозитория комнаты
 type RoomRepositoryInterface interface {
@@ -29,16 +20,6 @@ type RoomRepositoryInterface interface {
 	UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error
 	GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error)
 	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int)
-	//UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int)
-}
-
-// UserServiceInterface интерфейс сервиса юзера
-type UserServiceInterface interface {
-	UpdateProfile(ctx context.Context, profileData *models.User) *errVals.ServiceError
-	UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errVals.ServiceError
-	AddFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
-	ResetFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
-	GetFavorites(ctx context.Context, usrID int) ([]models.MovieShortInfo, *errVals.ServiceError)
 }
 
 // RoomService структура сервиса комнаты
@@ -51,7 +32,13 @@ type RoomService struct {
 }
 
 // NewService конструктор сервиса
-func NewService(repo RoomRepositoryInterface, movieService client.MovieClientInterface, userService client.UserClientInterface, hub *ws.RoomHub, TimerManager *ws.TimerManager) *RoomService {
+func NewService(
+	repo RoomRepositoryInterface,
+	movieService client.MovieClientInterface,
+	userService client.UserClientInterface,
+	hub *ws.RoomHub,
+	TimerManager *ws.TimerManager,
+) *RoomService {
 	return &RoomService{
 		roomRepository: repo,
 		movieService:   movieService,

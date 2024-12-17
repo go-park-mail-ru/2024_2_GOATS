@@ -10,19 +10,11 @@ import (
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
+	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/service"
 	"github.com/google/uuid"
 
 	"github.com/go-redis/redis/v8"
 )
-
-// RoomRepositoryInterface интерфейс репозитория комнаты
-type RoomRepositoryInterface interface {
-	CreateRoom(ctx context.Context, room *model.RoomState) (*model.RoomState, error)
-	UpdateRoomState(ctx context.Context, roomID string, state *model.RoomState) error
-	GetRoomState(ctx context.Context, roomID string) (*model.RoomState, error)
-	GetFromCookie(ctx context.Context, cookie string) (string, *errVals.RepoError, int)
-	//UserById(ctx context.Context, userId string) (*model.User, *errVals.RepoError, int)
-}
 
 // Repo структура репоитория
 type Repo struct {
@@ -31,7 +23,7 @@ type Repo struct {
 }
 
 // NewRepository конструктор репоитория
-func NewRepository(rdb *redis.Client) RoomRepositoryInterface {
+func NewRepository(rdb *redis.Client) service.RoomRepositoryInterface {
 	return &Repo{
 		Redis: rdb,
 	}
