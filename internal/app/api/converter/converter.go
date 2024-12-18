@@ -129,7 +129,7 @@ func ToAPICollectionsResponse(cl *models.CollectionsRespData) *api.CollectionsRe
 }
 
 // ToAPIGetMovieResponse converts models MovieInfo to http MovieResponse
-func ToAPIGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
+func ToAPIGetMovieResponse(mv *models.MovieInfo, rating int64) *api.MovieResponse {
 	if mv == nil {
 		return nil
 	}
@@ -150,6 +150,7 @@ func ToAPIGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 		Director:         mv.Director.FullName(),
 		IsFavorite:       mv.IsFavorite,
 		Seasons:          mv.Seasons,
+		WithSubscription: mv.WithSubscription,
 	}
 
 	var actors = make([]*api.ActorInfo, 0, len(mv.Actors))
@@ -165,6 +166,7 @@ func ToAPIGetMovieResponse(mv *models.MovieInfo) *api.MovieResponse {
 	}
 
 	mvInfo.Actors = actors
+	mvInfo.RatingUser = rating
 
 	return &api.MovieResponse{
 		MovieInfo: mvInfo,

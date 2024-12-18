@@ -35,6 +35,34 @@ func (m *MockMovieRepositoryInterface) EXPECT() *MockMovieRepositoryInterfaceMoc
 	return m.recorder
 }
 
+// AddOrUpdateRating mocks base method.
+func (m *MockMovieRepositoryInterface) AddOrUpdateRating(ctx context.Context, userId, movieId int, rating float32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddOrUpdateRating", ctx, userId, movieId, rating)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddOrUpdateRating indicates an expected call of AddOrUpdateRating.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) AddOrUpdateRating(ctx, userId, movieId, rating interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrUpdateRating", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).AddOrUpdateRating), ctx, userId, movieId, rating)
+}
+
+// DeleteUserRating mocks base method.
+func (m *MockMovieRepositoryInterface) DeleteUserRating(ctx context.Context, userID, movieID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserRating", ctx, userID, movieID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserRating indicates an expected call of DeleteUserRating.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) DeleteUserRating(ctx, userID, movieID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserRating", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).DeleteUserRating), ctx, userID, movieID)
+}
+
 // GetActor mocks base method.
 func (m *MockMovieRepositoryInterface) GetActor(ctx context.Context, actorID int) (*models.ActorInfo, error) {
 	m.ctrl.T.Helper()
@@ -125,6 +153,21 @@ func (mr *MockMovieRepositoryInterfaceMockRecorder) GetMovieByGenre(ctx, genre i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByGenre", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetMovieByGenre), ctx, genre)
 }
 
+// GetUserRating mocks base method.
+func (m *MockMovieRepositoryInterface) GetUserRating(ctx context.Context, userId, movieId int) (float32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserRating", ctx, userId, movieId)
+	ret0, _ := ret[0].(float32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserRating indicates an expected call of GetUserRating.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) GetUserRating(ctx, userId, movieId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserRating", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).GetUserRating), ctx, userId, movieId)
+}
+
 // SearchActors mocks base method.
 func (m *MockMovieRepositoryInterface) SearchActors(ctx context.Context, query string) ([]models.ActorInfo, error) {
 	m.ctrl.T.Helper()
@@ -153,4 +196,18 @@ func (m *MockMovieRepositoryInterface) SearchMovies(ctx context.Context, query s
 func (mr *MockMovieRepositoryInterfaceMockRecorder) SearchMovies(ctx, query interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).SearchMovies), ctx, query)
+}
+
+// UpdateMovieRating mocks base method.
+func (m *MockMovieRepositoryInterface) UpdateMovieRating(ctx context.Context, movieId int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMovieRating", ctx, movieId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateMovieRating indicates an expected call of UpdateMovieRating.
+func (mr *MockMovieRepositoryInterfaceMockRecorder) UpdateMovieRating(ctx, movieId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMovieRating", reflect.TypeOf((*MockMovieRepositoryInterface)(nil).UpdateMovieRating), ctx, movieId)
 }

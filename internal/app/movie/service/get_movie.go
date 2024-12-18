@@ -16,8 +16,8 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 
 	if err != nil {
 		return nil, &errVals.ServiceError{
-			Code:  "GetCollection",
-			Error: fmt.Errorf("error GetCollection: %w", err),
+			Code:  "GetMovie",
+			Error: fmt.Errorf("error GetMovie: %w", err),
 		}
 	}
 
@@ -31,12 +31,30 @@ func (s *MovieService) GetMovie(ctx context.Context, mvID int) (*models.MovieInf
 		isFav, err := s.userClient.CheckFavorite(ctx, fav)
 		if err != nil {
 			return nil, &errVals.ServiceError{
-				Code:  "GetCollection",
-				Error: fmt.Errorf("error GetCollection: %w", err),
+				Code:  "GetMovie",
+				Error: fmt.Errorf("error GetMovie: %w", err),
 			}
 		}
 
 		mv.IsFavorite = isFav
+
+		if mv.WithSubscription {
+			usrData, err := s.userClient.FindByID(ctx, uint64(usrID))
+			if err != nil {
+				return nil, &errVals.ServiceError{
+					Code:  "GetUserData",
+					Error: fmt.Errorf("error GetUserData: %w", err),
+				}
+			}
+
+			if !usrData.SubscriptionStatus {
+				mv.VideoURL = ""
+			}
+		}
+	}
+
+	if mv.WithSubscription && usrID == 0 {
+		mv.VideoURL = ""
 	}
 
 	return mv, nil

@@ -5,7 +5,6 @@ run:
   tests: true
   exclude-files:
     - \.pb\.go$
-    - \.pb\.gw\.go$
 
 output:
   formats: colored-line-number
@@ -38,7 +37,6 @@ linters:
 issues:
   exclude-use-default: false
   exclude:
-    - G104
     - exported func .* returns unexported type .*, which can be annoying to use
     - should have a package comment
     - don't use an underscore in package name

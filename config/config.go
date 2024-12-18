@@ -9,7 +9,19 @@ import (
 
 // Config contains facade configuration
 type Config struct {
-	Listener Listener `yaml:"listener"`
+	Listener  Listener  `yaml:"listener"`
+	Databases Databases `yaml:"databases"`
+}
+
+// Databases contains auth_service databases configuration
+type Databases struct {
+	Redis Redis `yaml:"redis"`
+}
+
+// Redis contains auth_service redis configuration
+type Redis struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 // Listener contains facade listener params

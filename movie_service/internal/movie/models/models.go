@@ -36,6 +36,7 @@ type MovieInfo struct {
 	Director         *DirectorInfo `json:"director_info"`
 	Seasons          []*Season     `json:"seasons"`
 	IsFavorite       bool          `json:"is_favorite"`
+	WithSubscription bool          `json:"with_subscription"`
 }
 
 // Season represents movie's season full info
@@ -114,4 +115,11 @@ type Favorite struct {
 // FullName returns the person's fullname
 func (p Person) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", p.Name, p.Surname))
+}
+
+// UserRating user_rating struct
+type UserRating struct {
+	UserID  int
+	MovieID int
+	Rating  float64
 }

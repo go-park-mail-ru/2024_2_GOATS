@@ -36,6 +36,46 @@ func (m *MockMovieServiceClient) EXPECT() *MockMovieServiceClientMockRecorder {
 	return m.recorder
 }
 
+// AddOrUpdateRating mocks base method.
+func (m *MockMovieServiceClient) AddOrUpdateRating(arg0 context.Context, arg1 *__.AddOrUpdateRatingRequest, arg2 ...grpc.CallOption) (*__.AddOrUpdateRatingResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddOrUpdateRating", varargs...)
+	ret0, _ := ret[0].(*__.AddOrUpdateRatingResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddOrUpdateRating indicates an expected call of AddOrUpdateRating.
+func (mr *MockMovieServiceClientMockRecorder) AddOrUpdateRating(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrUpdateRating", reflect.TypeOf((*MockMovieServiceClient)(nil).AddOrUpdateRating), varargs...)
+}
+
+// DeleteRating mocks base method.
+func (m *MockMovieServiceClient) DeleteRating(arg0 context.Context, arg1 *__.DeleteRatingRequest, arg2 ...grpc.CallOption) (*__.DeleteRatingResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteRating", varargs...)
+	ret0, _ := ret[0].(*__.DeleteRatingResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteRating indicates an expected call of DeleteRating.
+func (mr *MockMovieServiceClientMockRecorder) DeleteRating(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRating", reflect.TypeOf((*MockMovieServiceClient)(nil).DeleteRating), varargs...)
+}
+
 // GetActor mocks base method.
 func (m *MockMovieServiceClient) GetActor(arg0 context.Context, arg1 *__.GetActorRequest, arg2 ...grpc.CallOption) (*__.GetActorResponse, error) {
 	m.ctrl.T.Helper()
@@ -154,6 +194,26 @@ func (mr *MockMovieServiceClientMockRecorder) GetMovieByGenre(arg0, arg1 interfa
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByGenre", reflect.TypeOf((*MockMovieServiceClient)(nil).GetMovieByGenre), varargs...)
+}
+
+// GetUserRating mocks base method.
+func (m *MockMovieServiceClient) GetUserRating(arg0 context.Context, arg1 *__.GetUserRatingRequest, arg2 ...grpc.CallOption) (*__.GetUserRatingResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetUserRating", varargs...)
+	ret0, _ := ret[0].(*__.GetUserRatingResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserRating indicates an expected call of GetUserRating.
+func (mr *MockMovieServiceClientMockRecorder) GetUserRating(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserRating", reflect.TypeOf((*MockMovieServiceClient)(nil).GetUserRating), varargs...)
 }
 
 // SearchActors mocks base method.

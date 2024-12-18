@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"context"
-	"log"
 
 	movie "github.com/go-park-mail-ru/2024_2_GOATS/movie_service/pkg/movie_v1"
 	"github.com/microcosm-cc/bluemonday"
@@ -81,6 +80,7 @@ func (h *MovieHandler) GetMovie(ctx context.Context, req *movie.GetMovieRequest)
 	respp.FullDescription = movieg.FullDescription
 	respp.ShortDescription = movieg.ShortDescription
 	respp.TitleUrl = movieg.TitleURL
+	respp.WithSubscription = movieg.WithSubscription
 
 	var actors []*movie.ActorInfo
 	for _, actor := range movieg.Actors {
@@ -144,8 +144,6 @@ func (h *MovieHandler) GetActor(ctx context.Context, req *movie.GetActorRequest)
 		return nil, err
 	}
 
-	log.Println("actorDel", actor)
-
 	var respp movie.ActorInfo
 	respp.Id = int32(actor.ID)
 	respp.Birthdate = actor.Birthdate.String
@@ -208,7 +206,6 @@ func (h *MovieHandler) SearchMovies(ctx context.Context, req *movie.SearchMovies
 			TitleUrl:         mov.TitleURL,
 		}
 	}
-	log.Println("resppmovie", respp)
 	return &movie.SearchMoviesResponse{Movies: respp}, nil
 }
 
@@ -219,7 +216,6 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 	}
 
 	actors, err := h.movieService.SearchActors(ctx, req.Query)
-	log.Println("del", actors)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -234,7 +230,6 @@ func (h *MovieHandler) SearchActors(ctx context.Context, req *movie.SearchActors
 		}
 
 	}
-	log.Println("respp", respp)
 	return &movie.SearchActorsResponse{Actors: respp}, nil
 }
 
@@ -298,6 +293,40 @@ func (h *MovieHandler) GetFavorites(ctx context.Context, req *movie.GetFavorites
 	}
 
 	return &movie.GetFavoritesResponse{Movies: respp}, nil
+}
+
+// GetUserRating gets user_rating for movie
+func (h *MovieHandler) GetUserRating(ctx context.Context, req *movie.GetUserRatingRequest) (*movie.GetUserRatingResponse, error) {
+	if req.MovieId <= 0 || req.UserId <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "invalid req.MovieID or req.UserId")
+	}
+
+	rating, err := h.movieService.GetUserRating(ctx, int(req.UserId), int(req.MovieId))
+	if err != nil {
+		return nil, err
+	}
+
+	return &movie.GetUserRatingResponse{
+		Rating: &movie.UserRating{
+			UserId:  req.UserId,
+			MovieId: req.MovieId,
+			Rating:  rating,
+		},
+	}, nil
+}
+
+// AddOrUpdateRating creates user_rating for movie
+func (h *MovieHandler) AddOrUpdateRating(ctx context.Context, req *movie.AddOrUpdateRatingRequest) (*movie.AddOrUpdateRatingResponse, error) {
+	if req.MovieId <= 0 || req.UserId <= 0 || req.Rating < 1 || req.Rating > 10 {
+		return nil, status.Error(codes.InvalidArgument, "invalid req.UserId or req.Rating req.Rating")
+	}
+
+	err := h.movieService.AddOrUpdateRating(ctx, int(req.UserId), int(req.MovieId), float32(req.Rating))
+	if err != nil {
+		return nil, err
+	}
+
+	return &movie.AddOrUpdateRatingResponse{}, nil
 }
 
 func sanitizeInput(input string) string {

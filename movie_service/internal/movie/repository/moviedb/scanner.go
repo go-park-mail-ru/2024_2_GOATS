@@ -39,6 +39,7 @@ func ScanMovieConnection(rows *sql.Rows) (*models.MovieInfo, error) {
 			&mvInfo.VideoURL,
 			&mvInfo.MovieType,
 			&mvInfo.TitleURL,
+			&mvInfo.WithSubscription,
 			&directorInfo.Name,
 			&directorInfo.Surname,
 			&mvInfo.Country,
