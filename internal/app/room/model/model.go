@@ -105,6 +105,7 @@ type User struct {
 	Password   string `json:"password"`
 	AvatarURL  string `json:"avatar_url"`
 	AvatarName string `json:"avatar_name"`
+	//SubscriptionStatus bool   `json:"subscription_status"`
 }
 
 // SessionRespData struct

@@ -18,12 +18,12 @@ type BroadcastMessage struct {
 
 // RoomHub hub struct
 type RoomHub struct {
-	Rooms        map[string]map[*websocket.Conn]bool
-	Users        map[*websocket.Conn]models.User
-	Register     chan *Client
-	Unregister   chan *websocket.Conn
-	Broadcast    chan BroadcastMessage
-	mu           sync.RWMutex
+	Rooms      map[string]map[*websocket.Conn]bool
+	Users      map[*websocket.Conn]models.User
+	Register   chan *Client
+	Unregister chan *websocket.Conn
+	Broadcast  chan BroadcastMessage
+	//Mu           sync.RWMutex
 	timerManager *TimerManager
 }
 
@@ -66,14 +66,14 @@ func (hub *RoomHub) RegisterClient(conn *websocket.Conn, roomID string) {
 
 // GetClients get clients
 func (hub *RoomHub) GetClients(roomID string) map[*websocket.Conn]bool {
-	hub.mu.RLock()
-	defer hub.mu.RUnlock()
+	//hub.Mu.RLock()
+	//defer hub.Mu.RUnlock()
 	return hub.Rooms[roomID]
 }
 
 func (hub *RoomHub) addClientToRoom(client *Client) {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
+	//hub.Mu.Lock()
+	//defer hub.Mu.Unlock()
 
 	if hub.Rooms[client.RoomID] == nil {
 		hub.Rooms[client.RoomID] = make(map[*websocket.Conn]bool)
@@ -82,8 +82,8 @@ func (hub *RoomHub) addClientToRoom(client *Client) {
 }
 
 func (hub *RoomHub) removeClient(conn *websocket.Conn) {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
+	//hub.Mu.Lock()
+	//defer hub.Mu.Unlock()
 
 	for roomID, clients := range hub.Rooms {
 		if clients[conn] {
@@ -106,8 +106,8 @@ func (hub *RoomHub) removeClient(conn *websocket.Conn) {
 }
 
 func (hub *RoomHub) broadcastToRoom(message BroadcastMessage) {
-	hub.mu.RLock()
-	defer hub.mu.RUnlock()
+	//hub.Mu.RLock()
+	//defer hub.Mu.RUnlock()
 
 	clients := hub.Rooms[message.RoomID]
 	for conn := range clients {
