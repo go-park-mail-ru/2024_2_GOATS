@@ -93,6 +93,7 @@ type MovieInfo struct {
 	IsFavorite       bool             `json:"is_favorite"`
 	WithSubscription bool             `json:"with_subscription"`
 	RatingUser       int64            `json:"rating_user"`
+	Genres           []string         `json:"genres"`
 }
 
 // ActorResponse json struct

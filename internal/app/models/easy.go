@@ -30,6 +30,7 @@ type MovieInfo struct {
 	Seasons          []*Season     `json:"seasons"`
 	IsFavorite       bool          `json:"is_favorite"`
 	WithSubscription bool          `json:"with_subscription"`
+	Genres           []string      `json:"genres"`
 }
 
 // Season represents movie's season full info

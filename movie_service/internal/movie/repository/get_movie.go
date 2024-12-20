@@ -20,5 +20,17 @@ func (r *MovieRepo) GetMovie(ctx context.Context, mvID int) (*models.MovieInfo, 
 		return nil, fmt.Errorf("GetMovieRepoError: %w", err)
 	}
 
+	genreRows, err := moviedb.GetGenres(ctx, mvID, r.Database)
+	if err != nil {
+		return nil, fmt.Errorf("GetMovieRepoError: %w", err)
+	}
+
+	genres, err := moviedb.ScanGenreConnection(genreRows)
+	if err != nil {
+		return nil, fmt.Errorf("GetMovieRepoError: %w", err)
+	}
+
+	movieInfo.Genres = genres
+
 	return movieInfo, nil
 }

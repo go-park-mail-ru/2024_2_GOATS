@@ -306,6 +306,7 @@ func TestGetMovie_Success(t *testing.T) {
 			},
 		},
 		Seasons: []*models.Season{},
+		Genres:  []string{"Комедия"},
 	}
 
 	mock.ExpectPrepare(`
@@ -396,6 +397,15 @@ func TestGetMovie_Success(t *testing.T) {
 			nil,
 		),
 	)
+
+	mock.ExpectPrepare(`
+		SELECT genres.title FROM genres
+		JOIN movie_genres on movie_genres.genre_id = genres.id
+		JOIN movies ON movies.id = movie_genres.movie_id
+		WHERE movies.id = \$1
+	`).
+		ExpectQuery().WithArgs(movieID).
+		WillReturnRows(sqlmock.NewRows([]string{"title"}).AddRow("Комедия"))
 
 	r := NewMovieRepository(db, nil)
 

@@ -134,7 +134,7 @@ func TestDelivery_Login(t *testing.T) {
 			name:       "Service Error",
 			mockErr:    errVals.NewServiceError(errVals.ErrInvalidPasswordCode, errVals.ErrInvalidPasswordsMatch),
 			resp:       `{"errors":[{"code":"invalid_password","error":"password doesn't match with passwordConfirmation"}]}`,
-			statusCode: http.StatusBadRequest,
+			statusCode: http.StatusUnprocessableEntity,
 		},
 	}
 

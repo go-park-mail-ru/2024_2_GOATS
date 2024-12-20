@@ -14,5 +14,5 @@ databases:
     connMaxIdleTime: 5
 
   localStorage:
-    userAvatarsFullURL: /home/ubuntu/images/user_avatars/
-    userAvatarsRelativeURL: /images/user_avatars/
+    userAvatarsFullURL: /home/ubuntu/images/
+    userAvatarsRelativeURL: /images/

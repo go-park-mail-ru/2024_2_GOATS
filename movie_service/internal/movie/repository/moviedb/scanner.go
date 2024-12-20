@@ -3,6 +3,7 @@ package moviedb
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/models"
 	"github.com/go-park-mail-ru/2024_2_GOATS/movie_service/internal/movie/repository/converter"
@@ -183,4 +184,39 @@ func ScanMovieShortConnection(rows *sql.Rows) ([]*models.MovieShortInfo, error) 
 	}
 
 	return movies, nil
+}
+
+// ScanGenreConnection scans short movie info from sql Rows
+func ScanGenreConnection(rows *sql.Rows) ([]string, error) {
+	var genres []string
+
+	if rows == nil {
+		return []string{}, nil
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			errMsg := fmt.Errorf("cannot close rows while taking genres: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+		}
+	}()
+
+	for rows.Next() {
+		var genre string
+
+		err := rows.Scan(&genre)
+
+		if err != nil {
+			errMsg := fmt.Errorf("error while scanning genres: %w", err)
+			log.Error().Err(errMsg).Msg(errMsg.Error())
+
+			return nil, errMsg
+		}
+
+		genres = append(genres, genre)
+	}
+
+	sort.Strings(genres)
+
+	return genres, nil
 }

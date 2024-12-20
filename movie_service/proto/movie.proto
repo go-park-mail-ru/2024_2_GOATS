@@ -61,6 +61,7 @@ message MovieInfo {
   repeated Season seasons = 15;
   bool is_favorite = 16;
   bool with_subscription = 17;
+  repeated string genres = 18;
 }
 
 
@@ -210,5 +211,3 @@ service MovieService {
 
   rpc DeleteRating(DeleteRatingRequest) returns (DeleteRatingResponse);
 }
-
-

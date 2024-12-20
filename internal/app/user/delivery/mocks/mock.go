@@ -6,6 +6,7 @@ package mock_delivery
 
 import (
 	context "context"
+	multipart "mime/multipart"
 	reflect "reflect"
 
 	errors "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
@@ -94,15 +95,15 @@ func (mr *MockUserServiceInterfaceMockRecorder) UpdatePassword(ctx, passwordData
 }
 
 // UpdateProfile mocks base method.
-func (m *MockUserServiceInterface) UpdateProfile(ctx context.Context, profileData *models.User) *errors.ServiceError {
+func (m *MockUserServiceInterface) UpdateProfile(ctx context.Context, handler *multipart.FileHeader, profileData *models.User) *errors.ServiceError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfile", ctx, profileData)
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, handler, profileData)
 	ret0, _ := ret[0].(*errors.ServiceError)
 	return ret0
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.
-func (mr *MockUserServiceInterfaceMockRecorder) UpdateProfile(ctx, profileData interface{}) *gomock.Call {
+func (mr *MockUserServiceInterfaceMockRecorder) UpdateProfile(ctx, handler, profileData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserServiceInterface)(nil).UpdateProfile), ctx, profileData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserServiceInterface)(nil).UpdateProfile), ctx, handler, profileData)
 }

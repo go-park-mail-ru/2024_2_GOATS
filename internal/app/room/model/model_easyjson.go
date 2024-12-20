@@ -49,6 +49,8 @@ func easyjsonC80ae7adDecodeGithubComGoParkMailRu20242GOATSInternalAppRoomModel(i
 			out.AvatarURL = string(in.String())
 		case "avatar_name":
 			out.AvatarName = string(in.String())
+		case "subscription_status":
+			out.SubscriptionStatus = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -92,6 +94,11 @@ func easyjsonC80ae7adEncodeGithubComGoParkMailRu20242GOATSInternalAppRoomModel(o
 		const prefix string = ",\"avatar_name\":"
 		out.RawString(prefix)
 		out.String(string(in.AvatarName))
+	}
+	{
+		const prefix string = ",\"subscription_status\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.SubscriptionStatus))
 	}
 	out.RawByte('}')
 }

@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"mime/multipart"
 
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/models"
@@ -11,7 +12,7 @@ import (
 //
 //go:generate mockgen -source=delivery.go -destination=mocks/mock.go
 type UserServiceInterface interface {
-	UpdateProfile(ctx context.Context, profileData *models.User) *errVals.ServiceError
+	UpdateProfile(ctx context.Context, handler *multipart.FileHeader, profileData *models.User) *errVals.ServiceError
 	UpdatePassword(ctx context.Context, passwordData *models.PasswordData) *errVals.ServiceError
 	AddFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError
 	ResetFavorite(ctx context.Context, favData *models.Favorite) *errVals.ServiceError

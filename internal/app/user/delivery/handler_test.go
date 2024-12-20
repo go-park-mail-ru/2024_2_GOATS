@@ -182,7 +182,7 @@ func TestUserHandler_UpdateProfile(t *testing.T) {
 			handler := NewUserHandler(ms)
 
 			if !test.skipService {
-				ms.EXPECT().UpdateProfile(gomock.Any(), gomock.Any()).Return(test.mockErr)
+				ms.EXPECT().UpdateProfile(gomock.Any(), gomock.Any(), gomock.Any()).Return(test.mockErr)
 			}
 
 			w := httptest.NewRecorder()

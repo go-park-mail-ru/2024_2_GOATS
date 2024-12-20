@@ -13,7 +13,7 @@ import (
 func (u *UserService) UpdateProfile(ctx context.Context, usrData *dto.User) error {
 	logger := log.Ctx(ctx)
 	if usrData.AvatarName != "" {
-		avatarURL, err := u.userRepo.SaveUserAvatar(ctx, usrData.AvatarName, usrData.AvatarFile)
+		avatarURL, err := u.userRepo.SaveUserAvatar(ctx, usrData.AvatarName)
 
 		if err != nil {
 			logger.Error().Err(err).Msg("userService - failed to updateProfile")
