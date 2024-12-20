@@ -1,0 +1,35 @@
+// Заполнение базы юзеров: 154497 запросов
+Running 25m test @ https://cassette-world.ru/api/auth/signup
+  100 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.93s   409.30ms   4.00s    79.04%
+    Req/Sec     1.28      2.22    20.00     89.87%
+  154497 requests in 25.00m, 81.78MB read
+  Socket errors: connect 0, read 414, write 0, timeout 0
+  Non-2xx or 3xx responses: 1250
+Requests/sec:    103.00
+Transfer/sec:     55.83KB
+
+// Получение инфы о пользователе: 22006 запросов
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   156  100     2  100   154      3    249 --:--:-- --:--:-- --:--:--   252
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    76  100     2  100    74      3    122 --:--:-- --:--:-- --:--:--   126
+Running 2m test @ https://cassette-world.ru/api/auth/session
+  4 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   452.87ms  219.42ms   1.16s    57.85%
+    Req/Sec    62.91     48.35   250.00     62.36%
+  Latency Distribution
+     50%  426.09ms
+     75%  641.40ms
+     90%  745.04ms
+     99%  944.26ms
+  22006 requests in 1.67m, 14.12MB read
+Requests/sec:    219.89
+Transfer/sec:    144.52KB
