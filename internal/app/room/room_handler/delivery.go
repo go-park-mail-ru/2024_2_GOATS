@@ -139,7 +139,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(clients)+1 > 2 {
+	if len(clients)+1 > 10 {
 		ErrorManyConnections = true
 	}
 
