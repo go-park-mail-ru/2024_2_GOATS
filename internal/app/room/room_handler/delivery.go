@@ -1,15 +1,16 @@
 package delivery
 
 import (
-	"context"
-	"fmt"
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-	websocket "github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
+
+	"context"
+	"fmt"
 	ll "log"
 	"net/http"
 	"strconv"
@@ -54,33 +55,33 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//userID := r.URL.Query().Get("user_id")
-	//if userID == "" {
-	//	http.Error(w, "Missing user_id", http.StatusBadRequest)
-	//	return
-	//}
-
-	//ctx := config.WrapContext(r.Context(), h.cfg)
-	//
-	//sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
-	//if errSrvResp != nil {
-	//	http.Error(w, "get session error", http.StatusInternalServerError)
-	//}
-
-	//if !sessionSrvResp.UserData.SubscriptionStatus {
-	createdRoom, err := h.roomService.CreateRoom(r.Context(), room)
-	if err != nil {
-		logger.Error().Err(err).Msg("cannot_create_room")
-		http.Error(w, fmt.Sprintf("Failed to create room: %v", err), http.StatusInternalServerError)
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "Missing user_id", http.StatusBadRequest)
 		return
 	}
+	//
+	ctx := config.WrapContext(r.Context(), h.cfg)
 
-	w.Header().Set("Content-Type", "application/json")
-	api.Response(r.Context(), w, http.StatusOK, createdRoom)
-	//} else {
-	//	w.Header().Set("Content-Type", "application/json")
-	//	api.Response(r.Context(), w, http.StatusBadRequest, fmt.Errorf("no subscription"))
-	//}
+	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
+	if errSrvResp != nil {
+		http.Error(w, "get session error", http.StatusInternalServerError)
+	}
+
+	if sessionSrvResp.UserData.SubscriptionStatus {
+		createdRoom, err := h.roomService.CreateRoom(r.Context(), room)
+		if err != nil {
+			logger.Error().Err(err).Msg("cannot_create_room")
+			http.Error(w, fmt.Sprintf("Failed to create room: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		api.Response(r.Context(), w, http.StatusOK, createdRoom)
+		ll.Println("http.StatusOK")
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, fmt.Sprintf("no subscription"), http.StatusForbidden)
+	}
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +98,6 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	if errSrvResp != nil {
 		http.Error(w, "get session error", http.StatusInternalServerError)
 		return
-		//ll.Println("getsessionerror")
 	}
 
 	user := model.User{
