@@ -111,18 +111,18 @@ func (mr *MockUserRepoInterfaceMockRecorder) ResetFavorite(ctx, favData interfac
 }
 
 // SaveUserAvatar mocks base method.
-func (m *MockUserRepoInterface) SaveUserAvatar(ctx context.Context, avatarName string, file []byte) (string, error) {
+func (m *MockUserRepoInterface) SaveUserAvatar(ctx context.Context, avatarName string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUserAvatar", ctx, avatarName, file)
+	ret := m.ctrl.Call(m, "SaveUserAvatar", ctx, avatarName)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUserAvatar indicates an expected call of SaveUserAvatar.
-func (mr *MockUserRepoInterfaceMockRecorder) SaveUserAvatar(ctx, avatarName, file interface{}) *gomock.Call {
+func (mr *MockUserRepoInterfaceMockRecorder) SaveUserAvatar(ctx, avatarName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserAvatar", reflect.TypeOf((*MockUserRepoInterface)(nil).SaveUserAvatar), ctx, avatarName, file)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUserAvatar", reflect.TypeOf((*MockUserRepoInterface)(nil).SaveUserAvatar), ctx, avatarName)
 }
 
 // SetFavorite mocks base method.

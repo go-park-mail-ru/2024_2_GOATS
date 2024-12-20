@@ -3,8 +3,11 @@ package delivery
 import (
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
@@ -101,7 +104,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profileReq, err := u.parseProfileRequest(r, usrID)
+	profileReq, handler, err := u.parseProfileRequest(r, usrID)
 	if err != nil {
 		errMsg := fmt.Errorf("cannot read file from request: %w", err)
 		logger.Error().Err(errMsg).Msg("read_file_error")
@@ -133,7 +136,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	profileServData := converter.ToServUserData(profileReq)
-	errSrvResp := u.userService.UpdateProfile(r.Context(), profileServData)
+	errSrvResp := u.userService.UpdateProfile(r.Context(), handler, profileServData)
 	errResp := errVals.ToDeliveryErrorFromService(errSrvResp)
 
 	if errResp != nil {
@@ -148,7 +151,7 @@ func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	api.Response(r.Context(), w, http.StatusOK, nil)
 }
 
-func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, error) {
+func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.UpdateProfileRequest, *multipart.FileHeader, error) {
 	logger := log.Ctx(r.Context())
 	formData := r.MultipartForm.Value
 	file, handler, err := r.FormFile("avatar")
@@ -168,7 +171,30 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 			errMsg := fmt.Errorf("cannot read file from request: %w", err)
 			logger.Error().Err(errMsg).Msg("read_file_error")
 
-			return nil, err
+			return nil, nil, err
+		}
+	}
+
+	if handler != nil {
+		const maxFileSize = 2 * 1024 * 1024
+		if handler.Size > maxFileSize {
+			errMsg := fmt.Errorf("file size exceeds 2 MB: %d bytes", handler.Size)
+			logger.Error().Err(errMsg).Msg("file_size_error")
+			return nil, nil, errMsg
+		}
+
+		allowedExtensions := map[string]bool{
+			".jpeg": true,
+			".jpg":  true,
+			".svg":  true,
+			".webp": true,
+			".png":  true,
+		}
+		fileExt := strings.ToLower(filepath.Ext(handler.Filename))
+		if !allowedExtensions[fileExt] {
+			errMsg := fmt.Errorf("unsupported file type: %s", fileExt)
+			logger.Error().Err(errMsg).Msg("file_type_error")
+			return nil, nil, errMsg
 		}
 	}
 
@@ -185,7 +211,7 @@ func (u *UserHandler) parseProfileRequest(r *http.Request, usrID int) (*api.Upda
 		AvatarName: filename,
 	}
 
-	return profileReq, nil
+	return profileReq, handler, nil
 }
 
 // SetFavorite set_user_favorite http handler method

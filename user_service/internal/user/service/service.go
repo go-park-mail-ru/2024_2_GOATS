@@ -16,7 +16,7 @@ type UserRepoInterface interface {
 	SetFavorite(ctx context.Context, favData *repoDTO.RepoFavorite) error
 	ResetFavorite(ctx context.Context, favData *repoDTO.RepoFavorite) error
 	GetFavorites(ctx context.Context, usrID uint64) ([]uint64, error)
-	SaveUserAvatar(ctx context.Context, avatarName string, file []byte) (string, error)
+	SaveUserAvatar(ctx context.Context, avatarName string) (string, error)
 	UpdatePassword(ctx context.Context, usrID uint64, pass string) error
 	UpdateProfileData(ctx context.Context, profileData *repoDTO.RepoUser) error
 	UserByEmail(ctx context.Context, email string) (*dto.User, error)

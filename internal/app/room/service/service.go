@@ -221,12 +221,13 @@ func (s *RoomService) Session(ctx context.Context, cookie string) (*model.Sessio
 
 	return &model.SessionRespData{
 		UserData: model.User{
-			ID:         user.ID,
-			Email:      user.Email,
-			Username:   user.Username,
-			Password:   user.Password,
-			AvatarURL:  user.AvatarURL,
-			AvatarName: user.AvatarName,
+			ID:                 user.ID,
+			Email:              user.Email,
+			Username:           user.Username,
+			Password:           user.Password,
+			AvatarURL:          user.AvatarURL,
+			AvatarName:         user.AvatarName,
+			SubscriptionStatus: user.SubscriptionStatus,
 		},
 	}, nil
 }

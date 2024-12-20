@@ -1,18 +1,19 @@
 package delivery
 
 import (
-	"context"
-	"fmt"
-
-	"net/http"
-
 	"github.com/go-park-mail-ru/2024_2_GOATS/config"
 	"github.com/go-park-mail-ru/2024_2_GOATS/internal/app/api"
 	errVals "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/errors"
 	model "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/model"
 	ws "github.com/go-park-mail-ru/2024_2_GOATS/internal/app/room/ws"
-	websocket "github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
+
+	"context"
+	"fmt"
+	ll "log"
+	"net/http"
+	"strconv"
 )
 
 // RoomServiceInterface defines methods for room service layer
@@ -54,18 +55,36 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdRoom, err := h.roomService.CreateRoom(r.Context(), room)
-	if err != nil {
-		logger.Error().Err(err).Msg("cannot_create_room")
-		http.Error(w, fmt.Sprintf("Failed to create room: %v", err), http.StatusInternalServerError)
+	userID := config.CurrentUserID(r.Context())
+	if userID == 0 {
+		http.Error(w, "Missing user_id", http.StatusBadRequest)
 		return
 	}
+	//
+	ctx := config.WrapContext(r.Context(), h.cfg)
 
-	w.Header().Set("Content-Type", "application/json")
-	api.Response(r.Context(), w, http.StatusOK, createdRoom)
+	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, strconv.Itoa(userID))
+	if errSrvResp != nil {
+		http.Error(w, "get session error", http.StatusInternalServerError)
+	}
+
+	if sessionSrvResp.UserData.SubscriptionStatus {
+		createdRoom, err := h.roomService.CreateRoom(r.Context(), room)
+		if err != nil {
+			logger.Error().Err(err).Msg("cannot_create_room")
+			http.Error(w, fmt.Sprintf("Failed to create room: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		api.Response(r.Context(), w, http.StatusOK, createdRoom)
+		ll.Println("http.StatusOK")
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, "no subscription", http.StatusForbidden)
+	}
 }
 
-// JoinRoom join user into room
+// JoinRoom handles joining into joint viewing
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	logger := log.Ctx(r.Context())
 
@@ -76,10 +95,10 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := config.WrapContext(r.Context(), h.cfg)
-
 	sessionSrvResp, errSrvResp := h.roomService.Session(ctx, userID)
 	if errSrvResp != nil {
 		http.Error(w, "get session error", http.StatusInternalServerError)
+		return
 	}
 
 	user := model.User{
@@ -96,10 +115,51 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ErrorAlreadyConnection := false
+	ErrorManyConnections := false
+
+	clients := h.roomHub.Rooms[roomID]
+
+	for conn := range clients {
+		usrID, err := strconv.Atoi(userID)
+		if err != nil {
+			return
+		}
+
+		if h.roomHub.Users[conn].ID == usrID {
+			ll.Println("already_connected11111")
+			ErrorAlreadyConnection = true
+		}
+
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error().Err(err).Msg("Failed to upgrade to WebSocket")
 		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
+		return
+	}
+
+	if len(clients)+1 > 10 {
+		ErrorManyConnections = true
+	}
+
+	if ErrorAlreadyConnection {
+		Action := map[string]interface{}{
+			"name": "already_connected",
+		}
+		if err := conn.WriteJSON(Action); err != nil {
+			ll.Println("already_connected", conn.WriteJSON(Action))
+		}
+		return
+	}
+	if ErrorManyConnections {
+		Action := map[string]interface{}{
+			"name": "many_connections",
+		}
+		if err := conn.WriteJSON(Action); err != nil {
+			ll.Println("many_connections", conn.WriteJSON(Action))
+		}
 		return
 	}
 
@@ -134,7 +194,7 @@ func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		validActions := []string{"pause", "play", "rewind", "message", "change", "change_series", "duration"}
+		validActions := []string{"pause", "play", "rewind", "message", "change", "change_series", "duration", "already_connected"}
 		isValid := false
 
 		for _, validAction := range validActions {

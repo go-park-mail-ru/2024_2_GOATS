@@ -369,6 +369,29 @@ func easyjson97766e5aDecodeGithubComGoParkMailRu20242GOATSInternalAppModels2(in 
 			out.IsFavorite = bool(in.Bool())
 		case "with_subscription":
 			out.WithSubscription = bool(in.Bool())
+		case "genres":
+			if in.IsNull() {
+				in.Skip()
+				out.Genres = nil
+			} else {
+				in.Delim('[')
+				if out.Genres == nil {
+					if !in.IsDelim(']') {
+						out.Genres = make([]string, 0, 4)
+					} else {
+						out.Genres = []string{}
+					}
+				} else {
+					out.Genres = (out.Genres)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v6 string
+					v6 = string(in.String())
+					out.Genres = append(out.Genres, v6)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -450,14 +473,14 @@ func easyjson97766e5aEncodeGithubComGoParkMailRu20242GOATSInternalAppModels2(out
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v6, v7 := range in.Actors {
-				if v6 > 0 {
+			for v7, v8 := range in.Actors {
+				if v7 > 0 {
 					out.RawByte(',')
 				}
-				if v7 == nil {
+				if v8 == nil {
 					out.RawString("null")
 				} else {
-					(*v7).MarshalEasyJSON(out)
+					(*v8).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -479,14 +502,14 @@ func easyjson97766e5aEncodeGithubComGoParkMailRu20242GOATSInternalAppModels2(out
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v8, v9 := range in.Seasons {
-				if v8 > 0 {
+			for v9, v10 := range in.Seasons {
+				if v9 > 0 {
 					out.RawByte(',')
 				}
-				if v9 == nil {
+				if v10 == nil {
 					out.RawString("null")
 				} else {
-					(*v9).MarshalEasyJSON(out)
+					(*v10).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -501,6 +524,22 @@ func easyjson97766e5aEncodeGithubComGoParkMailRu20242GOATSInternalAppModels2(out
 		const prefix string = ",\"with_subscription\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.WithSubscription))
+	}
+	{
+		const prefix string = ",\"genres\":"
+		out.RawString(prefix)
+		if in.Genres == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v11, v12 := range in.Genres {
+				if v11 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v12))
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
@@ -738,17 +777,17 @@ func easyjson97766e5aDecodeGithubComGoParkMailRu20242GOATSInternalAppModels5(in 
 					out.Movies = (out.Movies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v10 *MovieShortInfo
+					var v13 *MovieShortInfo
 					if in.IsNull() {
 						in.Skip()
-						v10 = nil
+						v13 = nil
 					} else {
-						if v10 == nil {
-							v10 = new(MovieShortInfo)
+						if v13 == nil {
+							v13 = new(MovieShortInfo)
 						}
-						(*v10).UnmarshalEasyJSON(in)
+						(*v13).UnmarshalEasyJSON(in)
 					}
-					out.Movies = append(out.Movies, v10)
+					out.Movies = append(out.Movies, v13)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -784,14 +823,14 @@ func easyjson97766e5aEncodeGithubComGoParkMailRu20242GOATSInternalAppModels5(out
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v11, v12 := range in.Movies {
-				if v11 > 0 {
+			for v14, v15 := range in.Movies {
+				if v14 > 0 {
 					out.RawByte(',')
 				}
-				if v12 == nil {
+				if v15 == nil {
 					out.RawString("null")
 				} else {
-					(*v12).MarshalEasyJSON(out)
+					(*v15).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -872,17 +911,17 @@ func easyjson97766e5aDecodeGithubComGoParkMailRu20242GOATSInternalAppModels6(in 
 					out.Movies = (out.Movies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v13 *MovieShortInfo
+					var v16 *MovieShortInfo
 					if in.IsNull() {
 						in.Skip()
-						v13 = nil
+						v16 = nil
 					} else {
-						if v13 == nil {
-							v13 = new(MovieShortInfo)
+						if v16 == nil {
+							v16 = new(MovieShortInfo)
 						}
-						(*v13).UnmarshalEasyJSON(in)
+						(*v16).UnmarshalEasyJSON(in)
 					}
-					out.Movies = append(out.Movies, v13)
+					out.Movies = append(out.Movies, v16)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -947,14 +986,14 @@ func easyjson97766e5aEncodeGithubComGoParkMailRu20242GOATSInternalAppModels6(out
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v14, v15 := range in.Movies {
-				if v14 > 0 {
+			for v17, v18 := range in.Movies {
+				if v17 > 0 {
 					out.RawByte(',')
 				}
-				if v15 == nil {
+				if v18 == nil {
 					out.RawString("null")
 				} else {
-					(*v15).MarshalEasyJSON(out)
+					(*v18).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')

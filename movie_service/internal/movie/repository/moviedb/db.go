@@ -3,6 +3,7 @@ package moviedb
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/lib/pq"
@@ -80,6 +81,13 @@ const (
 		SELECT movies.id, movies.title, movies.card_url, movies.album_url, movies.rating, movies.release_date, movies.movie_type, countries.title FROM movies
 		JOIN countries ON countries.id = movies.country_id
 		WHERE movies.id = ANY($1)
+	`
+
+	getGenresSQL = `
+		SELECT genres.title FROM genres
+		JOIN movie_genres on movie_genres.genre_id = genres.id
+		JOIN movies ON movies.id = movie_genres.movie_id
+		WHERE movies.id = $1
 	`
 )
 
@@ -204,5 +212,39 @@ func GetMoviesByIDs(ctx context.Context, mvIDs []uint64, db *sql.DB) (*sql.Rows,
 	}
 
 	metricsutils.SaveSuccessMetric(start, "get_movie_by_ids", "movies")
+	return rows, nil
+}
+
+// GetGenres returns genres for film
+func GetGenres(ctx context.Context, mvID int, db *sql.DB) (*sql.Rows, error) {
+	start := time.Now()
+	logger := log.Ctx(ctx)
+
+	stmt, err := db.Prepare(getGenresSQL)
+	if err != nil {
+		return nil, fmt.Errorf("prepareStatement#moviesByIDs: %w", err)
+	}
+
+	defer func() {
+		if clErr := stmt.Close(); clErr != nil {
+			logger.Error().Err(clErr).Msg("failed_to_close_statement")
+		}
+	}()
+
+	rows, err := stmt.QueryContext(ctx, mvID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
+		metricsutils.SaveErrorMetric("get_movie_genres", "genres")
+		errMsg := fmt.Errorf("postgres: error while selecting movie genres: %w", err)
+		logger.Error().Err(errMsg).Msg("pg_error")
+
+		return nil, errMsg
+	}
+
+	metricsutils.SaveSuccessMetric(start, "get_movie_genres", "movies")
 	return rows, nil
 }

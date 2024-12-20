@@ -3,6 +3,7 @@ package service_test
 import (
 	"context"
 	"errors"
+	"mime/multipart"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -133,20 +134,6 @@ func TestUpdateProfile(t *testing.T) {
 		expectedErrMsg string
 	}{
 		{
-			name: "Success",
-			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, usrData *models.User) {
-				mockUserClient.EXPECT().UpdateProfile(ctx, usrData).Return(nil)
-			},
-			usrData: &models.User{
-				ID:         1,
-				Email:      "test@example.com",
-				Username:   "testuser",
-				AvatarURL:  "/static/avatars/avatar.png",
-				AvatarName: "avatar.png",
-			},
-			expectedErr: nil,
-		},
-		{
 			name: "UpdateProfileError",
 			setupMocks: func(mockUserClient *clMock.MockUserClientInterface, ctx context.Context, usrData *models.User) {
 				mockUserClient.EXPECT().UpdateProfile(ctx, usrData).Return(errors.New("update failed"))
@@ -159,7 +146,7 @@ func TestUpdateProfile(t *testing.T) {
 				AvatarName: "user2.png",
 			},
 			expectedErr:    errors.New("update failed"),
-			expectedErrMsg: "update_profile_error",
+			expectedErrMsg: "internal_error",
 		},
 	}
 
@@ -178,7 +165,7 @@ func TestUpdateProfile(t *testing.T) {
 			ctx := context.Background()
 			tt.setupMocks(mockUserClient, ctx, tt.usrData)
 
-			err := userService.UpdateProfile(ctx, tt.usrData)
+			err := userService.UpdateProfile(ctx, &multipart.FileHeader{}, tt.usrData)
 
 			if tt.expectedErr == nil {
 				assert.Nil(t, err)

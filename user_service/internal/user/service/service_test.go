@@ -605,7 +605,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			},
 			mockSetup: func(mock *mockRepo.MockUserRepoInterface) {
 				mock.EXPECT().
-					SaveUserAvatar(gomock.Any(), "avatar.png", []byte("mock avatar file data")).
+					SaveUserAvatar(gomock.Any(), "avatar.png").
 					Return("http://example.com/avatar.png", nil)
 				mock.EXPECT().
 					UpdateProfileData(gomock.Any(), gomock.Any()).
@@ -638,7 +638,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			},
 			mockSetup: func(mock *mockRepo.MockUserRepoInterface) {
 				mock.EXPECT().
-					SaveUserAvatar(gomock.Any(), "avatar.png", []byte("mock avatar file data")).
+					SaveUserAvatar(gomock.Any(), "avatar.png").
 					Return("", errors.New("avatar save error"))
 			},
 			expectedError: fmt.Errorf("userService - failed to updateProfile: avatar save error"),
@@ -654,7 +654,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			},
 			mockSetup: func(mock *mockRepo.MockUserRepoInterface) {
 				mock.EXPECT().
-					SaveUserAvatar(gomock.Any(), "avatar.png", []byte("mock avatar file data")).
+					SaveUserAvatar(gomock.Any(), "avatar.png").
 					Return("http://example.com/avatar.png", nil)
 				mock.EXPECT().
 					UpdateProfileData(gomock.Any(), gomock.Any()).
