@@ -5,8 +5,8 @@ services:
     build:
       context: ..
       dockerfile: user_service/Dockerfile
-    volumes:
-      - /home/ubuntu/images:/home/ubuntu/images
+    # volumes:
+    #   - /home/ubuntu/images:/home/ubuntu/images
     depends_on:
       user_db:
         condition: service_healthy
